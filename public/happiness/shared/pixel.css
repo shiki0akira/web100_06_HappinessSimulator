@@ -1,0 +1,175 @@
+/* 幸福模擬器 — 像素風視覺系統
+   規則：沒有圓角、硬邊框、硬陰影（offset 不模糊）、色階不漸層、字不抗鋸齒。 */
+
+:root {
+  --ground: #E7EBE3;
+  --surface: #FFFFFF;
+  --surface-2: #D7DED4;
+  --ink: #0E1512;
+  --ink-2: #3F534C;
+  --ink-3: #6E837B;
+  --edge: #0E1512;          /* 硬邊框 */
+  --edge-soft: #A8B5AD;
+  --hard: #0E1512;          /* 硬陰影 */
+  --root-c: #0B7A63;
+  --root-soft: #C8E4DA;
+  --vol: #C4491A;
+  --vol-soft: #F3DACE;
+  --gold: #B0800E;
+  --bar-bg: #0E1512;        /* HUD／控制列：不隨主題翻轉 */
+  --bar-ink: #E7EBE3;
+  --bar-edge: #46605A;
+  --on-primary: #FFFFFF;   /* 主要按鈕上的字 */
+  --scan: rgba(0, 0, 0, .035);
+  --sans: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+  --serif: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+  --pixel: "Press Start 2P", "IBM Plex Mono", ui-monospace, monospace;
+  --mono: "Press Start 2P", "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground: #0D1315;
+    --surface: #182124;
+    --surface-2: #222E31;
+    --ink: #E9F1EC;
+    --ink-2: #A7BBB4;
+    --ink-3: #7A8F88;
+    --edge: #6E8A82;
+    --edge-soft: #2A383C;
+    --hard: #04080A;
+    --root-c: #54D6AF;
+    --root-soft: #113A32;
+    --vol: #FF8A4C;
+    --vol-soft: #3A2116;
+    --gold: #F0C64B;
+    --bar-bg: #05090A;
+    --bar-ink: #E9F1EC;
+    --bar-edge: #46605A;
+    --on-primary: #04120E;
+    --scan: rgba(0, 0, 0, .13);
+  }
+}
+
+* { box-sizing: border-box; border-radius: 0 !important; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--sans);
+  line-height: 1.7;
+  -webkit-font-smoothing: none;      /* 關掉抗鋸齒，中文字才有像素感 */
+  font-smooth: never;
+  -webkit-tap-highlight-color: transparent;
+}
+/* 掃描線 */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 90;
+  background: repeating-linear-gradient(0deg, var(--scan) 0 1px, transparent 1px 3px);
+}
+img, canvas { image-rendering: pixelated; }
+
+h1, h2, h3, h4 { font-family: var(--serif); font-weight: 700; line-height: 1.35; margin: 0; }
+button { font-family: inherit; cursor: pointer; }
+
+/* 小標：英數用像素字 */
+.kicker {
+  display: block;
+  font-family: var(--pixel);
+  font-size: 10px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 10px;
+}
+.tag {
+  display: inline-block;
+  font-family: var(--pixel);
+  font-size: 9px;
+  letter-spacing: .06em;
+  padding: 6px 9px;
+  border: 2px solid var(--root-c);
+  background: var(--root-soft);
+  color: var(--root-c);
+}
+.tag.host { border-color: var(--vol); background: var(--vol-soft); color: var(--vol); }
+
+/* 按鈕：按下去會沉下去 */
+.btn {
+  border: 3px solid var(--edge);
+  background: var(--surface);
+  color: var(--ink);
+  padding: 11px 16px;
+  font-size: 15px;
+  font-weight: 700;
+  box-shadow: 4px 4px 0 var(--hard);
+  transition: none;
+}
+.btn:active { transform: translate(4px, 4px); box-shadow: none; }
+.btn.primary { background: var(--root-c); border-color: var(--edge); color: var(--on-primary); }
+.btn.ghost { background: transparent; }
+.btn:disabled { opacity: .45; cursor: default; box-shadow: 4px 4px 0 var(--edge-soft); }
+
+/* 分段能量條 */
+.bar {
+  display: block;
+  height: 16px;
+  border: 2px solid var(--edge);
+  background: var(--surface-2);
+  padding: 2px;
+  overflow: hidden;
+}
+.bar > i {
+  display: block;
+  height: 100%;
+  /* 用遮罩切成一格一格，顏色由行內樣式給 */
+  -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 8px, transparent 8px 10px);
+  mask-image: repeating-linear-gradient(90deg, #000 0 8px, transparent 8px 10px);
+  transition: none;
+}
+.bar.locked {
+  background: repeating-linear-gradient(135deg, var(--surface-2) 0 4px, var(--edge-soft) 4px 8px);
+}
+
+.card-face {
+  background: var(--surface);
+  border: 3px solid var(--edge);
+  box-shadow: 5px 5px 0 var(--hard);
+  padding: 18px;
+}
+
+/* 輸入元件 */
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 20px;
+  background: var(--surface-2);
+  border: 3px solid var(--edge);
+  padding: 0;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 24px;
+  height: 14px;
+  background: var(--vol);
+  border: 3px solid var(--edge);
+  cursor: pointer;
+}
+input[type=range]::-moz-range-thumb {
+  width: 24px;
+  height: 14px;
+  background: var(--vol);
+  border: 3px solid var(--edge);
+  cursor: pointer;
+}
+input[type=text], input:not([type]), textarea, select {
+  border: 3px solid var(--edge);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--sans);
+}

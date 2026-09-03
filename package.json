@@ -1,0 +1,14 @@
+{
+  "name": "web100-06-happiness-simulator",
+  "version": "1.0.0",
+  "private": true,
+  "description": "幸福模擬器 — 幸福小組七週互動遊戲。Web100 系列第 6 個專案。",
+  "scripts": {
+    "dev": "wrangler dev --ip 0.0.0.0",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail"
+  },
+  "devDependencies": {
+    "wrangler": "^4.128.0"
+  }
+}

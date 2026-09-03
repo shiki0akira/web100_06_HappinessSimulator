@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>幸福模擬器 · 七週</title>
+<meta name="robots" content="noindex">
+<meta name="description" content="幸福小組七週互動遊戲。主持人的準備台。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Press+Start+2P&display=swap">
+<link rel="stylesheet" href="/happiness/shared/pixel.css">
+<style>
+  body { padding-bottom: 60px; }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 0 20px; }
+
+  .hero { border-bottom: 4px solid var(--edge); background: var(--surface); padding: 34px 0 30px; margin-bottom: 34px; }
+  .hero .eyebrow { font-family: var(--pixel); font-size: 10px; color: var(--ink-3); letter-spacing: .08em; }
+  .hero h1 { font-size: 46px; font-weight: 900; letter-spacing: .04em; margin: 16px 0 0; }
+  .hero p { font-size: 16px; color: var(--ink-2); max-width: 56ch; margin: 14px 0 0; }
+  .hero .meta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+  .hero .meta span { font-family: var(--pixel); font-size: 10px; padding: 7px 10px; border: 2px solid var(--edge-soft); color: var(--ink-2); }
+
+  .start { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin-top: 24px; }
+  .start .btn { font-size: 19px; padding: 16px 26px; }
+
+  h2.sec { font-size: 13px; font-family: var(--pixel); color: var(--ink-3); letter-spacing: .08em;
+    border-bottom: 3px solid var(--edge); padding-bottom: 10px; margin: 44px 0 20px; }
+
+  .weeks { display: grid; gap: 14px; }
+  .wk { display: grid; grid-template-columns: 74px 1fr auto; gap: 18px; align-items: center;
+    background: var(--surface); border: 4px solid var(--edge); box-shadow: 6px 6px 0 var(--hard); padding: 16px 18px; }
+  .wk.soon { box-shadow: none; border-color: var(--edge-soft); opacity: .62; }
+  .wk .n { font-family: var(--pixel); font-size: 26px; color: var(--vol); text-align: center; }
+  .wk.soon .n { color: var(--ink-3); }
+  .wk h3 { font-size: 22px; font-weight: 900; letter-spacing: .04em; }
+  .wk .role { font-size: 13px; color: var(--ink-3); margin-top: 4px; }
+  .wk .go { font-family: var(--pixel); font-size: 10px; padding: 10px 12px; border: 3px solid var(--edge);
+    background: var(--root-c); color: var(--on-primary); text-decoration: none; white-space: nowrap; }
+  .wk .lock { font-family: var(--pixel); font-size: 9px; color: var(--ink-3); white-space: nowrap; }
+  .wk .prep { grid-column: 2 / -1; font-size: 13px; color: var(--ink-2); margin-top: 8px;
+    border-left: 6px solid var(--gold); padding-left: 10px; }
+
+  .notes { background: var(--surface); border: 4px solid var(--edge); box-shadow: 6px 6px 0 var(--hard); padding: 20px; }
+  .notes p.why { font-size: 14px; color: var(--ink-2); margin: 0 0 16px; }
+  .nrow { display: grid; grid-template-columns: 1fr; gap: 14px; }
+  @media (min-width: 720px) { .nrow { grid-template-columns: repeat(3, 1fr); } }
+  .nrow label { display: block; font-family: var(--pixel); font-size: 10px; color: var(--ink-3); margin-bottom: 7px; }
+  .nrow textarea { width: 100%; min-height: 84px; padding: 10px; font-size: 15px; font-weight: 500; resize: vertical; }
+  .saved { font-family: var(--pixel); font-size: 10px; color: var(--root-c); margin-top: 12px; min-height: 14px; }
+
+  .prep-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+  .prep-list li { display: flex; gap: 12px; align-items: flex-start; background: var(--surface);
+    border: 3px solid var(--edge-soft); padding: 12px 14px; font-size: 15px; }
+  .prep-list b { font-family: var(--pixel); font-size: 10px; color: var(--vol); white-space: nowrap; padding-top: 3px; }
+
+  footer { margin-top: 52px; padding-top: 22px; border-top: 3px dashed var(--edge-soft);
+    font-size: 13px; color: var(--ink-3); }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="wrap">
+    <p class="eyebrow">WEB100_06 · HAPPINESS SIMULATOR</p>
+    <h1>幸福模擬器</h1>
+    <p>投影片還在，只是活了過來。你照樣一頁一頁講，講到某個段落畫面會跳出問答或小遊戲，全場拿手機參與，玩完再回到你的信息。</p>
+    <div class="meta">
+      <span>七週 · 每關 20–25 分</span>
+      <span>大螢幕 ＋ 每人一支手機</span>
+      <span>需要一位主持人</span>
+    </div>
+    <div class="start">
+      <a class="btn primary" href="/happiness/w1/zh-TW/">今晚開場 → 第一關</a>
+      <span class="mono" style="font-size:11px;color:var(--ink-3)">開了就會給你房號和 QR</span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <h2 class="sec">SEVEN WEEKS</h2>
+  <div class="weeks" id="weeks"></div>
+
+  <h2 class="sec">TONIGHT · 準備清單</h2>
+  <ul class="prep-list">
+    <li><b>大螢幕</b><span>電腦接投影機，開第一關的網址，按 F11 全螢幕。</span></li>
+    <li><b>手機</b><span>提醒大家先關掉自動鎖屏。掃 QR 或輸入四碼房號進場。</span></li>
+    <li><b>散會前</b><span>問一句「卡片存好的舉手」。那張卡是下週的入場券。</span></li>
+    <li><b>斷網備案</b><span>紙本標單、印出來的機會與命運卡、白板記分。整關照樣跑得完。</span></li>
+  </ul>
+
+  <h2 class="sec">LAST WEEK · 現場筆記</h2>
+  <div class="notes">
+    <p class="why">系統不跨週存資料，所以這三件事要你自己記。散會前打進來，下週開場打開這頁就看得到。只存在這台裝置的瀏覽器裡。</p>
+    <div class="nrow">
+      <div>
+        <label>拍賣配置</label>
+        <textarea id="n1" placeholder="誰買了什麼、花了多少"></textarea>
+      </div>
+      <div>
+        <label>誰抽到重擊卡</label>
+        <textarea id="n2" placeholder="下週開場問：上禮拜金融風暴那位，還好嗎"></textarea>
+      </div>
+      <div>
+        <label>誰標到「？」</label>
+        <textarea id="n3" placeholder="第二關揭曉永恆時，全場會看向他"></textarea>
+      </div>
+    </div>
+    <p class="saved" id="saved"></p>
+  </div>
+
+  <footer>
+    依福氣教會幸福小組八週組題設計。第八週「幸福的教會」不設關卡，改為回顧與幸福護照發放。<br>
+    這是主持人的工具，不是自助遊戲 —— 沒有人帶，它只是一堆會跑的動畫。
+  </footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var WEEKS = [
+    { n: 1, name: '真幸福', role: '建立現況', ready: true,
+      prep: '幸福拍賣會。每人 100 點競標六樣東西，最後一樣是「？」。收重擔、發第一張經文卡。' },
+    { n: 2, name: '真相大白', role: '覺醒' },
+    { n: 3, name: '萬世巨星', role: '遇見關鍵角色' },
+    { n: 4, name: '幸福連線', role: '取得能力' },
+    { n: 5, name: '當上帝來敲門', role: '視角反轉' },
+    { n: 6, name: '十字架的勝利', role: '決戰' },
+    { n: 7, name: '釋放與自由', role: '結局' },
+  ];
+
+  document.getElementById('weeks').innerHTML = WEEKS.map(function (w) {
+    var pad = w.n < 10 ? '0' + w.n : w.n;
+    return '<div class="wk' + (w.ready ? '' : ' soon') + '">' +
+      '<div class="n">' + pad + '</div>' +
+      '<div><h3>' + w.name + '</h3><div class="role">' + w.role + '</div></div>' +
+      (w.ready
+        ? '<a class="go" href="/happiness/w' + w.n + '/zh-TW/">開場 →</a>'
+        : '<span class="lock">尚未開放</span>') +
+      (w.prep ? '<div class="prep">' + w.prep + '</div>' : '') +
+    '</div>';
+  }).join('');
+
+  // 現場筆記：純本機，不上傳
+  var saved = document.getElementById('saved');
+  var timer = null;
+  ['n1', 'n2', 'n3'].forEach(function (id) {
+    var el = document.getElementById(id);
+    try { el.value = localStorage.getItem('happiness_note_' + id) || ''; } catch (e) {}
+    el.addEventListener('input', function () {
+      try { localStorage.setItem('happiness_note_' + id, el.value); } catch (e) {}
+      saved.textContent = '已存到這台裝置';
+      clearTimeout(timer);
+      timer = setTimeout(function () { saved.textContent = ''; }, 1800);
+    });
+  });
+})();
+</script>
+</body>
+</html>

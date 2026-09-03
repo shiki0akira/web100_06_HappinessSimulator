@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>幸福模擬器 · 真幸福</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Press+Start+2P&display=swap">
+<link rel="stylesheet" href="/happiness/shared/pixel.css">
+<style>
+  body { padding: 0 0 28px; }
+  .wrap { max-width: 520px; margin: 0 auto; padding: 0 16px; }
+
+  .status { position: sticky; top: 0; z-index: 5; background: var(--surface); border-bottom: 4px solid var(--edge); padding: 10px 16px 12px; }
+  .status .row1 { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ink-3); }
+  .status .row1 b { color: var(--ink); font-size: 16px; font-weight: 900; }
+  .status .row1 .pts { margin-left: auto; font-family: var(--pixel); font-size: 11px; color: var(--gold); }
+  .gauge { margin-top: 9px; }
+  .gauge .lbl { display: flex; justify-content: space-between; font-family: var(--pixel); font-size: 9px; color: var(--ink-3); margin-bottom: 4px; }
+  .gauge .lbl b { font-size: 11px; color: var(--vol); }
+  .gauge + .gauge { margin-top: 7px; }
+  .gauge.locked .lbl b { color: var(--ink-3); }
+
+  .screen { padding-top: 22px; }
+  .screen h2 { font-size: 25px; font-weight: 900; letter-spacing: .03em; }
+  .screen p { color: var(--ink-2); font-size: 15px; }
+  .wait { text-align: center; padding: 44px 0; color: var(--ink-3); }
+  .wait .dot { font-family: var(--pixel); font-size: 22px; letter-spacing: .3em; color: var(--root-c); }
+
+  .slider { margin: 26px 0 10px; }
+  .slider .val { font-family: var(--pixel); font-size: 46px; text-align: center; line-height: 1.2; }
+  .ends { display: flex; justify-content: space-between; font-family: var(--pixel); font-size: 9px; color: var(--ink-3); margin-top: 8px; }
+
+  .fullbtn { width: 100%; margin-top: 20px; padding: 15px; font-size: 17px; }
+
+  .lotcard { text-align: center; padding: 24px 16px; }
+  .lotcard .idx { font-family: var(--pixel); font-size: 10px; color: var(--ink-3); }
+  .lotcard .nm { font-size: 30px; font-weight: 900; margin-top: 12px; line-height: 1.35; letter-spacing: .04em; }
+  .lotcard .timer { font-family: var(--pixel); font-size: 30px; color: var(--vol); margin-top: 14px; }
+  .bidrow { display: flex; gap: 8px; margin-top: 14px; }
+  .bidrow button { flex: 1; padding: 12px 0; font-size: 14px; }
+  .bidnum { font-family: var(--pixel); font-size: 40px; text-align: center; line-height: 1.2; margin: 16px 0 12px; }
+
+  .flip { width: 100%; aspect-ratio: 3/4; border: 5px solid var(--edge); box-shadow: 6px 6px 0 var(--hard);
+    background: #12211E; color: #7BE8C4;
+    background-image: repeating-linear-gradient(45deg, rgba(255,255,255,.045) 0 8px, transparent 8px 16px);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+    font-family: var(--pixel); font-size: 44px; margin-top: 18px; }
+  .flip:active { transform: translate(6px, 6px); box-shadow: none; }
+  .flip small { font-family: var(--sans); font-size: 14px; font-weight: 700; color: #DCEDE8; }
+  .evcard { margin-top: 18px; }
+  .evcard .hd { display: flex; justify-content: space-between; align-items: center; font-family: var(--pixel); font-size: 10px; color: var(--ink-3); }
+  .evcard .hd b { font-size: 18px; color: var(--vol); }
+  .evcard .hd b.up { color: var(--root-c); }
+  .evcard p { font-size: 18px; font-weight: 500; line-height: 1.9; color: var(--ink); margin: 14px 0 0; }
+
+  .verse-p { text-align: center; padding: 10px 0; }
+  .verse-p .ref { font-family: var(--pixel); font-size: 10px; color: var(--gold); }
+  .verse-p blockquote { font-size: 23px; font-weight: 700; line-height: 1.95; margin: 16px 0 0; letter-spacing: .02em; }
+
+  textarea { width: 100%; min-height: 108px; padding: 12px; font-size: 17px; font-weight: 500; resize: vertical; }
+  .checkline { display: flex; gap: 10px; align-items: flex-start; margin-top: 14px; font-size: 14px; color: var(--ink-2); }
+  .checkline input { margin-top: 3px; width: 20px; height: 20px; accent-color: var(--root-c); }
+  .privacy { margin-top: 12px; font-size: 13px; color: var(--ink-3); line-height: 1.8; }
+
+  /* 卡片蓋在掃描線上面，存下來的圖才是乾淨的觀感 */
+  .weekcard { width: 100%; border: 4px solid var(--edge); box-shadow: 6px 6px 0 var(--hard); display: block;
+    margin-top: 16px; position: relative; z-index: 95; }
+  .ok { color: var(--root-c); font-weight: 700; }
+  .mono { font-family: var(--pixel); }
+</style>
+</head>
+<body>
+  <div class="status" id="status" hidden>
+    <div class="row1"><b id="myname">—</b><span id="mystate"></span><span class="pts" id="mypts"></span></div>
+    <div class="gauge">
+      <div class="lbl"><span>外在境遇值</span><b id="outerv">—</b></div>
+      <span class="bar"><i id="outerbar" style="width:0%;background:var(--vol)"></i></span>
+    </div>
+    <div class="gauge locked">
+      <div class="lbl"><span>？？？</span><b>—</b></div>
+      <span class="bar locked"></span>
+    </div>
+  </div>
+
+  <div class="wrap"><div class="screen" id="screen"></div></div>
+
+<script src="/happiness/shared/card.js"></script>
+<script src="/happiness/shared/room-client.js"></script>
+<script src="/happiness/w1/player.js"></script>
+</body>
+</html>
