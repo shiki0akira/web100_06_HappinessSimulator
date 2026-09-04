@@ -37,11 +37,15 @@
           '<div class="nm">' + esc(p.name) +
             '<span class="val">' + (p.outer == null ? '—' : p.outer) + '</span>' +
           '</div>' +
+          // 上面是幸福指數，下面那條第一關還沒有名字。它有數字、它會動，
+          // 但畫面上只有三個問號 —— 有人問就說「下週」。
           '<div class="bars">' +
-            '<span class="bar"><i style="width:' + outer + '%;background:var(--vol)"></i></span>' +
-            '<span class="bar locked" title="內在根基：第二關解鎖"></span>' +
+            '<span class="bar" title="幸福指數"><i style="width:' + outer + '%;background:var(--vol)"></i></span>' +
+            '<span class="bar" title="？？？"><i style="width:' + (p.inner || 0) + '%;background:var(--root-c)"></i></span>' +
           '</div>' +
+          // ？？？ 的數字等它真的開始長才出現 —— 憑空冒出來比一直掛 0 有戲
           '<div class="meta">剩 <b>' + p.points + '</b> 點' +
+            (p.inner ? '<b class="mono" style="color:var(--root-c);margin-left:8px">？？？ ' + p.inner + '</b>' : '') +
             '<span class="adj">' +
               '<button data-adj="' + p.pid + '" data-d="-5">−</button>' +
               '<button data-adj="' + p.pid + '" data-d="5">＋</button>' +
@@ -110,7 +114,7 @@
 
     selfscore: function () {
       return '<span class="kicker">Interaction 2</span><h2>你覺得現在自己幸福嗎？</h2>' +
-        '<p class="lede">0 到 100。這個數字就是每個人的外在境遇值起點，會跟著他走完七週。</p>' +
+        '<p class="lede">0 到 100。這個數字就是每個人的幸福指數起點，會跟著他走完七週。</p>' +
         '<div class="big" style="margin-top:30px">' + S.stats.answeredScore + ' <span class="muted" style="font-size:calc(34px * var(--u))">/ ' + S.stats.count + ' 人已作答</span></div>' +
         '<div class="note"><b>作答中不顯示分布</b>　避免互相定錨。全部填完再翻下一頁。</div>';
     },
@@ -242,7 +246,8 @@
       return '<div class="verse"><span class="ref">' + esc(S.verse.ref) + '</span>' +
         '<blockquote>「' + esc(S.verse.text) + '」</blockquote></div>' +
         '<p class="lede" style="margin-top:26px">全場的分數都掉了——買很多的、囤著錢的、什麼都沒標到的。所以這句話的對象不是某些人，是在場每一個人。</p>' +
-        '<p class="mono muted" style="margin-top:12px">已領受 ' + S.players.filter(function (p) { return p.receivedVerse; }).length + ' / ' + S.stats.count + '</p>';
+        '<p class="mono muted" style="margin-top:12px">已領受 ' + S.stats.versesReceived + ' / ' + S.stats.count + '</p>' +
+        '<div class="note"><b>底下那條線現在會動</b>　每個人領受完，側欄第二條槽 +10。<b>不要解釋、不要指出來</b>——有人問就說「下週」。第二關才會替它正名。</div>';
     },
 
     burden: function () {
@@ -264,7 +269,8 @@
       return '<span class="kicker">Take-home</span><h2>把卡片存進相簿</h2>' +
         '<p class="lede">這張卡是下週的入場券。散會前每個人手機裡都要有——直接問一句「存好的舉手」。</p>' +
         '<div class="big" style="margin-top:20px">' + S.stats.cardsDone + ' <span class="muted" style="font-size:calc(34px * var(--u))">/ ' + S.stats.count + ' 已生成</span></div>' +
-        '<div class="note"><b>不要說回家再存</b>　漏掉的人下週就接不上了。忘記存也沒關係，下週直接重新評估現在的自己，跟新朋友走同一條路。</div>';
+        '<div class="note"><b>不要說回家再存</b>　漏掉的人下週就接不上了。忘記存也沒關係，下週直接重新評估現在的自己，跟新朋友走同一條路。</div>' +
+        '<div class="note"><b>禱告完，底下那條再 +5</b>　卡片一生成就加。今晚結束時每個人的 ？？？ 停在 15。</div>';
     },
 
     end: function () {
@@ -281,7 +287,7 @@
               var who = S.players.filter(function (p) { return p.won.some(function (w) { return w.mystery; }); });
               return who.length ? who.map(function (p) { return esc(p.name); }).join('、') : '（流標）';
             })() +
-            '</p><p class="muted" style="font-size:calc(13px * var(--u));margin:6px 0 0">第二關開標揭曉「永恆」時，全場會看向他</p></div>' +
+            '</p><p class="muted" style="font-size:calc(13px * var(--u));margin:6px 0 0">第二關開標揭曉「永生」時，全場會看向他</p></div>' +
         '</div>' +
         '<div class="note"><b>收尾那句鉤子</b>　「今天有人運氣很好。運氣好的人，我們下禮拜見。」</div>';
     },
@@ -291,7 +297,6 @@
   function render() {
     if (!S) return;
     document.getElementById('ptag').textContent = S.phase.tag;
-    document.getElementById('pclock').textContent = S.phase.clock;
     document.getElementById('pcount').textContent = S.stats.count + ' 人在場';
 
     var jump = document.getElementById('jump');

@@ -5,22 +5,22 @@ export const BID_MS = 20000;    // 暗標一輪 20 秒
 export const REVEAL_MS = 6000;  // 開標停留 6 秒
 
 export const PHASES = [
-  { id: 'lobby',            clock: '—',     tag: '入場',     title: '掃碼進場' },
-  { id: 'warmup',           clock: '00:00', tag: '互動點 1', title: '今天晚餐吃飽了嗎？' },
-  { id: 'warmup_result',    clock: '00:30', tag: '互動點 1', title: '全場分布' },
-  { id: 'selfscore',        clock: '02:00', tag: '互動點 2', title: '你覺得現在自己幸福嗎？' },
-  { id: 'selfscore_result', clock: '03:00', tag: '互動點 2', title: '全場分布（不顯示是誰）' },
-  { id: 'host_intro',       clock: '04:00', tag: '主持人',   title: '我會填幾分，但我不玩' },
-  { id: 'auction_intro',    clock: '06:30', tag: '主遊戲',   title: '幸福拍賣會 · 規則' },
-  { id: 'auction',          clock: '07:00', tag: '互動點 3', title: '幸福拍賣會' },
-  { id: 'auction_result',   clock: '13:30', tag: '結算頁',   title: '看看大家買了什麼' },
-  { id: 'event_draw',       clock: '15:30', tag: '互動點 4', title: '機會與命運' },
-  { id: 'event_result',     clock: '17:00', tag: '互動點 4', title: '三種策略，三種摔法' },
-  { id: 'testimony',        clock: '18:30', tag: '主持人',   title: '你的見證' },
-  { id: 'verse',            clock: '22:30', tag: '經文',     title: '馬太福音 11:28' },
-  { id: 'burden',           clock: '24:30', tag: '互動點 5', title: '禱告，順手把石頭收下來' },
-  { id: 'card',             clock: '26:00', tag: '週卡',     title: '生成你的第一張卡片' },
-  { id: 'end',              clock: '—',     tag: '散會',     title: '第一關結束' },
+  { id: 'lobby',            tag: '入場',     title: '掃碼進場' },
+  { id: 'warmup',           tag: '互動點 1', title: '今天晚餐吃飽了嗎？' },
+  { id: 'warmup_result',    tag: '互動點 1', title: '全場分布' },
+  { id: 'selfscore',        tag: '互動點 2', title: '你覺得現在自己幸福嗎？' },
+  { id: 'selfscore_result', tag: '互動點 2', title: '全場分布（不顯示是誰）' },
+  { id: 'host_intro',       tag: '主持人',   title: '我會填幾分，但我不玩' },
+  { id: 'auction_intro',    tag: '主遊戲',   title: '幸福拍賣會 · 規則' },
+  { id: 'auction',          tag: '互動點 3', title: '幸福拍賣會' },
+  { id: 'auction_result',   tag: '結算頁',   title: '看看大家買了什麼' },
+  { id: 'event_draw',       tag: '互動點 4', title: '機會與命運' },
+  { id: 'event_result',     tag: '互動點 4', title: '三種策略，三種摔法' },
+  { id: 'testimony',        tag: '主持人',   title: '你的見證' },
+  { id: 'verse',            tag: '經文',     title: '馬太福音 11:28' },
+  { id: 'burden',           tag: '互動點 5', title: '禱告，順手把石頭收下來' },
+  { id: 'card',             tag: '週卡',     title: '生成你的第一張卡片' },
+  { id: 'end',              tag: '散會',     title: '第一關結束' },
 ];
 
 export function createState() {
@@ -36,7 +36,15 @@ export function createState() {
   };
 }
 
+// 幸福根基的上限是 95，不是 100。七關全勤是 15×7 = 105，一定會撞到這道牆 ——
+// 那是設計，不是 bug：最後那 5 分留給第八週，你自己填不滿。
+export const INNER_CAP = 95;
+export const INNER_VERSE = 10;   // 領受經文
+export const INNER_PRAYER = 5;   // 收尾禱告
+
 const clamp = (n) => Math.max(0, Math.min(100, Math.round(n)));
+// 幸福根基只會漲。沒有任何事件扣得到它 —— 那是它唯一的意義。
+const grow = (p, n) => { p.inner = Math.min(INNER_CAP, p.inner + n); };
 const alive = (s) => s.order.map((id) => s.players[id]).filter(Boolean);
 const scored = (s) => alive(s).filter((p) => p.outer !== null);
 
@@ -63,9 +71,11 @@ export function addPlayer(s, name) {
     name: String(name || '').slice(0, 12) || '朋友',
     joinedAt: Date.now(),
     warmup: null,
-    outer: null,        // 外在境遇值（自評後才有）
+    outer: null,        // 幸福指數（自評後才有）
     outerStart: null,
-    inner: null,        // 內在根基：第一關鎖住
+    // 幸福根基。第一關畫面上的標籤只有「？？？」，但它有數字、它會動 ——
+    // 領受經文 +10、收尾禱告 +5。第二關才正名。
+    inner: 0,
     points: 100,        // 人生籌碼
     won: [],
     card: null,         // 機會與命運
@@ -74,6 +84,7 @@ export function addPlayer(s, name) {
     hasBurden: false,   // 重擔內容留在玩家手機上，除非他願意公開
     burdenShared: '',   // 只有按下「我願意分享」才會有內容
     receivedVerse: false,
+    cardDone: false,    // 生成週卡＝禱告收尾做完了
     adjust: 0,
   };
   s.order.push(pid);
@@ -215,7 +226,13 @@ export function applyAction(s, pid, msg) {
       }
       break;
     case 'metoo': p.metoo = !p.metoo; break;
-    case 'verse': p.receivedVerse = true; break;
+    // 這一關幸福根基只有這兩個入口，而且都只算一次
+    case 'verse':
+      if (!p.receivedVerse) { p.receivedVerse = true; grow(p, INNER_VERSE); }
+      break;
+    case 'card':
+      if (!p.cardDone) { p.cardDone = true; grow(p, INNER_PRAYER); }
+      break;
     // 重擔：文字留在玩家自己的手機上。這裡只收「有沒有寫」，
     // 以及他主動按下「我願意分享」時才送上來的那一句。
     case 'burden':
@@ -315,6 +332,7 @@ export function hostView(s, roomCode) {
     auction: auctionView(s),
     players: ps.map((p) => ({
       pid: p.pid, name: p.name, outer: p.outer, outerStart: p.outerStart,
+      inner: p.inner,
       points: p.points, won: p.won, group: groupOf(p),
       cardKind: p.card ? p.card.kind : null, cardFlipped: p.cardFlipped,
       metoo: p.metoo, hasBurden: p.hasBurden, burdenShare: !!p.burdenShared,
@@ -341,7 +359,9 @@ export function hostView(s, roomCode) {
       hitCards: hits.concat(narrate),
       decks: Object.values(DECKS).map((d) => ({ key: d.key, label: d.label, rule: d.rule, character: d.character })),
       groupCounts: { A: ps.filter((p) => groupOf(p) === 'A').length, B: ps.filter((p) => groupOf(p) === 'B').length, C: ps.filter((p) => groupOf(p) === 'C').length },
-      cardsDone: ps.filter((p) => p.receivedVerse).length,
+      versesReceived: ps.filter((p) => p.receivedVerse).length,
+      cardsDone: ps.filter((p) => p.cardDone).length,
+      innerAvg: ps.length ? Math.round(ps.reduce((a, b) => a + b.inner, 0) / ps.length) : 0,
       mysteryWinners: ps.filter((p) => p.won.some((w) => w.mystery)).map((p) => p.name),
     },
   };
@@ -363,11 +383,12 @@ export function playerView(s, pid, roomCode) {
     ...base,
     me: {
       pid: p.pid, name: p.name, warmup: p.warmup, outer: p.outer, outerStart: p.outerStart,
+      inner: p.inner, innerCap: INNER_CAP,
       points: p.points, won: p.won,
       card: p.cardFlipped ? p.card : (p.card ? { hidden: true } : null),
       cardFlipped: p.cardFlipped, metoo: p.metoo,
       hasBurden: p.hasBurden, burdenShare: !!p.burdenShared,
-      receivedVerse: p.receivedVerse,
+      receivedVerse: p.receivedVerse, cardDone: p.cardDone,
       myBid: s.auction.bids[p.pid] ? s.auction.bids[p.pid].amount : null,
     },
   };

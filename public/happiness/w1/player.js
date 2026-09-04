@@ -185,6 +185,8 @@
     },
 
     card: function (me) {
+      // 等 +5 記上去了再畫 —— 卡片上要印的是禱告之後的數字，不是之前的
+      if (!me.cardDone) return '<h2>你的第一張卡片</h2>' + wait('生成中');
       return '<h2>你的第一張卡片</h2>' +
         '<p>長按圖片存進相簿。這張卡是下週的入場券。</p>' +
         '<img class="weekcard" id="cardimg" alt="第一關週卡">' +
@@ -251,19 +253,21 @@
       if (n) act('rename', { name: n });
     };
 
+    // 進到週卡這一頁＝禱告收尾做完了，？？？ +5。狀態回來之後才畫圖。
+    if (S.phase.id === 'card' && !me.cardDone) act('card');
+
     var img = document.getElementById('cardimg');
     if (img) {
       var make = function () {
         var cv = document.createElement('canvas');
         drawWeekCard(cv, {
-          name: me.name, outer: me.outer,
+          name: me.name, outer: me.outer, inner: me.inner,
           verseRef: S.verse.ref, verseText: S.verse.text, burden: readBurden(),
         });
         cardURL = cv.toDataURL('image/png');
         img.src = cardURL;
         var dl = document.getElementById('dl');
         if (dl) dl.href = cardURL;
-        if (!me.receivedVerse) act('verse');   // 主畫面用它算「已生成」
       };
       if (document.fonts && document.fonts.ready) document.fonts.ready.then(make); else make();
     }
@@ -300,11 +304,13 @@
     document.getElementById('mypts').textContent = me.points + ' 點';
     document.getElementById('outerv').textContent = me.outer == null ? '—' : me.outer;
     document.getElementById('outerbar').style.width = (me.outer == null ? 0 : me.outer) + '%';
+    document.getElementById('innerv').textContent = me.inner;
+    document.getElementById('innerbar').style.width = me.inner + '%';
 
     var next = [
       S.phase.id, S.auction.status, S.auction.idx,
-      me.warmup, me.outer, me.myBid, me.cardFlipped, me.metoo,
-      me.receivedVerse, me.hasBurden, me.burdenShare, me.points, me.won.length,
+      me.warmup, me.outer, me.inner, me.myBid, me.cardFlipped, me.metoo,
+      me.receivedVerse, me.cardDone, me.hasBurden, me.burdenShare, me.points, me.won.length,
     ].join('|');
     if (next !== sig) {
       sig = next;

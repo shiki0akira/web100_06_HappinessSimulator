@@ -20,7 +20,7 @@
   .gauge .lbl { display: flex; justify-content: space-between; font-family: var(--pixel); font-size: 11px; color: var(--ink-3); margin-bottom: 4px; }
   .gauge .lbl b { font-size: 13px; color: var(--vol); }
   .gauge + .gauge { margin-top: 7px; }
-  .gauge.locked .lbl b { color: var(--ink-3); }
+  .gauge + .gauge .lbl b { color: var(--root-c); }
 
   .screen { padding-top: 22px; }
   .screen h2 { font-size: 28px; font-weight: 900; letter-spacing: .03em; }
@@ -75,12 +75,13 @@
   <div class="status" id="status" hidden>
     <div class="row1"><b id="myname">—</b><span id="mystate"></span><span class="pts" id="mypts"></span></div>
     <div class="gauge">
-      <div class="lbl"><span>外在境遇值</span><b id="outerv">—</b></div>
+      <div class="lbl"><span>幸福指數</span><b id="outerv">—</b></div>
       <span class="bar"><i id="outerbar" style="width:0%;background:var(--vol)"></i></span>
     </div>
-    <div class="gauge locked">
-      <div class="lbl"><span>？？？</span><b>—</b></div>
-      <span class="bar locked"></span>
+    <!-- 第二條這一關還沒有名字，但它有數字、它會動。第二關才正名。 -->
+    <div class="gauge">
+      <div class="lbl"><span>？？？</span><b id="innerv">0</b></div>
+      <span class="bar"><i id="innerbar" style="width:0%;background:var(--root-c)"></i></span>
     </div>
   </div>
 

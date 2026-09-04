@@ -56,7 +56,7 @@ var GROUP_NAME = '幸福小組';
     for (var i = 0; i < w; i += 16) ctx.fillRect(x + i, y, 8, 8);
   }
 
-  // data: { name, outer, verseRef, verseText, burden }
+  // data: { name, outer, inner, innerLabel, verseRef, verseText, burden }
   function drawWeekCard(canvas, data) {
     var W = 1080, H = 1440, M = 96, CW = W - M * 2;
     canvas.width = W; canvas.height = H;
@@ -85,14 +85,14 @@ var GROUP_NAME = '幸福小組';
     ctx.font = '900 88px ' + SANS;
     ctx.fillText('真幸福', M, y);
 
-    // 外在境遇值
+    // 幸福指數
     y += 74;
     ctx.fillStyle = GREEN;
     ctx.font = '400 20px ' + PIXEL;
     ctx.fillText('OUTER', M, y);
     ctx.fillStyle = INK;
     ctx.font = '700 26px ' + SANS;
-    ctx.fillText('外在境遇值', M + 108, y);
+    ctx.fillText('幸福指數', M + 108, y);
     ctx.fillStyle = ORANGE;
     ctx.font = '400 44px ' + PIXEL;
     ctx.textAlign = 'right';
@@ -101,15 +101,22 @@ var GROUP_NAME = '幸福小組';
     y += 26;
     blocks(ctx, M, y, CW, 44, 10, Math.round((data.outer || 0) / 10), ORANGE);
 
-    // 內在根基：第一關還鎖著
+    // 第二條。第一關印的是三個問號，但數字是真的 —— 第二關才正名。
     y += 84;
-    ctx.fillStyle = GREY;
+    var inner = data.inner || 0;
+    ctx.fillStyle = GREEN;
     ctx.font = '400 20px ' + PIXEL;
     ctx.fillText('INNER', M, y);
+    ctx.fillStyle = INK;
     ctx.font = '700 26px ' + SANS;
-    ctx.fillText('？？？　第二關解鎖', M + 108, y);
+    ctx.fillText(data.innerLabel || '？？？', M + 108, y);
+    ctx.fillStyle = GREEN;
+    ctx.font = '400 44px ' + PIXEL;
+    ctx.textAlign = 'right';
+    ctx.fillText(String(inner), W - M, y + 6);
+    ctx.textAlign = 'left';
     y += 26;
-    blocks(ctx, M, y, CW, 30, 10, 0, GREY);
+    blocks(ctx, M, y, CW, 44, 10, Math.round(inner / 10), GREEN);
 
     // 經文（字要大，這是最可能被轉發出去的部分）
     y += 96;

@@ -13,7 +13,7 @@ export const LOTS = [
   { id: 9, name: '一個完全懂你的人' },
 ];
 
-// 第十樣永遠是「？」，第一關不揭曉（第二關開標時是「永恆」）
+// 第十樣永遠是「？」，第一關不揭曉（第二關開標時是「永生」）
 export const MYSTERY_LOT = { id: 10, name: '？', mystery: true };
 
 export const DECKS = {
