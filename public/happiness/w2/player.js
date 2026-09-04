@@ -64,7 +64,7 @@
       }
       if (draft.newcomer) {
         return '<h2>沒關係，直接評估現在的自己</h2>' +
-          '<p>0 到 100，憑直覺。上禮拜沒來、忘記帶卡片、第一次來——都走這條路，一樣算數。</p>' +
+          '<p>0 到 100，憑直覺。上一關沒來、忘記帶卡片、第一次來——都走這條路，一樣算數。</p>' +
           '<div class="slider"><div class="val" id="sv">50</div>' +
           '<input type="range" min="0" max="100" value="50" id="sl">' +
           '<div class="ends"><span>0</span><span>100</span></div></div>' +
@@ -75,7 +75,7 @@
           '</div>' +
           '<p class="privacy">選好次數就送出了。</p>';
       }
-      return '<h2>打開上禮拜的卡片</h2>' +
+      return '<h2>打開上一次的卡片</h2>' +
         '<p>輸入卡片上的<b>幸福指數</b>。</p>' +
         '<input id="oc" type="tel" inputmode="numeric" maxlength="3" placeholder="58" class="numin">' +
         '<p style="margin-top:20px">這是你第幾次來？</p>' +
@@ -87,16 +87,16 @@
         '<p class="privacy">選好次數就送出了。忘記帶卡片完全沒關係，按上面那個按鈕就好。</p>';
     },
 
-    // 勾選上禮拜買到的東西 ＋ 沒花掉的點數。新朋友按直覺分配，也是同一頁。
+    // 勾選上一次買到的東西 ＋ 沒花掉的點數。新朋友按直覺分配，也是同一頁。
     holdings: function (me) {
       if (me.holdingsDone && !draft.editing) {
         return wait('已送出', me.owned.length ? '你手上有 ' + me.owned.length + ' 樣，還有 ' + me.points + ' 點' : '你什麼都沒買，還有 ' + me.points + ' 點')
           + '<button class="btn ghost fullbtn" id="redo">改一下</button>';
       }
       var chosen = draft.owned;
-      return '<h2>' + (me.newcomer ? '你會把 100 點押在哪裡' : '上禮拜你標到什麼') + '</h2>' +
+      return '<h2>' + (me.newcomer ? '你會把 100 點押在哪裡' : '上一關你標到什麼') + '</h2>' +
         '<p>' + (me.newcomer
-          ? '你沒有上禮拜，就按你的直覺選。選幾樣都可以。'
+          ? '你沒有上一關，就按你的直覺選。選幾樣都可以。'
           : '照卡片上的勾。等一下的折舊要算它。') + '</p>' +
         '<div class="lotgrid">' + S.lots.map(function (l) {
           var on = chosen.indexOf(l.id) >= 0;
@@ -151,7 +151,7 @@
         '<div class="eternal"><div class="nm">' + esc(S.mystery.name) + '</div>' +
           '<div class="rate">−0%</div></div>' +
         '<p style="text-align:center;margin-top:18px">' + esc(S.mystery.why) + '</p>' +
-        (mine ? '<div class="hit" style="border-color:var(--root-c);color:var(--root-c)">你上禮拜標到了它</div>' : '') +
+        (mine ? '<div class="hit" style="border-color:var(--root-c);color:var(--root-c)">你上一關標到了它</div>' : '') +
         wait('看大螢幕');
     },
 
@@ -170,7 +170,7 @@
       return '<h2>它有名字了</h2>' +
         '<div class="eternal" style="margin-top:26px"><div class="nm" style="font-size:44px">幸福根基</div>' +
           '<div class="rate">' + me.inner + '</div></div>' +
-        '<p style="margin-top:22px">上禮拜大家都在掉分的時候，有一條線是往上的。<b>就是它。</b></p>' +
+        '<p style="margin-top:22px">上一關大家都在掉分的時候，有一條線是往上的。<b>就是它。</b></p>' +
         '<p>這條線不會被任何事件扣掉。它從你來的第一天開始長。</p>' +
         wait('看大螢幕');
     },
@@ -201,7 +201,7 @@
       // 等 +5 記上去了再畫 —— 卡片上要印的是禱告之後的數字，不是之前的
       if (!me.cardDone) return '<h2>你的第二張卡片</h2>' + wait('生成中');
       return '<h2>你的第二張卡片</h2>' +
-        '<p>長按圖片存進相簿。下週開場還會用到它。</p>' +
+        '<p>長按圖片存進相簿。下一關開場還會用到它。</p>' +
         '<img class="weekcard" id="cardimg" alt="第二關週卡">' +
         '<a class="btn primary fullbtn" id="dl" style="display:block;text-align:center;text-decoration:none" download="幸福模擬器-W2-真相大白.png">下載這張卡</a>' +
         '<p class="privacy">現在就存。不要等回家——回家就忘了。</p>';
@@ -209,9 +209,9 @@
 
     end: function (me) {
       return '<h2>第二關結束</h2>' +
-        '<p>下週見。記得帶著卡片——開場會請你輸入上面的幸福指數。</p>' +
+        '<p>下次見。記得帶著卡片——開場會請你輸入上面的幸福指數。</p>' +
         (cardURL ? '<img class="weekcard" src="' + cardURL + '" alt="第二關週卡">' : '') +
-        '<p class="privacy">忘記存也沒關係。下週直接重新評估現在的自己，一樣算數。</p>';
+        '<p class="privacy">忘記存也沒關係。下一關直接重新評估現在的自己，一樣算數。</p>';
     },
   };
 

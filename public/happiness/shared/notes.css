@@ -1,0 +1,74 @@
+/* 主持人備忘錄的版面。七關共用。
+   拿在手上、光線不一定好、還要邊看邊講話 —— 所以字大、對比高、按鈕在拇指位置。 */
+
+body { padding: 0; }
+
+.app { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
+
+.hd {
+  position: sticky; top: 0; z-index: 5;
+  background: var(--surface); border-bottom: 4px solid var(--edge);
+  padding: 12px 16px 14px;
+}
+.hd .wk { font-family: var(--pixel); font-size: 10px; color: var(--ink-3); letter-spacing: .06em; }
+.hd .row { display: flex; align-items: baseline; gap: 10px; margin-top: 8px; }
+.hd .tag {
+  font-size: 12px; font-weight: 700; padding: 3px 8px;
+  border: 2px solid var(--root-c); color: var(--root-c); white-space: nowrap;
+}
+.hd .pos { margin-left: auto; font-family: var(--pixel); font-size: 11px; color: var(--ink-3); }
+.hd h2 { font-size: 25px; font-weight: 900; line-height: 1.35; margin: 10px 0 0; letter-spacing: .02em; }
+.hd .live {
+  margin-top: 10px; font-family: var(--pixel); font-size: 13px; color: var(--gold);
+  border-top: 2px dashed var(--edge-soft); padding-top: 9px;
+}
+
+.body { flex: 1; padding: 18px 16px 24px; }
+.body .lead { font-size: 19px; font-weight: 700; line-height: 1.75; color: var(--ink); margin: 0 0 18px; }
+.body .lead.muted { color: var(--ink-3); font-weight: 500; }
+
+.item {
+  display: grid; grid-template-columns: 34px 1fr; gap: 12px; align-items: start;
+  padding: 13px 14px; margin-bottom: 10px;
+  background: var(--surface); border: 3px solid var(--edge); border-left-width: 9px;
+  box-shadow: 3px 3px 0 var(--hard);
+}
+.item p { margin: 0; font-size: 17px; line-height: 1.8; color: var(--ink); }
+.item .k {
+  font-family: var(--pixel); font-size: 11px; text-align: center;
+  padding: 5px 0; border: 2px solid currentColor;
+}
+/* 要念的話用引號感，做的事中性，不要做的事用警示色 */
+.item.say { border-left-color: var(--gold); }
+.item.say .k { color: var(--gold); }
+.item.say p { font-weight: 700; }
+.item.do { border-left-color: var(--root-c); }
+.item.do .k { color: var(--root-c); }
+.item.warn { border-left-color: var(--vol); }
+.item.warn .k { color: var(--vol); }
+.item.warn p { color: var(--vol); font-weight: 700; }
+
+.ft {
+  position: sticky; bottom: 0;
+  display: grid; grid-template-columns: auto 1fr; gap: 10px;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  background: var(--bar-bg); border-top: 4px solid var(--bar-edge);
+}
+.ft button {
+  border: 3px solid var(--bar-edge); background: #1D2A2C; color: var(--bar-ink);
+  box-shadow: 3px 3px 0 #000; font-weight: 700; padding: 16px 18px; font-size: 17px;
+}
+.ft button:active { transform: translate(3px, 3px); box-shadow: none; }
+.ft button:disabled { opacity: .4; }
+.ft .next { background: var(--root-c); border-color: #9CF0D6; color: var(--on-primary); text-align: left; }
+.ft .next small { display: block; font-family: var(--pixel); font-size: 9px; opacity: .8; margin-bottom: 4px; }
+
+.ask { padding: 40px 20px; max-width: 420px; margin: 0 auto; }
+.ask h1 { font-size: 28px; font-weight: 900; }
+.ask p { color: var(--ink-2); font-size: 17px; margin-top: 14px; }
+.ask input {
+  width: 100%; margin-top: 18px; padding: 16px; font-size: 37px; font-weight: 700;
+  text-align: center; letter-spacing: .3em; font-family: var(--pixel);
+}
+.ask .btn { width: 100%; margin-top: 16px; padding: 18px; font-size: 21px; }
+.ask .hint { font-size: 15px; color: var(--ink-3); }

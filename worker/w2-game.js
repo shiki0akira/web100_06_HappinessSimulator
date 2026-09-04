@@ -11,8 +11,8 @@ export const INNER_PRAYER = 5;
 
 export const PHASES = [
   { id: 'lobby',      tag: '入場',     title: '掃碼進場' },
-  { id: 'reconnect',  tag: '接關',     title: '打開上禮拜的卡片' },
-  { id: 'holdings',   tag: '接關',     title: '上禮拜你買了什麼' },
+  { id: 'reconnect',  tag: '接關',     title: '打開上一次的卡片' },
+  { id: 'holdings',   tag: '接關',     title: '你手上有什麼' },
   { id: 'q20',        tag: '互動點 1', title: '你最重要的那樣東西，二十年後還在嗎' },
   { id: 'q20_result', tag: '互動點 1', title: '全場比例' },
   { id: 'ff_intro',   tag: '主遊戲',   title: '時間快轉三十年' },

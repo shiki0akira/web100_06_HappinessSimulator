@@ -188,7 +188,7 @@
       // 等 +5 記上去了再畫 —— 卡片上要印的是禱告之後的數字，不是之前的
       if (!me.cardDone) return '<h2>你的第一張卡片</h2>' + wait('生成中');
       return '<h2>你的第一張卡片</h2>' +
-        '<p>長按圖片存進相簿。這張卡是下週的入場券。</p>' +
+        '<p>長按圖片存進相簿。這張卡是下一關的入場券。</p>' +
         '<img class="weekcard" id="cardimg" alt="第一關週卡">' +
         '<a class="btn primary fullbtn" id="dl" style="display:block;text-align:center;text-decoration:none" download="幸福模擬器-W1-真幸福.png">下載這張卡</a>' +
         '<p class="privacy">現在就存。不要等回家——回家就忘了。</p>';
@@ -196,9 +196,9 @@
 
     end: function (me) {
       return '<h2>第一關結束</h2>' +
-        '<p>下週見。記得帶著你的卡片——開場會請你輸入上面那個數字。</p>' +
+        '<p>下次見。記得帶著你的卡片——開場會請你輸入上面那個數字。</p>' +
         (cardURL ? '<img class="weekcard" src="' + cardURL + '" alt="第一關週卡">' : '') +
-        '<p class="privacy">忘記存也沒關係。下週直接重新評估現在的自己，一樣算數。</p>';
+        '<p class="privacy">忘記存也沒關係。下一關直接重新評估現在的自己，一樣算數。</p>';
     },
   };
 

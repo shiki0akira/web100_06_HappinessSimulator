@@ -42,6 +42,16 @@ export default {
       return Response.redirect(to.toString(), 302);
     }
 
+    // 主持人備忘錄的短網址。大螢幕按 N 會把它編成 QR，主持人用自己的手機掃。
+    //   /h?room=XXXX&w=2  → 第二關的備忘錄，跟著大螢幕走
+    if (url.pathname === '/h') {
+      const week = /^[1-7]$/.test(url.searchParams.get('w') || '') ? url.searchParams.get('w') : '1';
+      const code = (url.searchParams.get('room') || '').toUpperCase();
+      const to = new URL('/happiness/w' + week + '/zh-TW/h/', url);
+      if (CODE_RE.test(code)) to.searchParams.set('room', code);
+      return Response.redirect(to.toString(), 302);
+    }
+
     if (url.pathname === '/') {
       return Response.redirect(new URL('/happiness/zh-TW/', url).toString(), 302);
     }

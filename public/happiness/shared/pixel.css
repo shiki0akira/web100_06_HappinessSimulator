@@ -173,3 +173,18 @@ input[type=text], input:not([type]), textarea, select {
   color: var(--ink);
   font-family: var(--sans);
 }
+
+/* 主持人備忘錄的 QR 遮罩。大螢幕按 N 叫出來，主持人用自己的手機掃。
+   平常不顯示 —— 房號是公開的，這個網址能翻頁，不要一直掛在牆上。 */
+.notesqr {
+  position: fixed; inset: 0; z-index: 200;
+  display: none; align-items: center; justify-content: center; gap: 40px;
+  background: rgba(6, 12, 11, .96); padding: 40px; flex-wrap: wrap;
+}
+.notesqr.on { display: flex; }
+.notesqr canvas { border: 6px solid var(--edge); background: #fff; padding: 10px; }
+.notesqr .t { max-width: 34ch; }
+.notesqr h3 { font-size: 34px; font-weight: 900; }
+.notesqr p { color: var(--ink-2); font-size: 17px; margin-top: 14px; line-height: 1.9; }
+.notesqr .u { font-family: var(--pixel); font-size: 15px; color: var(--root-c); margin-top: 16px; word-break: break-all; }
+.notesqr .esc { font-family: var(--pixel); font-size: 11px; color: var(--ink-3); margin-top: 22px; }
