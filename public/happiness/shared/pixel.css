@@ -193,3 +193,24 @@ input[type=text], input:not([type]), textarea, select {
    模組邊緣糊掉，掃描器就讀不到了。這是 QR 掃不出來最常見的原因。 */
 canvas.qr, .qrbox canvas, .notesqr canvas { image-rendering: pixelated; }
 .notesqr canvas { flex-shrink: 0; }
+
+/* 入場頁右邊那個小的「主持人備忘錄」QR。
+   刻意做得比玩家的 QR 小、而且標得很清楚，不會有人搞錯要掃哪一個。
+   翻頁之後這一頁就消失了，所以它只在開場前露臉。 */
+.hostqr {
+  border: 3px dashed var(--gold);
+  padding: 14px;
+  text-align: center;
+  align-self: flex-start;
+}
+.hostqr canvas {
+  display: block; margin: 0 auto;
+  background: #fff; padding: 5px;
+  image-rendering: pixelated;
+  position: relative; z-index: 95;
+}
+.hostqr .lbl {
+  font-family: var(--pixel); color: var(--gold);
+  letter-spacing: .06em; margin-bottom: 10px;
+}
+.hostqr .u { font-family: var(--pixel); color: var(--ink-3); margin-top: 10px; word-break: break-all; }

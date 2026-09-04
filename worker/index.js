@@ -54,10 +54,14 @@ export default {
       return Response.redirect(to.toString(), 302);
     }
 
-    // 主持人備忘錄的短網址。大螢幕按 N 會把它編成 QR，主持人用自己的手機掃。
-    //   /h?room=XXXX&w=2  → 第二關的備忘錄，跟著大螢幕走
-    if (url.pathname === '/h') {
-      const week = /^[1-7]$/.test(url.searchParams.get('w') || '') ? url.searchParams.get('w') : '1';
+    // 主持人備忘錄的短網址。入場頁上那個小 QR 編的就是這個，
+    // 掃不到的時候也打得出來（/h2 就是第二關）。
+    //   /h2           → 第二關的備忘錄，讓他輸入四碼房號
+    //   /h2?room=XXXX → 直接連上那一間，跟著大螢幕走
+    if (url.pathname === '/h' || /^\/h[1-7]$/.test(url.pathname)) {
+      const week = url.pathname.length > 2
+        ? url.pathname.slice(2)
+        : (/^[1-7]$/.test(url.searchParams.get('w') || '') ? url.searchParams.get('w') : '1');
       const code = (url.searchParams.get('room') || '').toUpperCase();
       const to = new URL('/happiness/w' + week + '/zh-TW/h/', url);
       if (CODE_RE.test(code)) to.searchParams.set('room', code);

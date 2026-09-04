@@ -4,6 +4,7 @@
   var WEEK = 1;
   // 大螢幕上印給人手動打字的網址。越短越好打。
   var JOIN_PATH = '/1';
+  var NOTES_PATH = '/h1';   // 主持人備忘錄，掃不到的時候也打得出來
   var S = null;
   var stage = document.getElementById('stage');
 
@@ -101,6 +102,13 @@
           '<div class="roomcode">' + esc(ROOM || '····') + '</div>' +
           '<p class="muted" style="margin:14px 0 6px">掃碼，或到這個網址輸入房號：</p>' +
           '<div class="url">' + esc(location.host + JOIN_PATH) + '</div></div>' +
+          // 主持人備忘錄。刻意比玩家的 QR 小、標得清楚，不會有人搞錯掃哪一個。
+          // 翻頁之後這一頁就沒了，所以它只在開場前露臉。
+          '<div class="hostqr">' +
+            '<div class="lbl" style="font-size:calc(11px * var(--u))">主持人備忘錄</div>' +
+            '<canvas id="hostqrc"></canvas>' +
+            '<div class="u" style="font-size:calc(12px * var(--u))">' + esc(location.host + NOTES_PATH) + '</div>' +
+          '</div>' +
         '</div>' +
         '<div class="names">' + (S.players.length
           ? S.players.map(function (p) { return '<span>' + esc(p.name) + '</span>'; }).join('')
@@ -320,6 +328,13 @@
     var qr = document.getElementById('qr');
     if (qr && ROOM) {
       try { QR.render(qr, joinUrl(), qrScale(7), '#161A18', '#ffffff'); } catch (err) {}
+    }
+
+    // 入場頁上的主持人備忘錄 QR，比玩家那個小一號
+    var hqr = document.getElementById('hostqrc');
+    if (hqr && ROOM) {
+      try { QR.render(hqr, location.origin + NOTES_PATH + '?room=' + ROOM, qrScale(4), '#161A18', '#ffffff'); }
+      catch (err) {}
     }
   }
 
