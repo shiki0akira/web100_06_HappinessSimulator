@@ -2,7 +2,8 @@
 (function () {
   'use strict';
   var WEEK = 2;
-  var JOIN_PATH = '/j';   // Worker 會把它導到這一關的玩家頁
+  // 大螢幕上印給人手動打字的網址。越短越好打 —— 手機鍵盤打 ? 和 = 很痛苦。
+  var JOIN_PATH = '/2';
   var S = null;
   var stage = document.getElementById('stage');
 
@@ -14,8 +15,15 @@
 
   var conn = null;
   var ROOM = '';
+
+  // 每個模組畫幾像素。跟著 --u 走，canvas 就能 1:1 顯示 ——
+  // 交給 CSS 去縮放 canvas 會把模組邊緣糊掉，掃描器就讀不到了。
+  function qrScale(base) {
+    var u = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--u')) || 1;
+    return Math.max(3, Math.round(base * u));
+  }
   function post(cmd, extra) { if (conn) conn.host(cmd, extra); }
-  function joinUrl() { return location.origin + JOIN_PATH + '?w=2&room=' + ROOM; }
+  function joinUrl() { return location.origin + JOIN_PATH + '?room=' + ROOM; }
   function pct(r) { return '−' + Math.round(r * 100) + '%'; }
 
   // ── 側欄玩家狀態 ──────────────────────────────────────────────────────
@@ -275,7 +283,7 @@
     // 每次回到入場頁都要重畫：stage.innerHTML 一被改寫，canvas 就是全新的空白元素
     var qr = document.getElementById('qr');
     if (qr && ROOM) {
-      try { QR.render(qr, joinUrl(), 8, '#161A18', '#ffffff'); } catch (err) {}
+      try { QR.render(qr, joinUrl(), qrScale(7), '#161A18', '#ffffff'); } catch (err) {}
     }
   }
 
@@ -307,7 +315,7 @@
     if (!on || !ROOM) return;
     var short = '/h?w=' + WEEK + '&room=' + ROOM;
     document.getElementById('notesurl').textContent = location.host + short;
-    try { QR.render(document.getElementById('notesqrc'), location.origin + short, 7, '#161A18', '#ffffff'); }
+    try { QR.render(document.getElementById('notesqrc'), location.origin + short, qrScale(6), '#161A18', '#ffffff'); }
     catch (err) {}
   }
   document.getElementById('notesqr').onclick = function () { toggleNotes(false); };

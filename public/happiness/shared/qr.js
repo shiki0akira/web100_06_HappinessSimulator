@@ -5,7 +5,7 @@
 
   var CAP_BYTES   = [17, 32, 53, 78, 106, 134];   // v1..v6，byte mode 可放幾個位元組
   var DATA_CW     = [19, 34, 55, 80, 108, 136];   // 資料碼字數
-  var EC_CW       = [7, 10, 15, 20, 26, 18];      // 錯誤更正碼字數
+  var EC_CW       = [7, 10, 15, 20, 26, 36];      // 錯誤更正碼字數
   var ALIGN_POS   = [null, 18, 22, 26, 30, 34];   // v2..v6 的單一校正圖形中心
 
   // 格式資訊（ECC = L，遮罩 0–7）直接查表，避免自己算 BCH 出錯
@@ -182,8 +182,10 @@
     g.m[8][8] = bits[7];
     g.m[7][8] = bits[8];
     for (var k = 9; k <= 14; k++) g.m[14 - k][8] = bits[k];
-    for (var a = 0; a <= 7; a++) g.m[size - 1 - a][8] = bits[a];
-    for (var b = 8; b <= 14; b++) g.m[8][size - 15 + b] = bits[b];
+    // 第二份：第 8 列的右邊八格放 bit 0–7，第 8 行的下面七格放 bit 8–14。
+    // bits[0] 是最高位（bit 14），所以查表要用 14 - i。
+    for (var a = 0; a <= 7; a++) g.m[8][size - 1 - a] = bits[14 - a];
+    for (var b = 8; b <= 14; b++) g.m[size - 15 + b][8] = bits[14 - b];
     g.m[size - 8][8] = 1;
   }
 

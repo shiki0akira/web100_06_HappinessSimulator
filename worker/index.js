@@ -42,6 +42,18 @@ export default {
       return Response.redirect(to.toString(), 302);
     }
 
+    // 最短的入場網址：/1 到 /7。大螢幕上印給人手動打字的就是這個 ——
+    // 問號和等號在手機鍵盤上很難打，所以連 ?w= 都不要。
+    //   /2            → 第二關的玩家頁，讓他輸入四碼房號
+    //   /2?room=XXXX  → 直接進那一間
+    if (/^\/[1-7]$/.test(url.pathname)) {
+      const week = url.pathname.slice(1);
+      const code = (url.searchParams.get('room') || '').toUpperCase();
+      const to = new URL('/happiness/w' + week + '/zh-TW/p/', url);
+      if (CODE_RE.test(code)) to.searchParams.set('room', code);
+      return Response.redirect(to.toString(), 302);
+    }
+
     // 主持人備忘錄的短網址。大螢幕按 N 會把它編成 QR，主持人用自己的手機掃。
     //   /h?room=XXXX&w=2  → 第二關的備忘錄，跟著大螢幕走
     if (url.pathname === '/h') {

@@ -188,3 +188,8 @@ input[type=text], input:not([type]), textarea, select {
 .notesqr p { color: var(--ink-2); font-size: 17px; margin-top: 14px; line-height: 1.9; }
 .notesqr .u { font-family: var(--pixel); font-size: 15px; color: var(--root-c); margin-top: 16px; word-break: break-all; }
 .notesqr .esc { font-family: var(--pixel); font-size: 11px; color: var(--ink-3); margin-top: 22px; }
+
+/* QR 一定要用 pixelated：canvas 的點陣被 CSS 縮放時，預設的平滑化會把
+   模組邊緣糊掉，掃描器就讀不到了。這是 QR 掃不出來最常見的原因。 */
+canvas.qr, .qrbox canvas, .notesqr canvas { image-rendering: pixelated; }
+.notesqr canvas { flex-shrink: 0; }

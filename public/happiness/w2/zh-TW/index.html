@@ -60,7 +60,10 @@
   .qrbox { display: flex; gap: 34px; align-items: center; margin-top: 22px; flex-wrap: wrap; }
   .qrbox > div { flex: 1 1 280px; min-width: 0; }
   /* QR 要蓋在掃描線上面，不然會影響掃描 */
-  .qrbox canvas { width: calc(276px * var(--u)); height: calc(276px * var(--u)); border: 4px solid var(--edge); background: #fff; padding: 6px;
+  /* 不設 width：canvas 用點陣的原尺寸 1:1 顯示，模組邊緣才不會被縮放糊掉。
+     大小改由 host.js 依 --u 算出每個模組幾像素。 */
+  .qrbox canvas { border: 4px solid var(--edge); background: #fff; padding: 6px;
+    image-rendering: pixelated;
     box-shadow: 8px 8px 0 var(--hard); position: relative; z-index: 95; }
   .roomcode { font-family: var(--pixel); font-size: calc(64px * var(--u)); color: var(--gold); letter-spacing: .14em; margin-top: 8px; }
   .url { font-family: var(--pixel); font-size: calc(24px * var(--u)); line-height: 1.8; color: var(--root-c); word-break: break-all; }
