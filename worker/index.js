@@ -29,6 +29,19 @@ export default {
       return stub.fetch(request);
     }
 
+    // 加入房間的短網址。大螢幕上印的是這個，QR 編的也是這個 ——
+    // 越短的網址 QR 模組越大，隔著電視越好掃。
+    //   /j            → 玩家頁，讓他手動輸入四碼房號
+    //   /j?room=XXXX  → 直接進那一間
+    //   /j?w=2        → 第二關（之後用）
+    if (url.pathname === '/j') {
+      const week = /^[1-7]$/.test(url.searchParams.get('w') || '') ? url.searchParams.get('w') : '1';
+      const code = (url.searchParams.get('room') || '').toUpperCase();
+      const to = new URL('/happiness/w' + week + '/zh-TW/p/', url);
+      if (CODE_RE.test(code)) to.searchParams.set('room', code);
+      return Response.redirect(to.toString(), 302);
+    }
+
     if (url.pathname === '/') {
       return Response.redirect(new URL('/happiness/zh-TW/', url).toString(), 302);
     }

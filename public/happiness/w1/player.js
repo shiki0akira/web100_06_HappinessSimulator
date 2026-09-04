@@ -44,8 +44,8 @@
 
   // ── 畫面 ─────────────────────────────────────────────────────────────
   var wait = function (msg, sub) {
-    return '<div class="wait"><div class="dot">. . .</div><p style="font-size:17px;color:var(--ink-2)">' +
-      esc(msg) + '</p>' + (sub ? '<p style="font-size:14px">' + esc(sub) + '</p>' : '') + '</div>';
+    return '<div class="wait"><div class="dot">. . .</div><p style="font-size:21px;color:var(--ink-2)">' +
+      esc(msg) + '</p>' + (sub ? '<p style="font-size:17px">' + esc(sub) + '</p>' : '') + '</div>';
   };
 
   function sliderScreen(title, lede, initial, action, unitLow, unitHigh) {
@@ -60,7 +60,7 @@
     lobby: function (me) {
       return '<h2>你已經進場了</h2>' +
         '<p>目前 ' + S.playerCount + ' 個人在場。等主持人開始，這個畫面會自己跳。</p>' +
-        '<p class="mono" style="color:var(--ink-3);font-size:13px">手機不要鎖螢幕，等一下會用到。</p>' +
+        '<p class="mono" style="color:var(--ink-3);font-size:16px">手機不要鎖螢幕，等一下會用到。</p>' +
         '<button class="btn ghost fullbtn" id="rename">改名字</button>';
     },
     warmup: function (me) {
@@ -78,7 +78,7 @@
     auction_intro: function (me) {
       return '<h2>幸福拍賣會</h2>' +
         '<p>你有 <b class="mono" style="color:var(--gold)">100 點</b> 人生籌碼。</p>' +
-        '<ul style="color:var(--ink-2);font-size:15px;padding-left:20px">' +
+        '<ul style="color:var(--ink-2);font-size:18px;padding-left:20px">' +
           '<li>每樣 20 秒，大家<b>同時</b>出價，別人看不到你出多少</li>' +
           '<li>最高者得，同價時先出價者得</li>' +
           '<li><b>什麼都不買，剩下的點數就是你的財富</b></li>' +
@@ -96,7 +96,7 @@
           '<div class="idx">' + (a.idx + 1) + ' / ' + a.total + ' 開標</div>' +
           '<div class="nm">' + esc(lot.name) + '</div>' +
           (r.winner
-            ? '<p style="margin-top:14px;font-size:17px">' + (mine
+            ? '<p style="margin-top:14px;font-size:21px">' + (mine
                 ? '<span class="ok">你得標了 · ' + r.amount + ' 點</span>'
                 : esc(r.winner.name) + ' 以 ' + r.amount + ' 點得標') + '</p>'
             : '<p style="margin-top:14px;color:var(--ink-3)">流標，沒有人出價</p>') +
@@ -128,11 +128,11 @@
         (me.won.length
           ? '<div class="card-face" style="margin-top:14px">' + me.won.map(function (w) {
               return '<div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:2px dashed var(--edge-soft)">' +
-                '<span style="font-size:18px;font-weight:700">' + esc(w.name) + '</span>' +
+                '<span style="font-size:22px;font-weight:700">' + esc(w.name) + '</span>' +
                 '<span class="mono" style="color:var(--vol)">' + w.price + ' 點</span></div>';
             }).join('') + '</div>'
           : '<p>你什麼都沒標到。你手上滿手現金——那不是輸，是第三種策略。</p>') +
-        '<p class="mono" style="margin-top:16px;color:var(--gold);font-size:19px">剩下的財富 ' + me.points + ' 點</p>' +
+        '<p class="mono" style="margin-top:16px;color:var(--gold);font-size:23px">剩下的財富 ' + me.points + ' 點</p>' +
         wait('看大螢幕');
     },
 
@@ -280,7 +280,7 @@
         sig = 'join';
         screen.innerHTML = '<h2>幸福模擬器</h2><p>第一關 · 真幸福</p>' +
           '<p style="margin-top:18px">輸入你的名字就可以進場。</p>' +
-          '<input id="nm" maxlength="12" placeholder="名字或暱稱" style="width:100%;padding:14px;font-size:18px;font-weight:700">' +
+          '<input id="nm" maxlength="12" placeholder="名字或暱稱" style="width:100%;padding:14px;font-size:22px;font-weight:700">' +
           '<button class="btn primary fullbtn" id="go">進場</button>';
         document.getElementById('go').onclick = function () {
           var n = document.getElementById('nm').value.trim();
@@ -326,7 +326,7 @@
     screen.innerHTML = '<h2>幸福模擬器</h2><p>第一關 · 真幸福</p>' +
       '<p style="margin-top:18px">輸入大螢幕上的四碼房號。</p>' +
       '<input id="rc" maxlength="4" autocapitalize="characters" autocomplete="off" placeholder="房號" ' +
-        'style="width:100%;padding:16px;font-size:34px;font-weight:700;text-align:center;letter-spacing:.3em;font-family:var(--pixel)">' +
+        'style="width:100%;padding:16px;font-size:37px;font-weight:700;text-align:center;letter-spacing:.3em;font-family:var(--pixel)">' +
       '<button class="btn primary fullbtn" id="rgo">進場</button>' +
       '<p class="privacy">掃主持人畫面上的 QR 就不用輸入這個。</p>';
     var go = function () {

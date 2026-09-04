@@ -2,10 +2,9 @@
 (function () {
   'use strict';
   var WEEK = 1;
-  var PLAYER_PATH = '/happiness/w1/zh-TW/p/';
+  var JOIN_PATH = '/j';   // Worker 會把它導到這一關的玩家頁
   var S = null;
   var stage = document.getElementById('stage');
-  var qrDrawnFor = null;
 
   var esc = function (s) {
     return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
@@ -16,13 +15,13 @@
   var conn = null;
   var ROOM = '';
   function post(cmd, extra) { if (conn) conn.host(cmd, extra); }
-  function joinUrl() { return location.origin + PLAYER_PATH + '?room=' + ROOM; }
+  function joinUrl() { return location.origin + JOIN_PATH + '?room=' + ROOM; }
 
   // ── 側欄玩家狀態 ──────────────────────────────────────────────────────
   function renderPlayers() {
     var el = document.getElementById('plist');
     if (!S.players.length) {
-      el.innerHTML = '<p class="muted" style="font-size:13px">還沒有人進場。</p>';
+      el.innerHTML = '<p class="muted" style="font-size:calc(13px * var(--u))">還沒有人進場。</p>';
       return;
     }
     el.innerHTML = S.players.map(function (p) {
@@ -86,10 +85,10 @@
         '<div class="qrbox">' +
           '<canvas id="qr"></canvas>' +
           '<div>' +
-          '<p class="muted mono" style="font-size:11px;margin:0">房號</p>' +
+          '<p class="muted mono" style="font-size:calc(11px * var(--u));margin:0">房號</p>' +
           '<div class="roomcode">' + esc(ROOM || '····') + '</div>' +
           '<p class="muted" style="margin:14px 0 6px">掃碼，或到這個網址輸入房號：</p>' +
-          '<div class="url">' + esc(location.host + PLAYER_PATH) + '</div></div>' +
+          '<div class="url">' + esc(location.host + JOIN_PATH) + '</div></div>' +
         '</div>' +
         '<div class="names">' + (S.players.length
           ? S.players.map(function (p) { return '<span>' + esc(p.name) + '</span>'; }).join('')
@@ -99,7 +98,7 @@
     warmup: function () {
       return '<span class="kicker">Interaction 1</span><h2>今天晚餐吃飽了嗎？</h2>' +
         '<p class="lede">不要介紹玩法，直接玩一題。這三十秒同時做完三件事：確認每支手機都連上了、他們學會了操作、破冰。</p>' +
-        '<div class="big" style="margin-top:24px">' + S.stats.answeredWarmup + ' <span class="muted" style="font-size:34px">/ ' + S.stats.count + '</span></div>' +
+        '<div class="big" style="margin-top:24px">' + S.stats.answeredWarmup + ' <span class="muted" style="font-size:calc(34px * var(--u))">/ ' + S.stats.count + '</span></div>' +
         histogram(S.stats.warmupDist);
     },
 
@@ -112,7 +111,7 @@
     selfscore: function () {
       return '<span class="kicker">Interaction 2</span><h2>你覺得現在自己幸福嗎？</h2>' +
         '<p class="lede">0 到 100。這個數字就是每個人的外在境遇值起點，會跟著他走完七週。</p>' +
-        '<div class="big" style="margin-top:30px">' + S.stats.answeredScore + ' <span class="muted" style="font-size:34px">/ ' + S.stats.count + ' 人已作答</span></div>' +
+        '<div class="big" style="margin-top:30px">' + S.stats.answeredScore + ' <span class="muted" style="font-size:calc(34px * var(--u))">/ ' + S.stats.count + ' 人已作答</span></div>' +
         '<div class="note"><b>作答中不顯示分布</b>　避免互相定錨。全部填完再翻下一頁。</div>';
     },
 
@@ -122,9 +121,9 @@
         '<p class="lede">只念兩個事實：最高幾分、最低幾分。中間的空白讓它留著。</p>' +
         histogram(s.outerDist) +
         '<div class="cols3" style="grid-template-columns:repeat(3,auto);gap:56px">' +
-          '<div><span class="kicker">最高</span><div class="big" style="font-size:64px">' + (s.outerHigh == null ? '—' : s.outerHigh) + '</div></div>' +
-          '<div><span class="kicker">最低</span><div class="big" style="font-size:64px">' + (s.outerLow == null ? '—' : s.outerLow) + '</div></div>' +
-          '<div><span class="kicker">平均</span><div class="big" style="font-size:64px">' + (s.outerAvg == null ? '—' : s.outerAvg) + '</div></div>' +
+          '<div><span class="kicker">最高</span><div class="big" style="font-size:calc(64px * var(--u))">' + (s.outerHigh == null ? '—' : s.outerHigh) + '</div></div>' +
+          '<div><span class="kicker">最低</span><div class="big" style="font-size:calc(64px * var(--u))">' + (s.outerLow == null ? '—' : s.outerLow) + '</div></div>' +
+          '<div><span class="kicker">平均</span><div class="big" style="font-size:calc(64px * var(--u))">' + (s.outerAvg == null ? '—' : s.outerAvg) + '</div></div>' +
         '</div>' +
         '<div class="note"><b>有人會填 100</b>　那是防衛，不要糾正、不要開玩笑。等一下的機會與命運，他自己會發現那 100 分怎麼縮水的。</div>';
     },
@@ -159,7 +158,7 @@
           '<div class="lotname" style="margin-top:6px">' + esc(lot.name) + '</div>' +
           (r.winner
             ? '<div style="margin-top:26px"><span class="kicker">得標</span><div class="big">' + esc(r.winner.name) + '</div>' +
-              '<div class="mono" style="font-size:28px;color:var(--vol);margin-top:8px">' + r.amount + ' 點</div>' +
+              '<div class="mono" style="font-size:calc(28px * var(--u));color:var(--vol);margin-top:8px">' + r.amount + ' 點</div>' +
               '<p class="muted mono" style="margin-top:10px">' + r.bidders + ' 人出價</p></div>'
             : '<div style="margin-top:26px"><div class="big" style="color:var(--ink-3)">流標</div>' +
               '<p class="lede">這場沒有人要「' + esc(lot.name) + '」。這句話你講得出來。</p></div>');
@@ -169,7 +168,7 @@
         '<div class="lotidx">' + (a.idx + 1) + ' / ' + a.total + '</div>' +
         '<div class="auction-row">' +
           '<div><div class="lotname">' + esc(lot.name) + '</div>' +
-          '<p class="muted mono" style="margin-top:16px;font-size:13px">已出價 <b id="bidcount" style="color:var(--ink)">' + a.bidCount + '</b> / ' + S.stats.count + ' 人</p></div>' +
+          '<p class="muted mono" style="margin-top:16px;font-size:calc(13px * var(--u))">已出價 <b id="bidcount" style="color:var(--ink)">' + a.bidCount + '</b> / ' + S.stats.count + ' 人</p></div>' +
           timerBlocks(left) +
         '</div>';
     },
@@ -190,11 +189,11 @@
             '<div class="say">「你花光了，值得嗎？」</div></div>' +
           '<div class="col3"><h3>剩最多錢的人</h3>' +
             '<div class="who">' + (s.richest ? esc(s.richest.name) : '—') + '</div>' +
-            (s.richest ? '<p class="mono" style="margin:8px 0 0;font-size:22px;color:var(--gold)">' + s.richest.points + ' 點</p>' : '') +
+            (s.richest ? '<p class="mono" style="margin:8px 0 0;font-size:calc(22px * var(--u));color:var(--gold)">' + s.richest.points + ' 點</p>' : '') +
             '<div class="say">「你很有錢。你打算拿來做什麼？」</div></div>' +
           '<div class="col3"><h3>什麼都沒標到的人</h3>' +
             '<div class="who">' + (s.empties.length ? s.empties.map(function (e) { return esc(e.name); }).join('、') : '（沒有人）') + '</div>' +
-            '<p class="muted" style="margin:8px 0 0;font-size:14px">他們手上滿手現金。那不是輸，是第三種人生策略。</p></div>' +
+            '<p class="muted" style="margin:8px 0 0;font-size:calc(14px * var(--u))">他們手上滿手現金。那不是輸，是第三種人生策略。</p></div>' +
         '</div>' +
         '<div class="note">停久一點。他們現在回答得很有把握——三分鐘後這些答案會變得很不一樣。</div>';
     },
@@ -203,12 +202,12 @@
       var g = S.stats.groupCounts;
       return '<span class="kicker">Interaction 4</span><h2>機會與命運</h2>' +
         '<p class="lede">每人抽一張，全場不重複。系統看你剩多少錢，從對應那一組發卡。</p>' +
-        '<div class="big" style="margin-top:20px">' + S.stats.flipped + ' <span class="muted" style="font-size:34px">/ ' + S.stats.count + ' 人已翻開</span></div>' +
+        '<div class="big" style="margin-top:20px">' + S.stats.flipped + ' <span class="muted" style="font-size:calc(34px * var(--u))">/ ' + S.stats.count + ' 人已翻開</span></div>' +
         '<div class="cols3">' +
           S.stats.decks.map(function (d) {
             return '<div class="col3"><h3>' + esc(d.label) + '</h3>' +
-              '<p class="mono muted" style="margin:0;font-size:13px">' + esc(d.rule) + ' · ' + g[d.key] + ' 人</p>' +
-              '<p style="margin:8px 0 0;font-size:14px;color:var(--ink-2)">' + esc(d.character) + '</p></div>';
+              '<p class="mono muted" style="margin:0;font-size:calc(13px * var(--u))">' + esc(d.rule) + ' · ' + g[d.key] + ' 人</p>' +
+              '<p style="margin:8px 0 0;font-size:calc(14px * var(--u));color:var(--ink-2)">' + esc(d.character) + '</p></div>';
           }).join('') +
         '</div>';
     },
@@ -218,8 +217,8 @@
       var drop = (s.startAvg != null && s.outerAvg != null) ? (s.outerAvg - s.startAvg) : null;
       return '<span class="kicker">Interaction 4</span><h2>三種策略，三種摔法</h2>' +
         '<div style="display:flex;gap:56px;align-items:flex-end;margin-top:16px">' +
-          '<div><span class="kicker">全場平均</span><div class="big" style="font-size:64px">' + (s.outerAvg == null ? '—' : s.outerAvg) + '</div></div>' +
-          '<div><span class="kicker">相對開場</span><div class="big" style="font-size:64px;color:var(--vol)">' + (drop == null ? '—' : (drop > 0 ? '+' : '') + drop) + '</div></div>' +
+          '<div><span class="kicker">全場平均</span><div class="big" style="font-size:calc(64px * var(--u))">' + (s.outerAvg == null ? '—' : s.outerAvg) + '</div></div>' +
+          '<div><span class="kicker">相對開場</span><div class="big" style="font-size:calc(64px * var(--u));color:var(--vol)">' + (drop == null ? '—' : (drop > 0 ? '+' : '') + drop) + '</div></div>' +
         '</div>' +
         '<div class="hitcards">' + s.hitCards.map(function (h) {
           return '<div class="hitcard">' +
@@ -250,12 +249,12 @@
       var shared = S.stats.sharedBurdens;
       return '<span class="kicker">Interaction 5</span><h2>禱告，順手把石頭收下來</h2>' +
         '<p class="lede">「剛剛那些卡，有沒有哪一張其實就是你？如果有，用一句話寫下來。只有你自己看得到。」</p>' +
-        '<div class="big" style="margin-top:20px">' + S.stats.burdens + ' <span class="muted" style="font-size:34px">/ ' + S.stats.count + ' 已填寫</span></div>' +
+        '<div class="big" style="margin-top:20px">' + S.stats.burdens + ' <span class="muted" style="font-size:calc(34px * var(--u))">/ ' + S.stats.count + ' 已填寫</span></div>' +
         '<div class="note"><b>預設完全不公開</b>　主畫面只顯示「已填寫」，不顯示內容。除非本人按下「我願意分享」。</div>' +
         (shared.length
           ? '<div class="hitcards">' + shared.map(function (b) {
               return '<div class="hitcard" style="border-left-color:var(--root-c)">' +
-                '<p style="font-size:19px;font-weight:700">「' + esc(b.text) + '」</p>' +
+                '<p style="font-size:calc(19px * var(--u));font-weight:700">「' + esc(b.text) + '」</p>' +
                 '<div class="nm">' + esc(b.name) + ' · 願意分享</div></div>';
             }).join('') + '</div>'
           : '');
@@ -264,7 +263,7 @@
     card: function () {
       return '<span class="kicker">Take-home</span><h2>把卡片存進相簿</h2>' +
         '<p class="lede">這張卡是下週的入場券。散會前每個人手機裡都要有——直接問一句「存好的舉手」。</p>' +
-        '<div class="big" style="margin-top:20px">' + S.stats.cardsDone + ' <span class="muted" style="font-size:34px">/ ' + S.stats.count + ' 已生成</span></div>' +
+        '<div class="big" style="margin-top:20px">' + S.stats.cardsDone + ' <span class="muted" style="font-size:calc(34px * var(--u))">/ ' + S.stats.count + ' 已生成</span></div>' +
         '<div class="note"><b>不要說回家再存</b>　漏掉的人下週就接不上了。忘記存也沒關係，下週直接重新評估現在的自己，跟新朋友走同一條路。</div>';
     },
 
@@ -273,16 +272,16 @@
       return '<span class="kicker">Carry forward</span><h2>第一關結束</h2>' +
         '<p class="lede">這三件事請同工現在拍一張主畫面存起來，第二關開場口頭帶到就好。</p>' +
         '<div class="cols3">' +
-          '<div class="col3"><h3>拍賣配置</h3><p class="muted" style="font-size:14px;margin:6px 0 0">「你們上禮拜買了什麼」</p></div>' +
-          '<div class="col3"><h3>誰抽到重擊卡</h3><p style="font-size:14px;margin:6px 0 0">' +
+          '<div class="col3"><h3>拍賣配置</h3><p class="muted" style="font-size:calc(14px * var(--u));margin:6px 0 0">「你們上禮拜買了什麼」</p></div>' +
+          '<div class="col3"><h3>誰抽到重擊卡</h3><p style="font-size:calc(14px * var(--u));margin:6px 0 0">' +
             (s.hitCards.filter(function (h) { return !h.absent; }).map(function (h) { return esc(h.name); }).join('、') || '—') +
-            '</p><p class="muted" style="font-size:13px;margin:6px 0 0">「上禮拜金融風暴那位，還好嗎」</p></div>' +
-          '<div class="col3"><h3>誰標到「？」</h3><p style="font-size:14px;margin:6px 0 0">' +
+            '</p><p class="muted" style="font-size:calc(13px * var(--u));margin:6px 0 0">「上禮拜金融風暴那位，還好嗎」</p></div>' +
+          '<div class="col3"><h3>誰標到「？」</h3><p style="font-size:calc(14px * var(--u));margin:6px 0 0">' +
             (function () {
               var who = S.players.filter(function (p) { return p.won.some(function (w) { return w.mystery; }); });
               return who.length ? who.map(function (p) { return esc(p.name); }).join('、') : '（流標）';
             })() +
-            '</p><p class="muted" style="font-size:13px;margin:6px 0 0">第二關開標揭曉「永恆」時，全場會看向他</p></div>' +
+            '</p><p class="muted" style="font-size:calc(13px * var(--u));margin:6px 0 0">第二關開標揭曉「永恆」時，全場會看向他</p></div>' +
         '</div>' +
         '<div class="note"><b>收尾那句鉤子</b>　「今天有人運氣很好。運氣好的人，我們下禮拜見。」</div>';
     },
@@ -319,9 +318,10 @@
     renderPlayers();
     stage.innerHTML = (views[S.phase.id] || function () { return ''; })();
 
-    if (S.phase.id === 'lobby' && ROOM && qrDrawnFor !== joinUrl()) {
-      try { QR.render(document.getElementById('qr'), joinUrl(), 8, '#161A18', '#ffffff'); qrDrawnFor = joinUrl(); }
-      catch (err) { qrDrawnFor = null; }
+    // 每次回到入場頁都要重畫：stage.innerHTML 一被改寫，canvas 就是全新的空白元素
+    var qr = document.getElementById('qr');
+    if (qr && ROOM) {
+      try { QR.render(qr, joinUrl(), 8, '#161A18', '#ffffff'); } catch (err) {}
     }
   }
 
