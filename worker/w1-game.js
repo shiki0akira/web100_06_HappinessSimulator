@@ -394,3 +394,9 @@ export function playerView(s, pid, roomCode) {
     },
   };
 }
+
+// 房間的鬧鐘。第一關只有拍賣需要計時。
+export function onAlarm(s, now) {
+  if (PHASES[s.phaseIdx].id !== 'auction') return null;
+  return advanceAuction(s, now);
+}

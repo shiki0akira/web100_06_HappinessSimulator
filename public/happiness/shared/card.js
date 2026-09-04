@@ -56,7 +56,18 @@ var GROUP_NAME = '幸福小組';
     for (var i = 0; i < w; i += 16) ctx.fillRect(x + i, y, 8, 8);
   }
 
-  // data: { name, outer, inner, innerLabel, verseRef, verseText, burden }
+  // 每一關的封面字樣。加一關就在這裡多一行。
+  var WEEKS = {
+    1: { banner: 'W1  TRUE HAPPINESS', title: '真幸福' },
+    2: { banner: 'W2  THE REVEAL',     title: '真相大白' },
+    3: { banner: 'W3  SUPERSTAR',      title: '萬世巨星' },
+    4: { banner: 'W4  CONNECTED',      title: '幸福連線' },
+    5: { banner: 'W5  HE KNOCKS',      title: '當上帝來敲門' },
+    6: { banner: 'W6  THE CROSS',      title: '十字架的勝利' },
+    7: { banner: 'W7  SET FREE',       title: '釋放與自由' },
+  };
+
+  // data: { week, name, outer, outerPrev, inner, innerLabel, verseRef, verseText, burden }
   function drawWeekCard(canvas, data) {
     var W = 1080, H = 1440, M = 96, CW = W - M * 2;
     canvas.width = W; canvas.height = H;
@@ -73,17 +84,19 @@ var GROUP_NAME = '幸福小組';
     ctx.fillRect(20, 20, 24, 24); ctx.fillRect(W - 44, 20, 24, 24);
     ctx.fillRect(20, H - 44, 24, 24); ctx.fillRect(W - 44, H - 44, 24, 24);
 
+    var wk = WEEKS[data.week || 1] || WEEKS[1];
+
     // 頂部色帶
     ctx.fillStyle = INK;
     ctx.fillRect(M, 74, CW, 74);
     ctx.fillStyle = PAPER;
     ctx.font = '400 22px ' + PIXEL;
-    ctx.fillText('W1  TRUE HAPPINESS', M + 24, 122);
+    ctx.fillText(wk.banner, M + 24, 122);
 
     var y = 254;
     ctx.fillStyle = INK;
     ctx.font = '900 88px ' + SANS;
-    ctx.fillText('真幸福', M, y);
+    ctx.fillText(wk.title, M, y);
 
     // 幸福指數
     y += 74;
@@ -98,6 +111,13 @@ var GROUP_NAME = '幸福小組';
     ctx.textAlign = 'right';
     ctx.fillText(String(data.outer == null ? '--' : data.outer), W - M, y + 6);
     ctx.textAlign = 'left';
+    // 落差要印出來 —— 第二關那張卡最有力的就是這個。
+    // 放在標籤右邊，不要擠在數字旁邊：三位數會撞上去。
+    if (data.outerPrev != null && data.outerPrev !== data.outer) {
+      ctx.fillStyle = '#5C706A';
+      ctx.font = '400 22px ' + PIXEL;
+      ctx.fillText('上週 ' + data.outerPrev, M + 236, y);
+    }
     y += 26;
     blocks(ctx, M, y, CW, 44, 10, Math.round((data.outer || 0) / 10), ORANGE);
 

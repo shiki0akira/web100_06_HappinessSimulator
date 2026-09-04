@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>幸福模擬器 · 第二關 真相大白 · 主畫面</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Press+Start+2P&display=swap">
+<link rel="stylesheet" href="/happiness/shared/pixel.css">
+<style>
+  /* 主畫面會用 HDMI 接 43–75 吋電視，觀看距離 2–4 公尺。
+     字級隨畫面寬度整體放大，--u 是縮放係數。 */
+  :root { --u: 1; }
+  @media (min-width: 1500px) { :root { --u: 1.22; } }
+  @media (min-width: 1900px) { :root { --u: 1.5; } }
+  @media (min-width: 2560px) { :root { --u: 2; } }
+
+  body { overflow: hidden; }
+  .app { display: grid; grid-template-rows: auto 1fr auto auto; height: 100vh; }
+
+  .top {
+    display: flex; align-items: center; gap: 16px;
+    padding: 12px 24px; border-bottom: 4px solid var(--edge); background: var(--surface);
+  }
+  .top h1 { font-size: calc(19px * var(--u)); font-weight: 900; }
+  .top .spacer { flex: 1; }
+  .top .count { font-family: var(--pixel); font-size: calc(11px * var(--u)); color: var(--ink-2); }
+
+  .body { display: grid; grid-template-columns: calc(272px * var(--u)) 1fr; min-height: 0; }
+
+  .side { border-right: 4px solid var(--edge); background: var(--surface); overflow-y: auto; padding: 14px; }
+  .side h4 { font-family: var(--pixel); font-size: calc(10px * var(--u)); letter-spacing: .06em; color: var(--ink-3); margin: 0 0 12px; text-transform: uppercase; }
+  .prow { padding: 10px 0; border-bottom: 2px dashed var(--edge-soft); }
+  .prow .nm { display: flex; align-items: center; gap: 6px; font-size: calc(15px * var(--u)); font-weight: 700; }
+  .prow .nm .val { margin-left: auto; font-family: var(--pixel); font-size: calc(13px * var(--u)); color: var(--vol); }
+  .prow .nm .drop { font-family: var(--pixel); font-size: calc(11px * var(--u)); color: var(--vol); }
+  .prow .bars { display: grid; gap: 4px; margin: 7px 0 6px; }
+  .prow .bars .bar { height: calc(13px * var(--u)); }
+  .prow .meta { display: flex; gap: 6px; align-items: center; font-size: calc(11px * var(--u)); color: var(--ink-3); font-family: var(--pixel); }
+  .prow .meta b { color: var(--ink-2); }
+  .chip { font-family: var(--sans); font-size: calc(11px * var(--u)); font-weight: 700; padding: 1px 6px; border: 2px solid var(--edge-soft); background: var(--surface-2); color: var(--ink-2); }
+  .chip.on { border-color: var(--root-c); background: var(--root-soft); color: var(--root-c); }
+  .chip.want { border-color: var(--gold); background: #3A2E12; color: var(--gold); }
+  .adj { margin-left: auto; display: flex; gap: 4px; }
+  .adj button { width: 24px; height: 22px; line-height: 1; padding: 0; font-size: calc(13px * var(--u)); font-weight: 700;
+    border: 2px solid var(--edge); background: var(--ground); color: var(--ink); box-shadow: 2px 2px 0 var(--hard); }
+  .adj button:active { transform: translate(2px, 2px); box-shadow: none; }
+
+  .stage { padding: calc(28px * var(--u)) calc(40px * var(--u)); overflow-y: auto; display: flex; flex-direction: column; }
+  .stage h2 { font-size: calc(40px * var(--u)); font-weight: 900; letter-spacing: .02em; }
+  .stage .lede { font-size: calc(17px * var(--u)); color: var(--ink-2); max-width: 62ch; margin: 12px 0 0; }
+  .big { font-size: calc(76px * var(--u)); font-family: var(--pixel); line-height: 1.1; }
+  .mono { font-family: var(--pixel); }
+  .muted { color: var(--ink-3); }
+
+  .qrbox { display: flex; gap: 34px; align-items: center; margin-top: 22px; flex-wrap: wrap; }
+  .qrbox > div { flex: 1 1 280px; min-width: 0; }
+  /* QR 要蓋在掃描線上面，不然會影響掃描 */
+  .qrbox canvas { width: calc(276px * var(--u)); height: calc(276px * var(--u)); border: 4px solid var(--edge); background: #fff; padding: 6px;
+    box-shadow: 8px 8px 0 var(--hard); position: relative; z-index: 95; }
+  .roomcode { font-family: var(--pixel); font-size: calc(64px * var(--u)); color: var(--gold); letter-spacing: .14em; margin-top: 8px; }
+  .url { font-family: var(--pixel); font-size: calc(24px * var(--u)); line-height: 1.8; color: var(--root-c); word-break: break-all; }
+  .names { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+  .names span { padding: 6px 12px; background: var(--surface); border: 3px solid var(--edge); box-shadow: 3px 3px 0 var(--hard); font-size: calc(15px * var(--u)); font-weight: 700; }
+
+  /* 折舊揭曉：一項一個畫面 */
+  .depidx { font-family: var(--pixel); color: var(--ink-3); font-size: calc(12px * var(--u)); }
+  .depname { font-size: calc(58px * var(--u)); font-weight: 900; line-height: 1.2; letter-spacing: .04em; margin-top: 6px; }
+  .deprow { display: flex; align-items: baseline; gap: calc(30px * var(--u)); margin-top: calc(22px * var(--u)); flex-wrap: wrap; }
+  .deprate { font-family: var(--pixel); font-size: calc(72px * var(--u)); color: var(--vol); line-height: 1; }
+  .deprate.zero { color: var(--root-c); }
+  .depwhy { font-size: calc(24px * var(--u)); color: var(--ink); max-width: 40ch; line-height: 1.7; font-weight: 700; }
+  .deplist { display: flex; flex-wrap: wrap; gap: 8px; margin-top: calc(22px * var(--u)); }
+  .deplist span { font-family: var(--pixel); font-size: calc(12px * var(--u)); padding: 4px 8px;
+    border: 2px solid var(--edge-soft); color: var(--ink-3); }
+  .deplist span.on { border-color: var(--vol); color: var(--vol); }
+
+  .cols3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 24px; }
+  .col3 { background: var(--surface); border: 4px solid var(--edge); box-shadow: 6px 6px 0 var(--hard); padding: 18px; }
+  .col3 h3 { font-size: calc(17px * var(--u)); margin-bottom: 10px; }
+  .col3 .who { font-size: calc(28px * var(--u)); font-weight: 900; }
+  .col3 .say { margin-top: 12px; font-size: calc(14px * var(--u)); font-weight: 700; color: var(--vol); }
+
+  /* 選擇題長條 */
+  .opts { display: grid; gap: 12px; margin-top: calc(24px * var(--u)); max-width: 70ch; }
+  .opt { display: flex; align-items: center; gap: 14px; }
+  .opt .lbl { width: calc(120px * var(--u)); font-size: calc(20px * var(--u)); font-weight: 700; }
+  .opt .track { flex: 1; height: calc(30px * var(--u)); border: 3px solid var(--edge); background: var(--surface-2); }
+  .opt .track i { display: block; height: 100%; background: var(--vol);
+    -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 8px, transparent 8px 10px);
+    mask-image: repeating-linear-gradient(90deg, #000 0 8px, transparent 8px 10px); }
+  .opt .n { font-family: var(--pixel); font-size: calc(16px * var(--u)); color: var(--ink-2); width: calc(52px * var(--u)); text-align: right; }
+
+  /* 「？」那一頁 */
+  .qmark { font-family: var(--pixel); font-size: calc(200px * var(--u)); color: var(--gold); line-height: 1; text-align: center; margin: calc(30px * var(--u)) 0; }
+  .eternal { text-align: center; margin: calc(24px * var(--u)) 0; }
+  .eternal .nm { font-size: calc(96px * var(--u)); font-weight: 900; color: var(--root-c); letter-spacing: .1em; }
+  .eternal .rate { font-family: var(--pixel); font-size: calc(56px * var(--u)); color: var(--root-c); margin-top: 10px; }
+  .freeline { font-size: calc(38px * var(--u)); font-weight: 900; line-height: 1.6; max-width: 26ch; margin-top: calc(20px * var(--u)); }
+  .wantlist { display: flex; flex-wrap: wrap; gap: 10px; margin-top: calc(22px * var(--u)); }
+  .wantlist span { padding: 8px 14px; background: var(--root-soft); border: 3px solid var(--root-c); color: var(--root-c);
+    font-size: calc(17px * var(--u)); font-weight: 700; box-shadow: 3px 3px 0 var(--hard); }
+
+  .verse { max-width: 30ch; }
+  .verse blockquote { font-size: calc(48px * var(--u)); font-weight: 900; line-height: 1.6; margin: 18px 0 0; }
+  .verse .ref { font-family: var(--pixel); color: var(--gold); font-size: calc(13px * var(--u)); }
+  .verse.half blockquote { color: var(--vol); }
+  .verse.half.second blockquote { color: var(--root-c); }
+
+  .hitcards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 18px; margin-top: 22px; }
+  .hitcard { background: var(--surface); border: 4px solid var(--edge); border-left-width: 12px; border-left-color: var(--vol);
+    box-shadow: 6px 6px 0 var(--hard); padding: 16px; }
+  .hitcard p { margin: 12px 0 0; font-size: calc(15px * var(--u)); line-height: 1.8; }
+  .hitcard .nm { margin-top: 12px; font-size: calc(14px * var(--u)); font-weight: 700; color: var(--ink-2); }
+
+  .note { background: var(--surface); border: 3px solid var(--edge); border-left-width: 10px; border-left-color: var(--gold);
+    padding: 14px 16px; margin-top: 22px; max-width: 70ch; font-size: calc(14px * var(--u)); color: var(--ink-2); box-shadow: 5px 5px 0 var(--hard); }
+  .note b { color: var(--ink); }
+  .note.warn { border-left-color: var(--vol); }
+  .note.warn b { color: var(--vol); }
+
+  .energy { display: flex; align-items: center; gap: 14px; padding: 10px 24px; border-top: 4px solid var(--edge);
+    background: var(--surface); font-family: var(--pixel); font-size: calc(11px * var(--u)); color: var(--ink-2); }
+  .energy .bar { flex: 1; height: calc(18px * var(--u)); }
+
+  /* HUD 控制列：固定深底淺字，不隨主題翻轉 */
+  .controls { display: flex; gap: 10px; align-items: center; padding: 12px 20px;
+    background: var(--bar-bg); border-top: 4px solid var(--bar-edge); flex-wrap: wrap; }
+  .controls .btn { padding: 9px 14px; font-size: calc(13px * var(--u)); background: #1D2A2C; border: 3px solid var(--bar-edge);
+    color: var(--bar-ink); box-shadow: 3px 3px 0 #000; }
+  .controls .btn:active { transform: translate(3px, 3px); box-shadow: none; }
+  .controls .btn.primary { background: var(--root-c); border-color: #9CF0D6; color: var(--on-primary); }
+  .controls select { background: #1D2A2C; color: var(--bar-ink); border: 3px solid var(--bar-edge);
+    padding: 9px 10px; font-family: var(--sans); font-weight: 700; font-size: calc(13px * var(--u)); }
+  .controls .sp { flex: 1; }
+  .controls .hint { color: #8FA8A1; font-size: calc(11px * var(--u)); font-family: var(--pixel); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <h1>幸福模擬器 · 第二關 <b>真相大白</b></h1>
+    <span class="tag" id="ptag">入場</span>
+    <span class="spacer"></span>
+    <span class="count" id="pcount">0 人在場</span>
+  </div>
+
+  <div class="body">
+    <aside class="side">
+      <h4>玩家狀態</h4>
+      <div id="plist"></div>
+    </aside>
+    <main class="stage" id="stage"></main>
+  </div>
+
+  <div class="energy">
+    <span>全場幸福能量</span>
+    <span class="bar"><i id="energybar" style="width:0%;background:var(--gold)"></i></span>
+    <span id="energyval">—</span>
+  </div>
+
+  <div class="controls">
+    <button class="btn" data-cmd="prev">← 上一頁</button>
+    <button class="btn primary" data-cmd="next">下一頁 →</button>
+    <select id="jump"></select>
+    <span id="depctl" style="display:none;gap:8px;">
+      <button class="btn primary" data-cmd="nextItem">揭曉下一項 →</button>
+      <button class="btn" data-cmd="revealAll">全部開完</button>
+      <button class="btn" data-cmd="resetReveal">重跑折舊</button>
+    </span>
+    <span class="sp"></span>
+    <span class="hint" id="hint"></span>
+    <button class="btn" data-cmd="reset" id="resetbtn">全部重置</button>
+  </div>
+</div>
+
+<script src="/happiness/shared/qr.js"></script>
+<script src="/happiness/shared/room-client.js"></script>
+<script src="/happiness/w2/host.js"></script>
+</body>
+</html>

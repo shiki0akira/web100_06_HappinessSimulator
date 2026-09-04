@@ -1,8 +1,10 @@
 import { DurableObject } from 'cloudflare:workers';
-import {
-  createState, addPlayer, applyAction, applyHost, advanceAuction,
-  hostView, playerView, PHASES,
-} from './game.js';
+import * as W1 from './w1-game.js';
+import * as W2 from './w2-game.js';
+
+// 七關共用同一個 class，用 week 決定套哪一關的規則。
+// 加一關就是在這裡多一行。
+const GAMES = { 1: W1, 2: W2 };
 
 const CLEANUP_MS = 6 * 60 * 60 * 1000;   // 最後一個人離線六小時後，房間自己清空
 
@@ -14,11 +16,17 @@ export class Room extends DurableObject {
   constructor(ctx, env) {
     super(ctx, env);
     this.code = '';
+    this.week = 1;
+    this.state = null;
     ctx.blockConcurrencyWhile(async () => {
-      this.state = (await ctx.storage.get('state')) || createState();
+      this.week = (await ctx.storage.get('week')) || 1;
       this.code = (await ctx.storage.get('code')) || '';
+      this.state = (await ctx.storage.get('state')) || null;
     });
   }
+
+  // 房號已經把週次編進 DO 的名字裡（w2:ABCD），所以一個房間只會是一關
+  get game() { return GAMES[this.week] || W1; }
 
   async fetch(request) {
     const url = new URL(request.url);
@@ -29,13 +37,22 @@ export class Room extends DurableObject {
     const role = url.searchParams.get('role') === 'host' ? 'host' : 'player';
     const pid = url.searchParams.get('pid') || '';
     const code = (url.searchParams.get('room') || '').toUpperCase();
+    const week = Number(url.searchParams.get('week')) || 1;
+
+    if (GAMES[week] && week !== this.week) {
+      this.week = week;
+      await this.ctx.storage.put('week', week);
+      this.state = null;            // 換了關就換一套規則，舊狀態不能沿用
+    }
     if (code && code !== this.code) {
       this.code = code;
       await this.ctx.storage.put('code', code);
     }
+
     // 主持人開新場：把舊的房間狀態清掉
-    if (role === 'host' && url.searchParams.get('fresh') === '1') {
-      this.state = createState();
+    const fresh = role === 'host' && url.searchParams.get('fresh') === '1';
+    if (!this.state || fresh) {
+      this.state = this.game.createState();
       await this.save();
     }
 
@@ -51,8 +68,8 @@ export class Room extends DurableObject {
 
   viewFor(att) {
     return att.role === 'host'
-      ? hostView(this.state, this.code)
-      : playerView(this.state, att.pid, this.code);
+      ? this.game.hostView(this.state, this.code)
+      : this.game.playerView(this.state, att.pid, this.code);
   }
 
   broadcast() {
@@ -84,7 +101,7 @@ export class Room extends DurableObject {
     if (msg.t === 'join') {
       let pid = att.pid;
       if (!pid || !this.state.players[pid]) {
-        pid = addPlayer(this.state, msg.name);
+        pid = this.game.addPlayer(this.state, msg.name);
       } else if (msg.name) {
         this.state.players[pid].name = String(msg.name).slice(0, 12);
       }
@@ -92,14 +109,14 @@ export class Room extends DurableObject {
       ws.send(JSON.stringify({ assigned: pid }));
     } else if (msg.t === 'action') {
       if (!att.pid) return;
-      applyAction(this.state, att.pid, msg);
+      this.game.applyAction(this.state, att.pid, msg);
     } else if (msg.t === 'host') {
       if (att.role !== 'host') return;
       if (msg.cmd === 'reset') {
-        this.state = createState();
+        this.state = this.game.createState();
         await this.ctx.storage.deleteAlarm();
       } else {
-        next = applyHost(this.state, msg, now);
+        next = this.game.applyHost(this.state, msg, now);
       }
     } else {
       return;
@@ -125,13 +142,13 @@ export class Room extends DurableObject {
 
     if (this.state.cleanupAt && now >= this.state.cleanupAt && this.ctx.getWebSockets().length === 0) {
       await this.ctx.storage.deleteAll();
-      this.state = createState();
+      this.state = this.game.createState();
       return;
     }
 
-    // 拍賣計時：暗標結束 → 開標 → 下一項
-    if (PHASES[this.state.phaseIdx].id === 'auction') {
-      const next = advanceAuction(this.state, now);
+    // 只有需要計時的關卡才有 onAlarm（第一關的拍賣）
+    if (typeof this.game.onAlarm === 'function') {
+      const next = this.game.onAlarm(this.state, now);
       await this.save();
       if (next) await this.ctx.storage.setAlarm(next);
       this.broadcast();
