@@ -44,7 +44,8 @@ export const INNER_PRAYER = 5;   // 收尾禱告
 
 const clamp = (n) => Math.max(0, Math.min(100, Math.round(n)));
 // 幸福根基只會漲。沒有任何事件扣得到它 —— 那是它唯一的意義。
-const grow = (p, n) => { p.inner = Math.min(INNER_CAP, p.inner + n); };
+// || 0 是為了舊版建立的房間：那時候 inner 還是 null，deploy 之後別讓它變 NaN。
+const grow = (p, n) => { p.inner = Math.min(INNER_CAP, (p.inner || 0) + n); };
 const alive = (s) => s.order.map((id) => s.players[id]).filter(Boolean);
 const scored = (s) => alive(s).filter((p) => p.outer !== null);
 
@@ -332,7 +333,7 @@ export function hostView(s, roomCode) {
     auction: auctionView(s),
     players: ps.map((p) => ({
       pid: p.pid, name: p.name, outer: p.outer, outerStart: p.outerStart,
-      inner: p.inner,
+      inner: p.inner || 0,
       points: p.points, won: p.won, group: groupOf(p),
       cardKind: p.card ? p.card.kind : null, cardFlipped: p.cardFlipped,
       metoo: p.metoo, hasBurden: p.hasBurden, burdenShare: !!p.burdenShared,
@@ -383,7 +384,7 @@ export function playerView(s, pid, roomCode) {
     ...base,
     me: {
       pid: p.pid, name: p.name, warmup: p.warmup, outer: p.outer, outerStart: p.outerStart,
-      inner: p.inner, innerCap: INNER_CAP,
+      inner: p.inner || 0, innerCap: INNER_CAP,
       points: p.points, won: p.won,
       card: p.cardFlipped ? p.card : (p.card ? { hidden: true } : null),
       cardFlipped: p.cardFlipped, metoo: p.metoo,
