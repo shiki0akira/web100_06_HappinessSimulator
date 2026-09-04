@@ -17,7 +17,10 @@
   .hero { border-bottom: 4px solid var(--edge); background: var(--surface); padding: 34px 0 30px; margin-bottom: 34px; }
   .hero .eyebrow { font-family: var(--pixel); font-size: 10px; color: var(--ink-3); letter-spacing: .08em; }
   .hero h1 { font-size: 46px; font-weight: 900; letter-spacing: .04em; margin: 16px 0 0; }
-  .hero p { font-size: 16px; color: var(--ink-2); max-width: 56ch; margin: 14px 0 0; }
+  .hero p { font-size: 16px; color: var(--ink-2); max-width: 56ch; margin: 14px 0 0; line-height: 1.9; }
+  .hero p.lead { font-size: 26px; font-weight: 900; color: var(--ink); line-height: 1.65; margin-top: 20px; letter-spacing: .02em; }
+  .hero p b { color: var(--ink); }
+  .hero p.quiet { color: var(--ink-3); font-size: 15px; }
   .hero .meta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
   .hero .meta span { font-family: var(--pixel); font-size: 10px; padding: 7px 10px; border: 2px solid var(--edge-soft); color: var(--ink-2); }
 
@@ -67,7 +70,10 @@
   <div class="wrap">
     <p class="eyebrow">WEB100_06 · HAPPINESS SIMULATOR</p>
     <h1>幸福模擬器</h1>
-    <p>投影片還在，只是活了過來。你照樣一頁一頁講，講到某個段落畫面會跳出問答或小遊戲，全場拿手機參與，玩完再回到你的信息。</p>
+    <p class="lead">幸福不是一個分數。<br>但如果它是，你會給自己打幾分？</p>
+    <p>七個晚上，那個數字會被生活推來推去——升遷、意外、一通電話、一張檢查報告。<b>沒有人控制得了它。這正是重點。</b></p>
+    <p>而在它底下，還有第二條線。什麼事都扣不到它，而且它只會往上。七週結束的時候，每個人都會看見自己的那兩條——一條起起伏伏、到最後也不見得高，一條從頭到尾往上長。</p>
+    <p class="quiet">這件事不用講，他們自己看得出來。</p>
     <div class="meta">
       <span>七週 · 每關 20–25 分</span>
       <span>大螢幕 ＋ 每人一支手機</span>
@@ -76,7 +82,6 @@
     <div class="start">
       <a class="btn primary" href="/happiness/w1/zh-TW/">開場 → 第一關</a>
       <a class="btn" href="/happiness/w2/zh-TW/">第二關</a>
-      <span class="mono" style="font-size:11px;color:var(--ink-3)">開了就會給你房號和 QR</span>
     </div>
   </div>
 </div>
