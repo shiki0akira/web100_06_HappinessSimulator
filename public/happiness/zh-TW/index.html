@@ -34,12 +34,15 @@
   .wk .n { font-family: var(--pixel); font-size: 26px; color: var(--vol); text-align: center; }
   .wk.soon .n { color: var(--ink-3); }
   .wk h3 { font-size: 22px; font-weight: 900; letter-spacing: .04em; }
-  .wk .role { font-size: 13px; color: var(--ink-3); margin-top: 4px; }
   .wk .go { font-family: var(--pixel); font-size: 10px; padding: 10px 12px; border: 3px solid var(--edge);
     background: var(--root-c); color: var(--on-primary); text-decoration: none; white-space: nowrap; }
   .wk .lock { font-family: var(--pixel); font-size: 9px; color: var(--ink-3); white-space: nowrap; }
-  .wk .prep { grid-column: 2 / -1; font-size: 13px; color: var(--ink-2); margin-top: 8px;
-    border-left: 6px solid var(--gold); padding-left: 10px; }
+  /* 當週的主題經文。這是主持人在準備台上最想看到的一行。 */
+  .wk .verse { grid-column: 2 / -1; margin-top: 8px;
+    border-left: 6px solid var(--gold); padding-left: 12px; }
+  .wk .verse .ref { font-family: var(--pixel); font-size: 10px; color: var(--gold); }
+  .wk .verse p { font-size: 15px; line-height: 1.85; color: var(--ink); margin: 5px 0 0; font-weight: 500; }
+  .wk.soon .verse p { color: var(--ink-2); }
 
   .notes { background: var(--surface); border: 4px solid var(--edge); box-shadow: 6px 6px 0 var(--hard); padding: 20px; }
   .notes p.why { font-size: 14px; color: var(--ink-2); margin: 0 0 16px; }
@@ -120,27 +123,40 @@
 <script>
 (function () {
   'use strict';
+  // 每一關的主題經文。已開的兩關要跟 worker/wN-data.js 的 VERSE 一致；
+  // 還沒開的幾關等主題經文定了再填進來。
   var WEEKS = [
-    { n: 1, name: '真幸福', role: '建立現況', ready: true,
-      prep: '幸福拍賣會。每人 100 點競標六樣東西，最後一樣是「？」。收重擔、發第一張經文卡。' },
-    { n: 2, name: '真相大白', role: '覺醒', ready: true,
-      prep: '時間快轉三十年，逐項揭曉折舊率。「？」開標是永生——唯一 0%，而且今天不用錢。那條 ？？？ 正名為幸福根基。' },
-    { n: 3, name: '萬世巨星', role: '遇見關鍵角色' },
-    { n: 4, name: '幸福連線', role: '取得能力' },
-    { n: 5, name: '當上帝來敲門', role: '視角反轉' },
-    { n: 6, name: '十字架的勝利', role: '決戰' },
-    { n: 7, name: '釋放與自由', role: '結局' },
+    { n: 1, name: '真幸福', ready: true,
+      ref: '馬太福音 11:28',
+      verse: '凡勞苦擔重擔的人，可以到我這裡來，我就使你們得安息。' },
+    { n: 2, name: '真相大白', ready: true,
+      ref: '約翰福音 10:10',
+      verse: '盜賊來，無非要偷竊，殺害，毀壞；我來了，是要叫羊得生命，並且得的更豐盛。' },
+    { n: 3, name: '萬世巨星' },
+    { n: 4, name: '幸福連線' },
+    { n: 5, name: '當上帝來敲門' },
+    { n: 6, name: '十字架的勝利' },
+    { n: 7, name: '釋放與自由' },
   ];
+
+  var esc = function (s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  };
 
   document.getElementById('weeks').innerHTML = WEEKS.map(function (w) {
     var pad = w.n < 10 ? '0' + w.n : w.n;
     return '<div class="wk' + (w.ready ? '' : ' soon') + '">' +
       '<div class="n">' + pad + '</div>' +
-      '<div><h3>' + w.name + '</h3><div class="role">' + w.role + '</div></div>' +
+      '<div><h3>' + esc(w.name) + '</h3></div>' +
       (w.ready
         ? '<a class="go" href="/happiness/w' + w.n + '/zh-TW/">開場 →</a>'
         : '<span class="lock">尚未開放</span>') +
-      (w.prep ? '<div class="prep">' + w.prep + '</div>' : '') +
+      (w.verse
+        ? '<div class="verse"><span class="ref">' + esc(w.ref) + '</span>' +
+          '<p>' + esc(w.verse) + '</p></div>'
+        : '') +
     '</div>';
   }).join('');
 

@@ -343,6 +343,16 @@
     }
   }, 200);
 
+  // 回系列頁。現場有人在的時候先問一句 —— 從系列頁按「開場」會拿到新房號，
+  // 誤點一下全場就掉了。準備階段沒人在，不會擋路。
+  var home = document.getElementById('home');
+  if (home) home.onclick = function (e) {
+    if (S && S.stats.count > 0 &&
+        !confirm('現在有 ' + S.stats.count + ' 個人在這個房間裡。\n\n離開這一頁沒關係，房號在網址上，用瀏覽器「上一頁」就回得來。\n但如果從系列頁重新按「開場」，會開到一個新房號，這些人就掉了。\n\n還是要離開嗎？')) {
+      e.preventDefault();
+    }
+  };
+
   document.querySelectorAll('[data-cmd]').forEach(function (b) {
     b.onclick = function () {
       var cmd = b.dataset.cmd;

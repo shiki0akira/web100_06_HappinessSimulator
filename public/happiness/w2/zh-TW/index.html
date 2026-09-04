@@ -24,6 +24,9 @@
     padding: 12px 24px; border-bottom: 4px solid var(--edge); background: var(--surface);
   }
   .top h1 { font-size: calc(19px * var(--u)); font-weight: 900; }
+  /* 回系列頁。現場有人在的時候會先問一句 —— 誤點再按「開場」會開到新房號 */
+  .top h1 a { color: inherit; text-decoration: none; border-bottom: 3px solid transparent; }
+  .top h1 a:hover, .top h1 a:focus-visible { color: var(--root-c); border-bottom-color: var(--root-c); }
   .top .spacer { flex: 1; }
   .top .count { font-family: var(--pixel); font-size: calc(11px * var(--u)); color: var(--ink-2); }
 
@@ -140,7 +143,7 @@
 <body>
 <div class="app">
   <div class="top">
-    <h1>幸福模擬器 · 第二關 <b>真相大白</b></h1>
+    <h1><a href="/happiness/zh-TW/" id="home" title="回系列頁">幸福模擬器</a> · 第二關 <b>真相大白</b></h1>
     <span class="tag" id="ptag">入場</span>
     <span class="spacer"></span>
     <span class="count" id="pcount">0 人在場</span>
