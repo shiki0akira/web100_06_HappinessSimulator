@@ -29,6 +29,11 @@
   .top h1 a:hover, .top h1 a:focus-visible { color: var(--root-c); border-bottom-color: var(--root-c); }
   .top .spacer { flex: 1; }
   .top .count { font-family: var(--pixel); font-size: calc(11px * var(--u)); color: var(--ink-2); }
+  /* 主持人備忘錄。放在頂端列，因為那是主持人的區域，而且一定看得到。 */
+  .notesbtn { font-family: var(--sans); font-size: calc(12px * var(--u)); font-weight: 700;
+    padding: calc(7px * var(--u)) calc(12px * var(--u));
+    border: 3px solid var(--gold); background: transparent; color: var(--gold); }
+  .notesbtn:hover { background: var(--gold); color: var(--surface); }
 
   .body { display: grid; grid-template-columns: calc(272px * var(--u)) 1fr; min-height: 0; }
 
@@ -149,6 +154,7 @@
     <h1><a href="/happiness/zh-TW/" id="home" title="回系列頁">幸福模擬器</a> · 第二關 <b>真相大白</b></h1>
     <span class="tag" id="ptag">入場</span>
     <span class="spacer"></span>
+    <button class="notesbtn" id="notesbtn" title="用手機掃，備忘錄會跟著大螢幕走">📱 主持人備忘錄</button>
     <span class="count" id="pcount">0 人在場</span>
   </div>
 

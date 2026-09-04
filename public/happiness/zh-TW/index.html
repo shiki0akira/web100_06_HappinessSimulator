@@ -26,6 +26,30 @@
 
   .start { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin-top: 24px; }
   .start .btn { font-size: 19px; padding: 16px 26px; }
+  .start .sep { width: 3px; align-self: stretch; background: var(--edge-soft); }
+  /* 組員的入口。跟主持人的「開場」分開，不然會有人按錯開到新房號。 */
+  .start .join { border-color: var(--gold); color: var(--gold); background: transparent; }
+  .start .join:hover { background: var(--gold); color: var(--surface); }
+
+  /* 加入房間 */
+  .modal { position: fixed; inset: 0; z-index: 200; display: none;
+    align-items: center; justify-content: center; padding: 20px;
+    background: rgba(6, 12, 11, .94); }
+  .modal.on { display: flex; }
+  .modal .box { background: var(--surface); border: 4px solid var(--edge);
+    box-shadow: 8px 8px 0 var(--hard); padding: 28px 24px; width: 100%; max-width: 420px; }
+  .modal h3 { font-size: 26px; font-weight: 900; letter-spacing: .03em; }
+  .modal p { color: var(--ink-2); font-size: 16px; margin-top: 10px; }
+  .modal input { width: 100%; margin-top: 18px; padding: 16px; font-size: 40px; font-weight: 700;
+    text-align: center; letter-spacing: .3em; font-family: var(--pixel); }
+  .modal .err { color: var(--vol); font-size: 15px; font-weight: 700; margin-top: 10px; min-height: 22px; }
+  .modal .pick { font-family: var(--pixel); font-size: 10px; color: var(--ink-3);
+    letter-spacing: .06em; margin: 6px 0 10px; }
+  .modal .lv { display: grid; gap: 10px; }
+  .modal .lv button { padding: 16px; font-size: 19px; font-weight: 700; text-align: left; }
+  .modal .lv button b { font-family: var(--pixel); font-size: 11px; color: var(--gold); display: block; margin-bottom: 6px; }
+  .modal .close { width: 100%; margin-top: 16px; }
+  .modal .hint { font-size: 14px; color: var(--ink-3); margin-top: 16px; line-height: 1.8; }
 
   h2.sec { font-size: 13px; font-family: var(--pixel); color: var(--ink-3); letter-spacing: .08em;
     border-bottom: 3px solid var(--edge); padding-bottom: 10px; margin: 44px 0 20px; }
@@ -82,6 +106,9 @@
     <div class="start">
       <a class="btn primary" href="/happiness/w1/zh-TW/">開場 → 第一關</a>
       <a class="btn" href="/happiness/w2/zh-TW/">第二關</a>
+      <span class="sep"></span>
+      <!-- 組員自己打網址進來的時候，這裡是他唯一找得到的入口 -->
+      <button class="btn join" id="joinbtn">我要加入房間</button>
     </div>
   </div>
 </div>
@@ -125,6 +152,21 @@
   </footer>
 </div>
 
+<!-- 加入房間。房號在不同關卡是不同房間，所以要問是哪一關。 -->
+<div class="modal" id="joinmodal">
+  <div class="box">
+    <h3>加入房間</h3>
+    <p>輸入大螢幕上的四碼房號。</p>
+    <input id="rc" maxlength="4" autocapitalize="characters" autocomplete="off"
+           inputmode="text" placeholder="房號">
+    <div class="err" id="rcerr"></div>
+    <div class="pick">你要加入哪一關？</div>
+    <div class="lv" id="lv"></div>
+    <button class="btn close" id="joinclose">取消</button>
+    <p class="hint">掃大螢幕上的 QR 就不用做這一步 —— 掃了直接進場。</p>
+  </div>
+</div>
+
 <script>
 (function () {
   'use strict';
@@ -164,6 +206,56 @@
         : '') +
     '</div>';
   }).join('');
+
+  // ── 加入房間 ──────────────────────────────────────────────────────
+  // 房號只有四碼，而且不同關卡各有自己的房間（w1:ABCD 和 w2:ABCD 是兩間），
+  // 所以光有房號還不夠，一定要問是哪一關 —— 那兩顆按鈕就是送出鍵。
+  var CODE_RE = /^[A-HJ-NP-Z2-9]{4}$/;
+  var modal = document.getElementById('joinmodal');
+  var rc = document.getElementById('rc');
+  var rcerr = document.getElementById('rcerr');
+
+  document.getElementById('lv').innerHTML = WEEKS.filter(function (w) { return w.ready; })
+    .map(function (w) {
+      return '<button class="btn" data-week="' + w.n + '">' +
+        '<b>第 ' + w.n + ' 關</b>' + esc(w.name) + '</button>';
+    }).join('');
+
+  function openJoin() {
+    modal.classList.add('on');
+    rcerr.textContent = '';
+    rc.value = '';
+    rc.focus();
+  }
+  function closeJoin() { modal.classList.remove('on'); }
+
+  function go(week) {
+    var c = rc.value.toUpperCase().trim();
+    if (!CODE_RE.test(c)) {
+      // 房號刻意不含 0/O、1/I，打錯的時候要講清楚，不要只說「格式錯誤」
+      rcerr.textContent = '房號是四個字，不會有 0、O、1、I。再看一次大螢幕。';
+      rc.focus();
+      return;
+    }
+    location.href = '/' + week + '?room=' + c;
+  }
+
+  document.getElementById('joinbtn').onclick = openJoin;
+  document.getElementById('joinclose').onclick = closeJoin;
+  modal.onclick = function (e) { if (e.target === modal) closeJoin(); };
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeJoin();
+  });
+  rc.oninput = function () { rcerr.textContent = ''; };
+  document.querySelectorAll('[data-week]').forEach(function (b) {
+    b.onclick = function () { go(b.dataset.week); };
+  });
+  // 只有一關開放的時候，Enter 就直接進去 —— 沒有第二個選項要挑
+  rc.onkeydown = function (e) {
+    if (e.key !== 'Enter') return;
+    var ready = WEEKS.filter(function (w) { return w.ready; });
+    if (ready.length === 1) go(ready[0].n);
+  };
 
   // 現場筆記：純本機，不上傳
   var saved = document.getElementById('saved');

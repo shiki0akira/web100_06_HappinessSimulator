@@ -102,13 +102,6 @@
           '<div class="roomcode">' + esc(ROOM || '····') + '</div>' +
           '<p class="muted" style="margin:14px 0 6px">掃碼，或到這個網址輸入房號：</p>' +
           '<div class="url">' + esc(location.host + JOIN_PATH) + '</div></div>' +
-          // 主持人備忘錄。刻意比玩家的 QR 小、標得清楚，不會有人搞錯掃哪一個。
-          // 翻頁之後這一頁就沒了，所以它只在開場前露臉。
-          '<div class="hostqr">' +
-            '<div class="lbl" style="font-size:calc(11px * var(--u))">主持人備忘錄</div>' +
-            '<canvas id="hostqrc"></canvas>' +
-            '<div class="u" style="font-size:calc(12px * var(--u))">' + esc(location.host + NOTES_PATH) + '</div>' +
-          '</div>' +
         '</div>' +
         '<div class="names">' + (S.players.length
           ? S.players.map(function (p) { return '<span>' + esc(p.name) + '</span>'; }).join('')
@@ -330,12 +323,6 @@
       try { QR.render(qr, joinUrl(), qrScale(7), '#161A18', '#ffffff'); } catch (err) {}
     }
 
-    // 入場頁上的主持人備忘錄 QR，比玩家那個小一號
-    var hqr = document.getElementById('hostqrc');
-    if (hqr && ROOM) {
-      try { QR.render(hqr, location.origin + NOTES_PATH + '?room=' + ROOM, qrScale(4), '#161A18', '#ffffff'); }
-      catch (err) {}
-    }
   }
 
   // 暗標倒數：只重畫圈圈，不整頁重繪
@@ -375,12 +362,13 @@
     var on = show == null ? !box.classList.contains('on') : show;
     box.classList.toggle('on', on);
     if (!on || !ROOM) return;
-    var short = '/h?w=' + WEEK + '&room=' + ROOM;
+    var short = NOTES_PATH + '?room=' + ROOM;
     document.getElementById('notesurl').textContent = location.host + short;
     try { QR.render(document.getElementById('notesqrc'), location.origin + short, qrScale(6), '#161A18', '#ffffff'); }
     catch (err) {}
   }
   document.getElementById('notesqr').onclick = function () { toggleNotes(false); };
+  document.getElementById('notesbtn').onclick = function () { toggleNotes(true); };
 
   document.addEventListener('keydown', function (ev) {
     if (ev.repeat) return;   // 按住不放不要一次跳好幾頁

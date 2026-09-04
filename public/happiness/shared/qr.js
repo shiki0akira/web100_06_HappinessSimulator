@@ -27,13 +27,16 @@
   })();
   function gmul(a, b) { return (a === 0 || b === 0) ? 0 : EXP[LOG[a] + LOG[b]]; }
 
+  // 生成多項式，係數由高次到低次（poly[0] 是最高次項，永遠是 1）。
+  // 順序很重要 —— rsEncode 是照這個順序取 gen[j+1] 的。排反了 EC 碼字會全錯，
+  // 而且錯得很安靜：QR 畫得出來、看起來很正常，就是沒有任何掃描器讀得了。
   function rsGenerator(n) {
     var poly = [1];
     for (var i = 0; i < n; i++) {
       var next = new Array(poly.length + 1).fill(0);
       for (var j = 0; j < poly.length; j++) {
-        next[j] ^= gmul(poly[j], EXP[i]);
-        next[j + 1] ^= poly[j];
+        next[j] ^= poly[j];                      // 乘 x
+        next[j + 1] ^= gmul(poly[j], EXP[i]);    // 乘 α^i
       }
       poly = next;
     }
