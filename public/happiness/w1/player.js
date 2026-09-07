@@ -165,11 +165,17 @@
     },
 
     event_result: function (me) {
-      var d = (me.outer != null && me.outerStart != null) ? me.outer - me.outerStart : null;
+      // 分數底下把自己那張卡再放一次 —— 大螢幕上是全場的，手機上是他自己的
+      var c = me.cardFlipped ? me.card : null;
       return '<h2>你現在的分數</h2>' +
         '<div class="slider"><div class="val">' + (me.outer == null ? '—' : me.outer) + '</div></div>' +
-        (d == null ? '' : '<p class="mono" style="text-align:center;color:' + (d < 0 ? 'var(--vol)' : 'var(--root-c)') +
-          '">開場是 ' + me.outerStart + ' 分（' + (d > 0 ? '+' : '') + d + '）</p>') +
+        (c
+          ? '<div class="card-face evcard">' +
+              '<div class="hd"><span>模擬事件' + (c.groupShort ? ' · ' + esc(c.groupShort) : '') + '</span>' +
+              '<b class="' + (c.delta > 0 ? 'up' : '') + '">' + (c.delta > 0 ? '+' + c.delta : c.delta === 0 ? '±0' : c.delta) + '</b></div>' +
+              '<p>' + esc(c.text) + '</p>' +
+            '</div>'
+          : '') +
         wait('看大螢幕');
     },
 
