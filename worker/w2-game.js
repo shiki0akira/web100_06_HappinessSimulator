@@ -1,7 +1,7 @@
 // 第二關「真相大白」的規則。純函式，不碰網路也不碰儲存。
 // 整關只有一個動作 —— 把時間往前推 —— 但它會依序引爆四件事：
-// 折舊、「？」開標、宣布它免費、那條 ？？？ 有了名字。
-import { LOTS, MYSTERY_LOT, DEPRECIATION, MYSTERY, VERSE, Q20, STAKE_FACTOR } from './w2-data.js';
+// 折舊、揭曉那一樣沒上過拍賣台的東西、宣布它免費、那條 ？？？ 有了名字。
+import { LOTS, DEPRECIATION, MYSTERY, VERSE, Q20, STAKE_FACTOR } from './w2-data.js';
 
 // 幸福根基的規則跟第一關一樣，七關都一樣。上限 95 不是 100 —— 你自己填不滿。
 export const INNER_CAP = 95;
@@ -18,7 +18,7 @@ export const PHASES = [
   { id: 'ff_intro',   tag: '主遊戲',   title: '時間快轉三十年' },
   { id: 'depreciate', tag: '互動點 2', title: '逐項揭曉' },
   { id: 'verse_half', tag: '經文',     title: '盜賊來，無非要偷竊，殺害，毀壞' },
-  { id: 'mystery',    tag: '高潮',     title: '「？」開標' },
+  { id: 'mystery',    tag: '高潮',     title: '還有一樣，沒上過拍賣台' },
   { id: 'free',       tag: '高潮',     title: '今天它不用錢' },
   { id: 'naming',     tag: '機制事件', title: '那條線有了名字' },
   { id: 'message',    tag: '主持人',   title: '你的信息與見證' },
@@ -141,7 +141,7 @@ export function applyAction(s, pid, msg) {
     }
     case 'holdings': {
       const ids = Array.isArray(msg.owned) ? msg.owned : [];
-      const valid = LOTS.concat([MYSTERY_LOT]).map((l) => l.id);
+      const valid = LOTS.map((l) => l.id);
       p.owned = ids.map(Number).filter((x) => valid.includes(x)).slice(0, 10);
       p.points = Math.max(0, Math.min(100, Math.floor(Number(msg.points) || 0)));
       p.holdingsDone = true;
@@ -221,7 +221,6 @@ export function hostView(s, roomCode) {
   const sc = scored(s);
   const outers = sc.map((p) => p.outer);
   const starts = sc.map((p) => p.outerStart);
-  const mysteryOwners = ps.filter((p) => p.owned.includes(MYSTERY_LOT.id));
 
   return {
     role: 'host',
@@ -236,7 +235,7 @@ export function hostView(s, roomCode) {
     named: s.named,
     mysteryOpen: s.mysteryOpen,
     reveal: revealView(s),
-    lots: LOTS.concat([MYSTERY_LOT]),
+    lots: LOTS,
     players: ps.map((p) => ({
       pid: p.pid, name: p.name,
       outer: p.outer, outerStart: p.outerStart, inner: p.inner || 0,
@@ -263,7 +262,6 @@ export function hostView(s, roomCode) {
           .sort((a, b) => b.drop - a.drop);
         return withDrop.length && withDrop[0].drop > 0 ? withDrop[0] : null;
       })(),
-      mysteryOwners: mysteryOwners.map((p) => ({ name: p.name })),
       wants: ps.filter((p) => p.want).map((p) => p.name),
       versesReceived: ps.filter((p) => p.receivedVerse).length,
       cardsDone: ps.filter((p) => p.cardDone).length,
@@ -287,7 +285,7 @@ export function playerView(s, pid, roomCode) {
     named: s.named,
     mysteryOpen: s.mysteryOpen,
     reveal: revealView(s),
-    lots: LOTS.concat([MYSTERY_LOT]),
+    lots: LOTS,
     playerCount: alive(s).length,
   };
   if (!p) return { ...base, me: null };

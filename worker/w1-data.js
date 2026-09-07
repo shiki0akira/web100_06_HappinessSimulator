@@ -3,18 +3,20 @@
 
 export const LOTS = [
   { id: 1, name: '健康的身體' },
-  { id: 2, name: '一段不會走的關係' },
-  { id: 3, name: '說走就走的自由' },
-  { id: 4, name: '被看見、被肯定' },
-  { id: 5, name: '一份有成就感的工作' },
-  { id: 6, name: '孩子順利長大' },
-  { id: 7, name: '一夜好眠' },
-  { id: 8, name: '每天多三小時' },
-  { id: 9, name: '一個完全懂你的人' },
+  { id: 2, name: '相愛的伴侶' },
+  { id: 3, name: '自由的時間' },
+  { id: 4, name: '被看見與肯定' },
+  { id: 5, name: '有成就感的工作' },
+  { id: 6, name: '家庭婚姻美滿' },
+  { id: 7, name: '每天睡眠都很好' },
+  { id: 8, name: '每天都有好吃的' },
+  { id: 9, name: '每天多三小時' },
+  { id: 10, name: '成為名人' },
 ];
 
-// 第十樣永遠是「？」，第一關不揭曉（第二關開標時是「永生」）
-export const MYSTERY_LOT = { id: 10, name: '？', mystery: true };
+// 第一樣是試拍品：不扣點、不計分，只是讓每個人先按過一次出價，
+// 真正開始的時候才不會有人還在問「要按哪裡」。
+export const PRACTICE_LOT = { id: 0, name: '一杯珍珠奶茶', practice: true };
 
 export const DECKS = {
   A: {

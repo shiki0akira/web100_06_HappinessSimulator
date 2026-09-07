@@ -181,21 +181,19 @@
     },
 
     mystery: function () {
-      var owners = S.stats.mysteryOwners;
       return '' +
         '<div class="qmark">？</div>' +
         '<div class="eternal"><div class="nm">' + esc(S.mystery.name) + '</div>' +
           '<div class="rate">折舊率 0%</div>' +
           '<p class="lede" style="margin:14px auto 0;text-align:center">' + esc(S.mystery.why) + '</p></div>' +
-        (owners.length
-          ? '<div class="wantlist" style="justify-content:center">' + owners.map(function (o) { return '<span>' + esc(o.name) + ' 上一次標到了</span>'; }).join('') + '</div>'
-          : '<p class="lede" style="text-align:center;margin:22px auto 0">沒有人買它。<br>而三十年後，它是唯一還在的。</p>');
+        '<p class="lede" style="text-align:center;margin:22px auto 0">上一關的拍賣清單上，沒有這一樣。<br>' +
+        '你想買也買不到 —— 而三十年後，它是唯一還在的。</p>';
     },
 
     free: function () {
       var w = S.stats.wants;
       return '' +
-        '<div class="freeline">你上一關出價四十點才搶到它。<br><span style="color:var(--root-c)">今天，它不用錢。誰要都可以拿。</span></div>' +
+        '<div class="freeline">這一樣，你出多少錢都買不到。<br><span style="color:var(--root-c)">今天，它不用錢。誰要都可以拿。</span></div>' +
         '<div class="verse half second" style="margin-top:calc(26px * var(--u))"><span class="ref">' + esc(S.verse.ref) + ' · 下半句</span>' +
           '<blockquote>「' + esc(S.verse.second) + '」</blockquote></div>' +
         '<div class="wantlist">' + (w.length

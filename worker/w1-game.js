@@ -1,5 +1,5 @@
 // 第一關「真幸福」的規則。純函式，不碰網路也不碰儲存 —— 房間（Durable Object）負責把它接上線。
-import { LOTS, DECKS, QUESTION_CARDS, VERSE } from './w1-data.js';
+import { LOTS, PRACTICE_LOT, DECKS, QUESTION_CARDS, VERSE } from './w1-data.js';
 
 export const BID_MS = 20000;    // 暗標一輪 20 秒
 export const REVEAL_MS = 6000;  // 開標停留 6 秒
@@ -107,7 +107,8 @@ function lotCountFor(n) {
 
 function buildLots(s) {
   const count = lotCountFor(Math.max(alive(s).length, 1));
-  s.lots = LOTS.slice(0, Math.min(Math.max(count, 2), LOTS.length));
+  // 第一樣是試拍品，不計分
+  s.lots = [{ ...PRACTICE_LOT }].concat(LOTS.slice(0, Math.min(Math.max(count, 2), LOTS.length)));
 }
 
 export function startAuction(s, now) {
@@ -131,8 +132,11 @@ function resolveLot(s, now) {
   if (win) {
     const p = s.players[win.pid];
     if (p && win.amount <= p.points) {
-      p.points -= win.amount;
-      p.won.push({ lotId: lot.id, name: lot.name, price: win.amount, mystery: !!lot.mystery });
+      // 試拍只是練習：照樣開標、照樣有人得標，但不扣點也不算他買到
+      if (!lot.practice) {
+        p.points -= win.amount;
+        p.won.push({ lotId: lot.id, name: lot.name, price: win.amount });
+      }
       result.winner = { pid: p.pid, name: p.name };
       result.amount = win.amount;
     }
@@ -318,8 +322,16 @@ export function hostView(s, roomCode) {
   const outers = sc.map((p) => p.outer);
   const warmups = ps.filter((p) => p.warmup !== null).map((p) => p.warmup);
   const spent = (p) => 100 - p.points;
-  const mostLots = ps.slice().sort((a, b) => b.won.length - a.won.length || spent(b) - spent(a))[0] || null;
-  const richest = ps.slice().sort((a, b) => b.points - a.points)[0] || null;
+  // 三個統計都可能同分 —— 同分就一起列出來，不要挑一個當代表
+  const topOf = (pick, best) => {
+    if (!ps.length) return [];
+    const target = ps.map(pick).reduce(best);
+    return ps.filter((p) => pick(p) === target)
+      .map((p) => ({ name: p.name, points: p.points, count: p.won.length }));
+  };
+  const topBuyers = topOf((p) => p.won.length, (a, b) => Math.max(a, b)).filter((x) => x.count > 0);
+  const richest = topOf((p) => p.points, (a, b) => Math.max(a, b));
+  const poorest = topOf((p) => p.points, (a, b) => Math.min(a, b));
 
   const hits = ps.filter((p) => p.card && p.card.kind === 'hit')
     .map((p) => ({ name: p.name, group: p.card.group, groupLabel: p.card.groupLabel, text: p.card.text, delta: p.card.delta }));
@@ -356,9 +368,7 @@ export function hostView(s, roomCode) {
       outerLow: outers.length ? Math.min(...outers) : null,
       outerAvg: outers.length ? Math.round(outers.reduce((a, b) => a + b, 0) / outers.length) : null,
       startAvg: sc.length ? Math.round(sc.reduce((a, b) => a + b.outerStart, 0) / sc.length) : null,
-      mostLots: mostLots ? { name: mostLots.name, won: mostLots.won, points: mostLots.points } : null,
-      richest: richest ? { name: richest.name, points: richest.points, won: richest.won } : null,
-      empties: ps.filter((p) => p.won.length === 0).map((p) => ({ name: p.name, points: p.points })),
+      topBuyers, richest, poorest,
       flipped: ps.filter((p) => p.cardFlipped).length,
       metoo: ps.filter((p) => p.metoo).map((p) => p.name),
       burdens: ps.filter((p) => p.hasBurden).length,

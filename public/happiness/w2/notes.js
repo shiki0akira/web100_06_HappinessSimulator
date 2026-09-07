@@ -85,12 +85,9 @@ window.WEEK_NOTES = {
 
   mystery: {
     lead: '整關的最高點。畫面先停在問號上久一點再翻。',
-    count: function (s) {
-      return s.mysteryOwners.length ? '上次標到的：' + s.mysteryOwners.map(function (o) { return o.name; }).join('、') : '上次沒有人標到';
-    },
     items: [
-      { k: 'say', t: '有人標到 → 問他：「你上一次為什麼買它？」他大概率會說「就好奇」「隨便押的」。那句話本身就很好。' },
-      { k: 'say', t: '沒有人標到 → 這句更有力：「今天沒有人買它。而三十年後，它是唯一還在的。」' },
+      { k: 'say', t: '「上一關的拍賣清單上，沒有這一樣。你想買也買不到。」' },
+      { k: 'say', t: '「而三十年後，它是唯一還在的。」這句講完就停住，不要接著解釋。' },
       { k: 'warn', t: '不要趕。這一頁多停十秒都值得。' },
     ],
   },

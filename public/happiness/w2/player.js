@@ -146,12 +146,10 @@
     },
 
     mystery: function (me) {
-      var mine = me.owned.indexOf(S.mystery.lotId) >= 0;
       return '<div class="qmark">？</div>' +
         '<div class="eternal"><div class="nm">' + esc(S.mystery.name) + '</div>' +
           '<div class="rate">−0%</div></div>' +
         '<p style="text-align:center;margin-top:18px">' + esc(S.mystery.why) + '</p>' +
-        (mine ? '<div class="hit" style="border-color:var(--root-c);color:var(--root-c)">你上一關標到了它</div>' : '') +
         wait('看大螢幕');
     },
 

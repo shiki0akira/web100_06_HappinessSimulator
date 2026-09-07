@@ -123,7 +123,7 @@
 
   // 每一樣標的有自己的插圖，檔名就是它的 id。圖畫在 tools/pixel-art.mjs。
   function lotArt(lot) {
-    if (!lot || !lot.id) return '';
+    if (!lot || lot.id == null) return '';   // 試拍品的 id 是 0，別被 falsy 吃掉
     return '<img class="lotart" src="/happiness/w1/art/lot-' + lot.id + '.svg" alt="">';
   }
 
@@ -220,7 +220,8 @@
           '<div class="col3" style="border-color:var(--gold)"><h3>什麼都不買，剩下的點數就是你的財富</h3><p class="muted" style="margin:0">所以不出價是一種策略，不是棄權。</p></div>' +
           '<div class="col3"><h3>每樣 20 秒同時暗標</h3><p class="muted" style="margin:0">最高者得，同價時先出價者得。</p></div>' +
         '</div>' +
-        '<div class="note">本場共 ' + (S.auction.lots.length || '—') + ' 樣。標的比人少，所以一定有人什麼都沒標到。</div>';
+        '<div class="note"><b>第一樣是試拍</b>，讓大家先按一次，不扣點也不計分。' +
+        '正式的共 ' + (S.auction.lots.length ? S.auction.lots.length - 1 : '—') + ' 樣 —— 標的比人少，所以一定有人什麼都沒標到。</div>';
     },
 
     auction: function () {
@@ -229,10 +230,14 @@
         return '<h2>全部開標完畢</h2>';
       }
       var lot = a.lot || { name: '—' };
+      // 試拍那一樣不編號，改標「試拍」；後面的才從 1 開始數
+      var idxLabel = lot.practice
+        ? '試拍 · 不計分'
+        : a.idx + ' / ' + Math.max(a.total - 1, 1);
       if (a.status === 'reveal') {
         var r = a.results[a.results.length - 1] || {};
         return '' +
-          '<div class="lotidx">' + (a.idx + 1) + ' / ' + a.total + '</div>' +
+          '<div class="lotidx">' + idxLabel + '</div>' +
           '<div class="auction-row">' +
             '<div>' +
               '<div class="lotname" style="margin-top:6px">' + esc(lot.name) + '</div>' +
@@ -248,7 +253,7 @@
       }
       var left = Math.max(0, Math.ceil((a.deadline - Date.now()) / 1000));
       return '' +
-        '<div class="lotidx">' + (a.idx + 1) + ' / ' + a.total + '</div>' +
+        '<div class="lotidx">' + idxLabel + '</div>' +
         '<div class="auction-row">' +
           '<div>' +
             '<div class="lotname">' + esc(lot.name) + '</div>' +
@@ -261,25 +266,23 @@
 
     auction_result: function () {
       var s = S.stats;
-      var lots = function (arr) {
-        return arr && arr.length
-          ? '<ul>' + arr.map(function (w) { return '<li>' + esc(w.name) + ' · ' + w.price + ' 點</li>'; }).join('') + '</ul>'
-          : '<p class="muted" style="margin:6px 0 0">什麼都沒標到</p>';
+      // 同分的人一起列，不挑一個當代表
+      var names = function (arr) {
+        return arr.length ? arr.map(function (x) { return esc(x.name); }).join('、') : '—';
+      };
+      var withPoints = function (arr) {
+        return arr.length
+          ? '<p class="mono" style="margin:8px 0 0;font-size:calc(22px * var(--u));color:var(--gold)">' + arr[0].points + ' 點</p>'
+          : '';
       };
       return '<h2>看看大家買了什麼</h2>' +
-        '<p class="lede">不是排名，是三種策略。</p>' +
         '<div class="cols3">' +
           '<div class="col3"><h3>買最多樣的人</h3>' +
-            '<div class="who">' + (s.mostLots ? esc(s.mostLots.name) : '—') + '</div>' +
-            (s.mostLots ? lots(s.mostLots.won) + '<p class="muted mono" style="margin:8px 0 0">剩 ' + s.mostLots.points + ' 點</p>' : '') +
-            '</div>' +
+            '<div class="who">' + names(s.topBuyers) + '</div></div>' +
           '<div class="col3"><h3>剩最多錢的人</h3>' +
-            '<div class="who">' + (s.richest ? esc(s.richest.name) : '—') + '</div>' +
-            (s.richest ? '<p class="mono" style="margin:8px 0 0;font-size:calc(22px * var(--u));color:var(--gold)">' + s.richest.points + ' 點</p>' : '') +
-            '</div>' +
-          '<div class="col3"><h3>什麼都沒標到的人</h3>' +
-            '<div class="who">' + (s.empties.length ? s.empties.map(function (e) { return esc(e.name); }).join('、') : '（沒有人）') + '</div>' +
-            '<p class="muted" style="margin:8px 0 0;font-size:calc(14px * var(--u))">滿手現金。那不是輸，是第三種人生策略。</p></div>' +
+            '<div class="who">' + names(s.richest) + '</div>' + withPoints(s.richest) + '</div>' +
+          '<div class="col3"><h3>剩最少錢的人</h3>' +
+            '<div class="who">' + names(s.poorest) + '</div>' + withPoints(s.poorest) + '</div>' +
         '</div>' +
         buyList();
     },
@@ -359,7 +362,9 @@
             (s.hitCards.filter(function (h) { return !h.absent; }).map(function (h) { return esc(h.name); }).join('、') || '—') +
             '</p></div>' +
           '<div class="col3"><h3>剩最多錢的人</h3><p style="font-size:calc(18px * var(--u));font-weight:700;margin:6px 0 0">' +
-            (s.richest ? esc(s.richest.name) + ' · ' + s.richest.points + ' 點' : '—') +
+            (s.richest.length
+              ? s.richest.map(function (x) { return esc(x.name); }).join('、') + ' · ' + s.richest[0].points + ' 點'
+              : '—') +
             '</p></div>' +
         '</div>';
     },

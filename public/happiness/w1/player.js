@@ -101,11 +101,13 @@
       var a = S.auction;
       if (a.status === 'done') return wait('拍賣結束', '看大螢幕');
       var lot = a.lot || { name: '—' };
+      // 試拍那一樣不編號，也要講清楚它不算分
+      var idxLabel = lot.practice ? '試拍 · 不計分' : a.idx + ' / ' + Math.max(a.total - 1, 1);
       if (a.status === 'reveal') {
         var r = a.results[a.results.length - 1] || {};
         var mine = r.winner && r.winner.pid === me.pid;
         return '<div class="lotcard card-face">' +
-          '<div class="idx">' + (a.idx + 1) + ' / ' + a.total + ' 開標</div>' +
+          '<div class="idx">' + idxLabel + ' · 開標</div>' +
           '<div class="nm">' + esc(lot.name) + '</div>' +
           (r.winner
             ? '<p style="margin-top:14px;font-size:21px">' + (mine
@@ -116,23 +118,19 @@
       }
       var bid = me.myBid == null ? 0 : me.myBid;
       return '<div class="lotcard card-face">' +
-          '<div class="idx">' + (a.idx + 1) + ' / ' + a.total + '</div>' +
+          '<div class="idx">' + idxLabel + '</div>' +
           '<div class="nm">' + esc(lot.name) + '</div>' +
           '<div class="timer" id="timer">–</div>' +
         '</div>' +
         '<p class="mono" style="text-align:center;color:var(--ink-3);margin:14px 0 0">你還有 ' + me.points + ' 點</p>' +
         '<div class="bidnum" id="bv">' + bid + '</div>' +
         '<input type="range" min="0" max="' + me.points + '" value="' + bid + '" id="bl">' +
-        '<div class="bidrow">' +
-          '<button class="btn" data-add="-5">−5</button>' +
-          '<button class="btn" data-add="5">+5</button>' +
-          '<button class="btn" data-add="10">+10</button>' +
-          '<button class="btn" data-add="all">全押</button>' +
-        '</div>' +
         '<button class="btn primary fullbtn" id="bid">' + (me.myBid == null ? '出價' : '改成這個價') + '</button>' +
-        (me.myBid == null
-          ? '<p class="privacy">不出價也是一種選擇。沒花掉的點數就是你的財富。</p>'
-          : '<p class="privacy ok">已出價 ' + me.myBid + ' 點，時間到之前都可以改。</p>');
+        (lot.practice
+          ? '<p class="privacy">這一樣是試拍，隨便出。不扣點，也不算你買到。</p>'
+          : me.myBid == null
+            ? '<p class="privacy">不出價也是一種選擇。沒花掉的點數就是你的財富。</p>'
+            : '<p class="privacy ok">已出價 ' + me.myBid + ' 點，時間到之前都可以改。</p>');
     },
 
     auction_result: function (me) {
@@ -229,13 +227,6 @@
     if (bl) {
       var bv = document.getElementById('bv');
       bl.oninput = function () { bv.textContent = bl.value; };
-      document.querySelectorAll('[data-add]').forEach(function (b) {
-        b.onclick = function () {
-          var v = b.dataset.add === 'all' ? Number(bl.max) : Number(bl.value) + Number(b.dataset.add);
-          bl.value = String(Math.max(0, Math.min(Number(bl.max), v)));
-          bv.textContent = bl.value;
-        };
-      });
       document.getElementById('bid').onclick = function () { act('bid', { value: Number(bl.value) }); };
     }
 
