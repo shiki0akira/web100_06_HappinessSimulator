@@ -74,6 +74,11 @@
     border: 3px solid var(--edge); box-shadow: 4px 4px 0 var(--hard);
     background: var(--root-c); color: var(--on-primary); text-decoration: none; white-space: nowrap; }
   .wk .go span { font-size: 20px; line-height: 1; margin-left: 10px; }
+  /* 跟 .btn 一樣的手感：移過去沉一半，按下去沉到底 */
+  @media (hover: hover) {
+    .wk .go:hover, .wk .go:focus-visible { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--hard); }
+  }
+  .wk .go:active { transform: translate(4px, 4px); box-shadow: none; }
   .wk .lock { font-size: 14px; font-weight: 700; color: var(--ink-3); white-space: nowrap; }
   /* 當週的主題經文。這是主持人在準備台上最想看到的一行。 */
   .wk .verse { margin-top: 10px;

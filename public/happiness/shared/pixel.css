@@ -135,6 +135,12 @@ button { font-family: inherit; cursor: pointer; }
   box-shadow: 4px 4px 0 var(--hard);
   transition: none;
 }
+/* 滑鼠移過去先沉一半，按下去才整個沉到底 —— 有回饋，又不會被誤認成已經按了。
+   只給有真的游標的裝置：手機上 :hover 會黏著不放，按過的鈕會一直卡在沉下去的樣子。 */
+@media (hover: hover) {
+  .btn:hover, .btn:focus-visible { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--hard); }
+  .btn:disabled:hover { transform: none; box-shadow: 4px 4px 0 var(--edge-soft); }
+}
 .btn:active { transform: translate(4px, 4px); box-shadow: none; }
 .btn.primary { background: var(--root-c); border-color: var(--edge); color: var(--on-primary); }
 .btn.ghost { background: transparent; }
