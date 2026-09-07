@@ -61,6 +61,9 @@
   .wk.soon { box-shadow: none; border-color: var(--edge-soft); opacity: .62; }
   .wk .n { font-family: var(--pixel); font-size: 26px; color: var(--vol); text-align: center; }
   .wk.soon .n { color: var(--ink-3); }
+  /* 標題和經文是同一塊，一起放在中間那欄 —— 分開跨欄的話，
+     中間會被按鈕那欄的高度撐出一段空白。 */
+  .wk .body { min-width: 0; }
   .wk h3 { font-size: 22px; font-weight: 900; letter-spacing: .04em; }
   /* 中文套 pixel 字型其實是掉回系統字，10px 根本看不清楚。
      標籤改用正常字體放大，只留箭頭保留 pixel 味道。 */
@@ -70,7 +73,7 @@
   .wk .go span { font-family: var(--pixel); font-size: 13px; margin-left: 8px; }
   .wk .lock { font-size: 14px; font-weight: 700; color: var(--ink-3); white-space: nowrap; }
   /* 當週的主題經文。這是主持人在準備台上最想看到的一行。 */
-  .wk .verse { grid-column: 2 / -1; margin-top: 8px;
+  .wk .verse { margin-top: 10px;
     border-left: 6px solid var(--gold); padding-left: 12px; }
   .wk .verse .ref { font-family: var(--pixel); font-size: 10px; color: var(--gold); }
   .wk .verse p { font-size: 15px; line-height: 1.85; color: var(--ink); margin: 5px 0 0; font-weight: 500; }
@@ -179,14 +182,15 @@
     var pad = w.n < 10 ? '0' + w.n : w.n;
     return '<div class="wk' + (w.ready ? '' : ' soon') + '">' +
       '<div class="n">' + pad + '</div>' +
-      '<div><h3>' + esc(w.name) + '</h3></div>' +
+      '<div class="body"><h3>' + esc(w.name) + '</h3>' +
+        (w.verse
+          ? '<div class="verse"><span class="ref">' + esc(w.ref) + '</span>' +
+            '<p>' + esc(w.verse) + '</p></div>'
+          : '') +
+      '</div>' +
       (w.ready
         ? '<a class="go" href="/happiness/w' + w.n + '/zh-TW/">開場<span>&rarr;</span></a>'
         : '<span class="lock">尚未開放</span>') +
-      (w.verse
-        ? '<div class="verse"><span class="ref">' + esc(w.ref) + '</span>' +
-          '<p>' + esc(w.verse) + '</p></div>'
-        : '') +
     '</div>';
   }).join('');
 
