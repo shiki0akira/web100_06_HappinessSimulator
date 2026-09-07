@@ -48,6 +48,18 @@
       esc(msg) + '</p>' + (sub ? '<p style="font-size:17px">' + esc(sub) + '</p>' : '') + '</div>';
   };
 
+  // 送出之後：自己填的數字放大，剩下的畫面是「還在等別人」。
+  // 只給人數，不給別人的答案 —— 那是主持人翻頁時才一起看的東西。
+  function submitted(value, unit, done, total) {
+    var all = total > 0 && done >= total;
+    return '<div class="sent' + (all ? ' done' : '') + '">' +
+      '<div class="lbl">已送出</div>' +
+      '<div class="val">' + esc(value) + (unit ? '<small>' + esc(unit) + '</small>' : '') + '</div>' +
+      '<p class="msg">' + (all ? '大家都作答完了，看大螢幕。' : '等待其他玩家作答…') + '</p>' +
+      '<p class="cnt">' + done + ' / ' + total + ' 人已作答</p>' +
+    '</div>';
+  }
+
   function sliderScreen(title, lede, initial, action, unitLow, unitHigh) {
     return '<h2>' + esc(title) + '</h2><p>' + esc(lede) + '</p>' +
       '<div class="slider"><div class="val" id="sv">' + initial + '</div>' +
@@ -64,16 +76,16 @@
         '<button class="btn ghost fullbtn" id="rename">改名字</button>';
     },
     warmup: function (me) {
-      if (me.warmup !== null) return wait('已送出：' + me.warmup, '看大螢幕');
-      return sliderScreen('今天晚餐吃飽了嗎？', '拉一下就好。', 50, 'warmup', '完全沒吃', '吃得很飽');
+      if (me.warmup !== null) return submitted(me.warmup, '', S.answeredWarmup, S.playerCount);
+      return sliderScreen('你現在有吃飽嗎？', '拉一下就好。', 50, 'warmup', '完全沒吃', '吃得很飽');
     },
     warmup_result: function () { return wait('看大螢幕'); },
     selfscore: function (me) {
-      if (me.outer !== null) return wait('已送出：' + me.outer + ' 分', '看大螢幕');
+      if (me.outer !== null) return submitted(me.outer, '分', S.answeredScore, S.playerCount);
       return sliderScreen('你覺得現在自己幸福嗎？', '0 到 100，憑直覺。只有你自己看得到你的數字。', 50, 'selfscore', '0', '100');
     },
     selfscore_result: function () { return wait('看大螢幕'); },
-    host_intro: function () { return wait('聽主持人說', '等一下有拍賣會'); },
+    standards: function () { return wait('看大螢幕', '世人的三個標準'); },
 
     auction_intro: function (me) {
       return '<h2>幸福拍賣會</h2>' +
@@ -301,7 +313,10 @@
     statusEl.hidden = false;
     document.getElementById('myname').textContent = me.name;
     document.getElementById('mystate').textContent = S.phase.title;
-    document.getElementById('mypts').textContent = me.points + ' 點';
+    // 點數只有拍賣會用得到，規則還沒講之前狀態列上不掛數字
+    var pts = document.getElementById('mypts');
+    pts.hidden = !S.pointsInPlay;
+    pts.textContent = me.points + ' 點';
     document.getElementById('outerv').textContent = me.outer == null ? '—' : me.outer;
     document.getElementById('outerbar').style.width = (me.outer == null ? 0 : me.outer) + '%';
     document.getElementById('innerv').textContent = me.inner;
@@ -311,6 +326,7 @@
       S.phase.id, S.auction.status, S.auction.idx,
       me.warmup, me.outer, me.inner, me.myBid, me.cardFlipped, me.metoo,
       me.receivedVerse, me.cardDone, me.hasBurden, me.burdenShare, me.points, me.won.length,
+      S.pointsInPlay, S.answeredWarmup, S.answeredScore, S.playerCount,
     ].join('|');
     if (next !== sig) {
       sig = next;

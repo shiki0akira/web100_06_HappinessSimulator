@@ -6,11 +6,11 @@ export const REVEAL_MS = 6000;  // 開標停留 6 秒
 
 export const PHASES = [
   { id: 'lobby',            tag: '入場',     title: '掃碼進場' },
-  { id: 'warmup',           tag: '互動點 1', title: '今天晚餐吃飽了嗎？' },
+  { id: 'warmup',           tag: '互動點 1', title: '你現在有吃飽嗎？' },
   { id: 'warmup_result',    tag: '互動點 1', title: '全場分布' },
   { id: 'selfscore',        tag: '互動點 2', title: '你覺得現在自己幸福嗎？' },
-  { id: 'selfscore_result', tag: '互動點 2', title: '全場分布（不顯示是誰）' },
-  { id: 'host_intro',       tag: '主持人',   title: '我會填幾分，但我不玩' },
+  { id: 'selfscore_result', tag: '互動點 2', title: '全場分布' },
+  { id: 'standards',        tag: '主持人',   title: '幸福的標準' },
   { id: 'auction_intro',    tag: '主遊戲',   title: '幸福拍賣會 · 規則' },
   { id: 'auction',          tag: '互動點 3', title: '幸福拍賣會' },
   { id: 'auction_result',   tag: '結算頁',   title: '看看大家買了什麼' },
@@ -22,6 +22,11 @@ export const PHASES = [
   { id: 'card',             tag: '週卡',     title: '生成你的第一張卡片' },
   { id: 'end',              tag: '散會',     title: '第一關結束' },
 ];
+
+// 點數只有幸福拍賣會用得到。規則頁（auction_intro）之前畫面上不出現點數 ——
+// 玩家還沒聽到「每人 100 點」，先看到一個數字只會讓人以為現在就該花它。
+const AUCTION_START = PHASES.findIndex((p) => p.id === 'auction_intro');
+const pointsInPlay = (s) => s.phaseIdx >= AUCTION_START;
 
 export function createState() {
   return {
@@ -329,12 +334,14 @@ export function hostView(s, roomCode) {
     phase: PHASES[s.phaseIdx],
     phaseIdx: s.phaseIdx,
     phases: PHASES,
+    pointsInPlay: pointsInPlay(s),
     verse: VERSE,
     auction: auctionView(s),
     players: ps.map((p) => ({
       pid: p.pid, name: p.name, outer: p.outer, outerStart: p.outerStart,
       inner: p.inner || 0,
       points: p.points, won: p.won, group: groupOf(p),
+      warmup: p.warmup,
       cardKind: p.card ? p.card.kind : null, cardFlipped: p.cardFlipped,
       metoo: p.metoo, hasBurden: p.hasBurden, burdenShare: !!p.burdenShared,
       receivedVerse: p.receivedVerse, adjust: p.adjust,
@@ -374,9 +381,13 @@ export function playerView(s, pid, roomCode) {
     room: roomCode,
     phase: PHASES[s.phaseIdx],
     phaseIdx: s.phaseIdx,
+    pointsInPlay: pointsInPlay(s),
     verse: VERSE,
     auction: auctionView(s),
     playerCount: alive(s).length,
+    // 手機在等別人的時候要看得到進度。只有人數，不含任何人的答案。
+    answeredWarmup: alive(s).filter((x) => x.warmup !== null).length,
+    answeredScore: alive(s).filter((x) => x.outer !== null).length,
   };
   if (!p) return { ...base, me: null };
   return {

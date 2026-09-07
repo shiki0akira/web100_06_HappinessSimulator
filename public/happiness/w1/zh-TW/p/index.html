@@ -18,7 +18,7 @@
   .status .row1 b { color: var(--ink); font-size: 20px; font-weight: 900; }
   .status .row1 .pts { margin-left: auto; font-family: var(--pixel); font-size: 13px; color: var(--gold); }
   .gauge { margin-top: 9px; }
-  .gauge .lbl { display: flex; justify-content: space-between; font-family: var(--pixel); font-size: 11px; color: var(--ink-3); margin-bottom: 4px; }
+  .gauge .lbl { display: flex; justify-content: space-between; font-family: var(--pixel); font-size: 13px; color: var(--ink-3); margin-bottom: 4px; }
   .gauge .lbl b { font-size: 13px; color: var(--vol); }
   .gauge + .gauge { margin-top: 7px; }
   .gauge + .gauge .lbl b { color: var(--root-c); }
@@ -29,14 +29,23 @@
   .wait { text-align: center; padding: 44px 0; color: var(--ink-3); }
   .wait .dot { font-family: var(--pixel); font-size: 27px; letter-spacing: .3em; color: var(--root-c); }
 
+  /* 送出之後：自己的數字是這一頁的主角，等待的說明放它下面 */
+  .sent { text-align: center; padding: 34px 0; }
+  .sent .lbl { font-family: var(--pixel); font-size: 13px; color: var(--ink-3); letter-spacing: .1em; }
+  .sent .val { font-family: var(--pixel); font-size: 72px; line-height: 1.2; margin-top: 14px; }
+  .sent .val small { font-family: var(--sans); font-size: 22px; font-weight: 700; color: var(--ink-3); margin-left: 8px; }
+  .sent .msg { font-size: 21px; color: var(--ink-2); margin: 26px 0 0; }
+  .sent.done .msg { color: var(--root-c); font-weight: 700; }
+  .sent .cnt { font-family: var(--pixel); font-size: 13px; color: var(--ink-3); margin: 12px 0 0; }
+
   .slider { margin: 26px 0 10px; }
   .slider .val { font-family: var(--pixel); font-size: 51px; text-align: center; line-height: 1.2; }
-  .ends { display: flex; justify-content: space-between; font-family: var(--pixel); font-size: 11px; color: var(--ink-3); margin-top: 8px; }
+  .ends { display: flex; justify-content: space-between; font-family: var(--pixel); font-size: 13px; color: var(--ink-3); margin-top: 8px; }
 
   .fullbtn { width: 100%; margin-top: 20px; padding: 18px; font-size: 21px; }
 
   .lotcard { text-align: center; padding: 24px 16px; }
-  .lotcard .idx { font-family: var(--pixel); font-size: 12px; color: var(--ink-3); }
+  .lotcard .idx { font-family: var(--pixel); font-size: 13px; color: var(--ink-3); }
   .lotcard .nm { font-size: 33px; font-weight: 900; margin-top: 12px; line-height: 1.35; letter-spacing: .04em; }
   .lotcard .timer { font-family: var(--pixel); font-size: 33px; color: var(--vol); margin-top: 14px; }
   .bidrow { display: flex; gap: 8px; margin-top: 14px; }
@@ -51,13 +60,13 @@
   .flip:active { transform: translate(6px, 6px); box-shadow: none; }
   .flip small { font-family: var(--sans); font-size: 17px; font-weight: 700; color: #DCEDE8; }
   .evcard { margin-top: 18px; }
-  .evcard .hd { display: flex; justify-content: space-between; align-items: center; font-family: var(--pixel); font-size: 12px; color: var(--ink-3); }
+  .evcard .hd { display: flex; justify-content: space-between; align-items: center; font-family: var(--pixel); font-size: 13px; color: var(--ink-3); }
   .evcard .hd b { font-size: 22px; color: var(--vol); }
   .evcard .hd b.up { color: var(--root-c); }
   .evcard p { font-size: 22px; font-weight: 500; line-height: 1.9; color: var(--ink); margin: 14px 0 0; }
 
   .verse-p { text-align: center; padding: 10px 0; }
-  .verse-p .ref { font-family: var(--pixel); font-size: 12px; color: var(--gold); }
+  .verse-p .ref { font-family: var(--pixel); font-size: 13px; color: var(--gold); }
   .verse-p blockquote { font-size: 28px; font-weight: 700; line-height: 1.95; margin: 16px 0 0; letter-spacing: .02em; }
 
   textarea { width: 100%; min-height: 124px; padding: 14px; font-size: 21px; font-weight: 500; resize: vertical; }

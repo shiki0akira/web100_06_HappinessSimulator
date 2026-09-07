@@ -33,18 +33,31 @@
       el.innerHTML = '<p class="muted" style="font-size:calc(13px * var(--u))">還沒有人進場。</p>';
       return;
     }
+    // 作答中側欄也不能先寫出分數 —— 大螢幕不長分布、旁邊卻已經掛著 79，
+    // 一樣是定錨。這一頁只讓主持人看到誰填完了，數字等翻到下一頁才回來。
+    var isAnswering = S.phase.id === 'warmup' || S.phase.id === 'selfscore';
+    var hideScore = S.phase.id === 'selfscore';
     el.innerHTML = S.players.map(function (p) {
-      var outer = p.outer == null ? 0 : p.outer;
+      var outer = (hideScore || p.outer == null) ? 0 : p.outer;
       var chips = [];
+      if (isAnswering) {
+        var done = S.phase.id === 'warmup' ? p.warmup !== null : p.outer !== null;
+        chips.push('<span class="chip' + (done ? ' on' : '') + '">' + (done ? '已作答' : '還沒填') + '</span>');
+      }
       if (p.won.length) chips.push('<span class="chip">標到 ' + p.won.length + ' 樣</span>');
       if (p.cardFlipped) chips.push('<span class="chip' + (p.cardKind === 'hit' ? ' on' : '') + '">' + (p.cardKind === 'hit' ? '重擊' : p.cardKind === 'question' ? '？卡' : '已抽') + '</span>');
       if (p.metoo) chips.push('<span class="chip on">我遇過</span>');
       if (p.hasBurden) chips.push('<span class="chip">已填寫</span>');
       if (p.receivedVerse) chips.push('<span class="chip on">已領受</span>');
+      // 點數等拍賣會開始才顯示；？？？ 的數字等它真的開始長才出現 ——
+      // 憑空冒出來比一直掛 0 有戲
+      var meta = [];
+      if (S.pointsInPlay) meta.push('剩 <b>' + p.points + '</b> 點');
+      if (p.inner) meta.push('<b class="mono" style="color:var(--root-c)">？？？ ' + p.inner + '</b>');
       return '' +
         '<div class="prow">' +
           '<div class="nm">' + esc(p.name) +
-            '<span class="val">' + (p.outer == null ? '—' : p.outer) + '</span>' +
+            '<span class="val">' + ((hideScore || p.outer == null) ? '—' : p.outer) + '</span>' +
           '</div>' +
           // 上面是幸福指數，下面那條第一關還沒有名字。它有數字、它會動，
           // 但畫面上只有三個問號 —— 有人問就說「下一關」。
@@ -52,33 +65,53 @@
             '<span class="bar" title="幸福指數"><i style="width:' + outer + '%;background:var(--vol)"></i></span>' +
             '<span class="bar" title="？？？"><i style="width:' + (p.inner || 0) + '%;background:var(--root-c)"></i></span>' +
           '</div>' +
-          // ？？？ 的數字等它真的開始長才出現 —— 憑空冒出來比一直掛 0 有戲
-          '<div class="meta">剩 <b>' + p.points + '</b> 點' +
-            (p.inner ? '<b class="mono" style="color:var(--root-c);margin-left:8px">？？？ ' + p.inner + '</b>' : '') +
-            '<span class="adj">' +
-              '<button data-adj="' + p.pid + '" data-d="-5">−</button>' +
-              '<button data-adj="' + p.pid + '" data-d="5">＋</button>' +
-            '</span>' +
-          '</div>' +
+          (meta.length ? '<div class="meta">' + meta.join('') + '</div>' : '') +
           (chips.length ? '<div class="meta" style="margin-top:4px;flex-wrap:wrap">' + chips.join('') + '</div>' : '') +
         '</div>';
     }).join('');
-
-    el.querySelectorAll('[data-adj]').forEach(function (b) {
-      b.onclick = function () { post('adjust', { pid: b.dataset.adj, delta: Number(b.dataset.d) }); };
-    });
   }
 
   // ── 元件 ─────────────────────────────────────────────────────────────
+  // 長條的高度用絕對值算。欄位是 flex 排的，沒有固定高度可以量，
+  // 百分比在這裡永遠解不出來 —— 之前每一根都只剩下最低的那一條線。
+  var HIST_H = 168;   // 最高那一根幾 px（再乘上 --u）
   function histogram(dist, accent) {
     var max = Math.max.apply(null, dist.concat([1]));
     return '<div class="hist">' + dist.map(function (n, i) {
       return '<div class="col">' +
         '<em>' + (n || '') + '</em>' +
-        '<i style="height:' + (n / max * 100) + '%;background:' + (accent || 'var(--vol)') + '"></i>' +
+        '<i style="height:calc(' + (Math.round(n / max * HIST_H * 10) / 10) + 'px * var(--u));background:' +
+          (accent || 'var(--vol)') + '"></i>' +
         '<b>' + (i * 10) + '</b>' +
       '</div>';
     }).join('') + '</div>';
+  }
+
+  // 作答中的計數。分布不在這裡長 —— 先看到別人的答案會互相定錨，
+  // 而且主持人少了「翻頁」這個把注意力收回來的動作。
+  function answering(n) {
+    var all = S.stats.count > 0 && n >= S.stats.count;
+    return '<div class="big" style="margin-top:24px">' + n +
+        ' <span class="muted" style="font-size:calc(34px * var(--u))">/ ' + S.stats.count + ' 人已作答</span></div>' +
+      (all ? '<div class="note" style="border-left-color:var(--root-c);color:var(--ink)">' +
+        '<b>大家都作答完了</b>　按「下一頁」看結果。</div>' : '');
+  }
+
+  // 結果頁的逐筆作答。側欄本來就看得到每個人的數字，這裡只是攤在大螢幕上一起看。
+  function answerList(pairs) {
+    if (!pairs.length) return '';
+    return '<span class="kicker" style="margin-top:26px">每個人填的</span>' +
+      '<div class="names">' + pairs
+        .slice()
+        .sort(function (a, b) { return b.v - a.v; })
+        .map(function (x) {
+          return '<span>' + esc(x.name) + ' <b class="mono" style="color:var(--vol);margin-left:6px">' + x.v + '</b></span>';
+        }).join('') + '</div>';
+  }
+
+  function answersOf(key) {
+    return S.players.filter(function (p) { return p[key] !== null && p[key] !== undefined; })
+      .map(function (p) { return { name: p.name, v: p[key] }; });
   }
 
   // 20 格的像素倒數條，一秒熄一格
@@ -98,7 +131,7 @@
         '<div class="qrbox">' +
           '<canvas id="qr"></canvas>' +
           '<div>' +
-          '<p class="muted mono" style="font-size:calc(11px * var(--u));margin:0">房號</p>' +
+          '<p class="muted mono" style="font-size:calc(13px * var(--u));margin:0">房號</p>' +
           '<div class="roomcode">' + esc(ROOM || '····') + '</div>' +
           '<p class="muted" style="margin:14px 0 6px">掃碼，或到這個網址輸入房號：</p>' +
           '<div class="url">' + esc(location.host + JOIN_PATH) + '</div></div>' +
@@ -109,37 +142,45 @@
     },
 
     warmup: function () {
-      return '<span class="kicker">Interaction 1</span><h2>今天晚餐吃飽了嗎？</h2>' +
+      return '<span class="kicker">Interaction 1</span><h2>你現在有吃飽嗎？</h2>' +
         '<p class="lede">拉一下你的手機就好。</p>' +
-        '<div class="big" style="margin-top:24px">' + S.stats.answeredWarmup + ' <span class="muted" style="font-size:calc(34px * var(--u))">/ ' + S.stats.count + '</span></div>' +
-        histogram(S.stats.warmupDist);
+        answering(S.stats.answeredWarmup);
     },
 
     warmup_result: function () {
       return '<span class="kicker">Interaction 1</span><h2>全場分布</h2>' +
-        histogram(S.stats.warmupDist);
+        histogram(S.stats.warmupDist) +
+        answerList(answersOf('warmup'));
     },
 
     selfscore: function () {
       return '<span class="kicker">Interaction 2</span><h2>你覺得現在自己幸福嗎？</h2>' +
         '<p class="lede">0 到 100，憑直覺。只有你自己看得到你的數字。</p>' +
-        '<div class="big" style="margin-top:30px">' + S.stats.answeredScore + ' <span class="muted" style="font-size:calc(34px * var(--u))">/ ' + S.stats.count + ' 人已作答</span></div>' +
-        '<div class="note">作答中不顯示分布，避免互相定錨。</div>';
+        answering(S.stats.answeredScore);
     },
 
     selfscore_result: function () {
       var s = S.stats;
       return '<span class="kicker">Interaction 2</span><h2>全場分布</h2>' +
+        '<p class="lede" style="color:var(--root-c);font-weight:700">轉頭跟旁邊的人講：你為什麼給自己這個分數？</p>' +
         histogram(s.outerDist) +
         '<div class="cols3" style="grid-template-columns:repeat(3,auto);gap:56px">' +
           '<div><span class="kicker">最高</span><div class="big" style="font-size:calc(64px * var(--u))">' + (s.outerHigh == null ? '—' : s.outerHigh) + '</div></div>' +
           '<div><span class="kicker">最低</span><div class="big" style="font-size:calc(64px * var(--u))">' + (s.outerLow == null ? '—' : s.outerLow) + '</div></div>' +
           '<div><span class="kicker">平均</span><div class="big" style="font-size:calc(64px * var(--u))">' + (s.outerAvg == null ? '—' : s.outerAvg) + '</div></div>' +
-        '</div>';
+        '</div>' +
+        answerList(answersOf('outer'));
     },
 
-    host_intro: function () {
-      return '<span class="kicker">Host</span><h2>我會填幾分，<br>但我不參與計分</h2>';
+    standards: function () {
+      return '<span class="kicker">Host</span><h2>幸福的標準</h2>' +
+        '<p class="lede">世人怎麼判斷一個人幸不幸福 —— 大概就這三樣。</p>' +
+        '<div class="cols3" style="margin-top:26px">' +
+          '<div class="col3"><h3>財富豐盛</h3><p class="muted" style="margin:0">有沒有錢、有沒有房、賺得比別人多不多。</p></div>' +
+          '<div class="col3"><h3>名聲地位</h3><p class="muted" style="margin:0">頭銜、成就、別人提到你的時候怎麼講。</p></div>' +
+          '<div class="col3"><h3>家庭婚姻</h3><p class="muted" style="margin:0">結婚了沒、孩子好不好、家完不完整。</p></div>' +
+        '</div>' +
+        '<div class="note">有時候我也是拿這三把尺，在量自己現在幸不幸福。</div>';
     },
 
     auction_intro: function () {
@@ -311,6 +352,7 @@
       S.phase.id === 'lobby' ? '玩家掃碼進場後按「下一頁」開始' : (S.phase.title || '');
 
     renderPlayers();
+    stage.className = 'stage phase-' + S.phase.id;
     stage.innerHTML = (views[S.phase.id] || function () { return ''; })();
 
     // 每次回到入場頁都要重畫：stage.innerHTML 一被改寫，canvas 就是全新的空白元素

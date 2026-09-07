@@ -80,7 +80,7 @@ button { font-family: inherit; cursor: pointer; }
 .kicker {
   display: block;
   font-family: var(--pixel);
-  font-size: 10px;
+  font-size: 13px;
   letter-spacing: .1em;
   text-transform: uppercase;
   color: var(--ink-3);
@@ -89,7 +89,7 @@ button { font-family: inherit; cursor: pointer; }
 .tag {
   display: inline-block;
   font-family: var(--pixel);
-  font-size: 9px;
+  font-size: 13px;
   letter-spacing: .06em;
   padding: 6px 9px;
   border: 2px solid var(--root-c);
@@ -187,7 +187,7 @@ input[type=text], input:not([type]), textarea, select {
 .notesqr h3 { font-size: 34px; font-weight: 900; }
 .notesqr p { color: var(--ink-2); font-size: 17px; margin-top: 14px; line-height: 1.9; }
 .notesqr .u { font-family: var(--pixel); font-size: 15px; color: var(--root-c); margin-top: 16px; word-break: break-all; }
-.notesqr .esc { font-family: var(--pixel); font-size: 11px; color: var(--ink-3); margin-top: 22px; }
+.notesqr .esc { font-family: var(--pixel); font-size: 13px; color: var(--ink-3); margin-top: 22px; }
 
 /* QR 一定要用 pixelated：canvas 的點陣被 CSS 縮放時，預設的平滑化會把
    模組邊緣糊掉，掃描器就讀不到了。這是 QR 掃不出來最常見的原因。 */

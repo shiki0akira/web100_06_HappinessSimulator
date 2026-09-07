@@ -29,9 +29,9 @@
   .top h1 a { color: inherit; text-decoration: none; border-bottom: 3px solid transparent; }
   .top h1 a:hover, .top h1 a:focus-visible { color: var(--root-c); border-bottom-color: var(--root-c); }
   .top .spacer { flex: 1; }
-  .top .count { font-family: var(--pixel); font-size: calc(11px * var(--u)); color: var(--ink-2); }
+  .top .count { font-family: var(--pixel); font-size: calc(13px * var(--u)); color: var(--ink-2); }
   /* 主持人備忘錄。放在頂端列，因為那是主持人的區域，而且一定看得到。 */
-  .notesbtn { font-family: var(--sans); font-size: calc(12px * var(--u)); font-weight: 700;
+  .notesbtn { font-family: var(--sans); font-size: calc(13px * var(--u)); font-weight: 700;
     padding: calc(7px * var(--u)) calc(12px * var(--u));
     border: 3px solid var(--gold); background: transparent; color: var(--gold); }
   .notesbtn:hover { background: var(--gold); color: var(--surface); }
@@ -39,16 +39,16 @@
   .body { display: grid; grid-template-columns: calc(272px * var(--u)) 1fr; min-height: 0; }
 
   .side { border-right: 4px solid var(--edge); background: var(--surface); overflow-y: auto; padding: 14px; }
-  .side h4 { font-family: var(--pixel); font-size: calc(10px * var(--u)); letter-spacing: .06em; color: var(--ink-3); margin: 0 0 12px; text-transform: uppercase; }
+  .side h4 { font-family: var(--pixel); font-size: calc(13px * var(--u)); letter-spacing: .06em; color: var(--ink-3); margin: 0 0 12px; text-transform: uppercase; }
   .prow { padding: 10px 0; border-bottom: 2px dashed var(--edge-soft); }
   .prow .nm { display: flex; align-items: center; gap: 6px; font-size: calc(15px * var(--u)); font-weight: 700; }
   .prow .nm .val { margin-left: auto; font-family: var(--pixel); font-size: calc(13px * var(--u)); color: var(--vol); }
-  .prow .nm .drop { font-family: var(--pixel); font-size: calc(11px * var(--u)); color: var(--vol); }
+  .prow .nm .drop { font-family: var(--pixel); font-size: calc(13px * var(--u)); color: var(--vol); }
   .prow .bars { display: grid; gap: 4px; margin: 7px 0 6px; }
   .prow .bars .bar { height: calc(13px * var(--u)); }
-  .prow .meta { display: flex; gap: 6px; align-items: center; font-size: calc(11px * var(--u)); color: var(--ink-3); font-family: var(--pixel); }
+  .prow .meta { display: flex; gap: 6px; align-items: center; font-size: calc(13px * var(--u)); color: var(--ink-3); font-family: var(--pixel); }
   .prow .meta b { color: var(--ink-2); }
-  .chip { font-family: var(--sans); font-size: calc(11px * var(--u)); font-weight: 700; padding: 1px 6px; border: 2px solid var(--edge-soft); background: var(--surface-2); color: var(--ink-2); }
+  .chip { font-family: var(--sans); font-size: calc(13px * var(--u)); font-weight: 700; padding: 1px 6px; border: 2px solid var(--edge-soft); background: var(--surface-2); color: var(--ink-2); }
   .chip.on { border-color: var(--root-c); background: var(--root-soft); color: var(--root-c); }
   .chip.want { border-color: var(--gold); background: #3A2E12; color: var(--gold); }
   .adj { margin-left: auto; display: flex; gap: 4px; }
@@ -77,14 +77,14 @@
   .names span { padding: 6px 12px; background: var(--surface); border: 3px solid var(--edge); box-shadow: 3px 3px 0 var(--hard); font-size: calc(15px * var(--u)); font-weight: 700; }
 
   /* 折舊揭曉：一項一個畫面 */
-  .depidx { font-family: var(--pixel); color: var(--ink-3); font-size: calc(12px * var(--u)); }
+  .depidx { font-family: var(--pixel); color: var(--ink-3); font-size: calc(13px * var(--u)); }
   .depname { font-size: calc(58px * var(--u)); font-weight: 900; line-height: 1.2; letter-spacing: .04em; margin-top: 6px; }
   .deprow { display: flex; align-items: baseline; gap: calc(30px * var(--u)); margin-top: calc(22px * var(--u)); flex-wrap: wrap; }
   .deprate { font-family: var(--pixel); font-size: calc(72px * var(--u)); color: var(--vol); line-height: 1; }
   .deprate.zero { color: var(--root-c); }
   .depwhy { font-size: calc(24px * var(--u)); color: var(--ink); max-width: 40ch; line-height: 1.7; font-weight: 700; }
   .deplist { display: flex; flex-wrap: wrap; gap: 8px; margin-top: calc(22px * var(--u)); }
-  .deplist span { font-family: var(--pixel); font-size: calc(12px * var(--u)); padding: 4px 8px;
+  .deplist span { font-family: var(--pixel); font-size: calc(13px * var(--u)); padding: 4px 8px;
     border: 2px solid var(--edge-soft); color: var(--ink-3); }
   .deplist span.on { border-color: var(--vol); color: var(--vol); }
 
@@ -142,7 +142,7 @@
   .controls select { background: #1D2A2C; color: var(--bar-ink); border: 3px solid var(--bar-edge);
     padding: 9px 10px; font-family: var(--sans); font-weight: 700; font-size: calc(13px * var(--u)); }
   .controls .sp { flex: 1; }
-  .controls .hint { color: #8FA8A1; font-size: calc(11px * var(--u)); font-family: var(--pixel); }
+  .controls .hint { color: #8FA8A1; font-size: calc(13px * var(--u)); font-family: var(--pixel); }
 </style>
 </head>
 <body>

@@ -10,13 +10,13 @@ body { padding: 0; }
   background: var(--surface); border-bottom: 4px solid var(--edge);
   padding: 12px 16px 14px;
 }
-.hd .wk { font-family: var(--pixel); font-size: 10px; color: var(--ink-3); letter-spacing: .06em; }
+.hd .wk { font-family: var(--pixel); font-size: 13px; color: var(--ink-3); letter-spacing: .06em; }
 .hd .row { display: flex; align-items: baseline; gap: 10px; margin-top: 8px; }
 .hd .tag {
-  font-size: 12px; font-weight: 700; padding: 3px 8px;
+  font-size: 13px; font-weight: 700; padding: 3px 8px;
   border: 2px solid var(--root-c); color: var(--root-c); white-space: nowrap;
 }
-.hd .pos { margin-left: auto; font-family: var(--pixel); font-size: 11px; color: var(--ink-3); }
+.hd .pos { margin-left: auto; font-family: var(--pixel); font-size: 13px; color: var(--ink-3); }
 .hd h2 { font-size: 25px; font-weight: 900; line-height: 1.35; margin: 10px 0 0; letter-spacing: .02em; }
 .hd .live {
   margin-top: 10px; font-family: var(--pixel); font-size: 13px; color: var(--gold);
@@ -35,7 +35,7 @@ body { padding: 0; }
 }
 .item p { margin: 0; font-size: 17px; line-height: 1.8; color: var(--ink); }
 .item .k {
-  font-family: var(--pixel); font-size: 11px; text-align: center;
+  font-family: var(--pixel); font-size: 13px; text-align: center;
   padding: 5px 0; border: 2px solid currentColor;
 }
 /* 要念的話用引號感，做的事中性，不要做的事用警示色 */
@@ -61,7 +61,7 @@ body { padding: 0; }
 .ft button:active { transform: translate(3px, 3px); box-shadow: none; }
 .ft button:disabled { opacity: .4; }
 .ft .next { background: var(--root-c); border-color: #9CF0D6; color: var(--on-primary); text-align: left; }
-.ft .next small { display: block; font-family: var(--pixel); font-size: 9px; opacity: .8; margin-bottom: 4px; }
+.ft .next small { display: block; font-family: var(--pixel); font-size: 13px; opacity: .8; margin-bottom: 4px; }
 
 .ask { padding: 40px 20px; max-width: 420px; margin: 0 auto; }
 .ask h1 { font-size: 28px; font-weight: 900; }

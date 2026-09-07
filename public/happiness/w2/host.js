@@ -108,7 +108,7 @@
         '<div class="qrbox">' +
           '<canvas id="qr"></canvas>' +
           '<div>' +
-          '<p class="muted mono" style="font-size:calc(11px * var(--u));margin:0">房號</p>' +
+          '<p class="muted mono" style="font-size:calc(13px * var(--u));margin:0">房號</p>' +
           '<div class="roomcode">' + esc(ROOM || '····') + '</div>' +
           '<p class="muted" style="margin:14px 0 6px">掃碼，或到這個網址輸入房號：</p>' +
           '<div class="url">' + esc(location.host + JOIN_PATH) + '</div></div>' +
