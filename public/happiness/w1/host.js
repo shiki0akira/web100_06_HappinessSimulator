@@ -124,7 +124,7 @@
   // 每一樣標的有自己的插圖，檔名就是它的 id。圖畫在 tools/pixel-art.mjs。
   function lotArt(lot) {
     if (!lot || lot.id == null) return '';   // 試拍品的 id 是 0，別被 falsy 吃掉
-    return '<img class="lotart" src="/happiness/w1/art/lot-' + lot.id + '.svg" alt="">';
+    return '<img class="lotart" src="/happiness/shared/art/asset-' + lot.id + '.svg" alt="">';
   }
 
   // 結算頁的完整清單：每個人買了什麼、剩多少。
@@ -344,7 +344,7 @@
         avg: S.stats.outerAvg,
         week: '真相大白',
         lines: [
-          '時間會往後推三十年，你今天買的東西要驗貨。',
+          '時間會往後推三十年。到那時候，你手上的東西還剩多少？',
           '還有：第二條數值到底是什麼，下一關公布。',
         ],
       });

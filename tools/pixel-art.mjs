@@ -1,4 +1,4 @@
-// 第一關的像素插圖產生器。跑 `node tools/pixel-art.mjs` 會重畫 public/happiness/w1/art/ 底下的 SVG。
+// 像素插圖產生器。跑 `node tools/pixel-art.mjs` 會重畫站上所有的 SVG。
 //
 // 為什麼用產生器而不是直接畫 SVG：圖案在這裡是一格一格的字元圖，
 // 改一個像素就是改一個字，比在 SVG 裡找 <rect> 好改太多了。
@@ -8,6 +8,9 @@ import fs from 'fs';
 import path from 'path';
 
 const OUT = 'public/happiness/w1/art';
+// 人生資產的圖示七關共用（第一關拍賣台上的東西、第二關要保住的三樣，是同一批），
+// 所以它們住在 shared/art，不掛在任何一關底下。
+const OUT_ASSETS = 'public/happiness/shared/art';
 
 const PAL = {
   // 金
@@ -39,11 +42,12 @@ function sprite(map, ox, oy) {
   return out.join('');
 }
 
-function write(name, viewBox, body, label) {
+function write(name, viewBox, body, label, dir) {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" shape-rendering="crispEdges"` +
     ` role="img" aria-label="${label}">${body}</svg>\n`;
-  fs.mkdirSync(OUT, { recursive: true });
-  fs.writeFileSync(path.join(OUT, name), svg);
+  const out = dir || OUT;
+  fs.mkdirSync(out, { recursive: true });
+  fs.writeFileSync(path.join(out, name), svg);
   return svg.length;
 }
 
@@ -118,8 +122,9 @@ const HOUSE = [
     '財富豐盛、名聲地位、家庭婚姻');
 }
 
-// ── 拍賣標的：一樣一張，暗標和開標的時候擺在畫面右邊 ────────────────────
-// key 就是 LOTS 的 id（10 是「？」）
+// ── 人生資產：一樣一張 ──────────────────────────────────────────────────
+// 第一關暗標和開標的時候擺在畫面右邊；第二關是「保住三樣」的選單和逐項揭曉。
+// key 就是 w1-data.js 的 LOTS 和 w2-data.js 的 ASSETS 共用的那個 id。
 const LOTS = {
   // 0 是試拍品：一看就知道不重要，正好用來讓大家按過一次
   0: ['一杯珍珠奶茶（試拍）', [
@@ -320,14 +325,16 @@ const LOTS = {
     '................',
     '................',
   ]],
+  // 11 只有第二關用得到：第一關的規則是「不買就是財富」，錢不在標的裡。
+  11: ['存得住的錢', COINS],
 };
 
 let n = 0;
 for (const [id, [label, map]] of Object.entries(LOTS)) {
-  write('lot-' + id + '.svg', '0 0 16 16', sprite(map, 0, 0), label);
+  write('asset-' + id + '.svg', '0 0 16 16', sprite(map, 0, 0), label, OUT_ASSETS);
   n++;
 }
-console.log('畫好了：standards.svg ＋ ' + n + ' 張標的圖 → ' + OUT);
+console.log('畫好了：standards.svg → ' + OUT + '；' + n + ' 張人生資產圖 → ' + OUT_ASSETS);
 
 // ── 會動的共用插圖：領受經文、祝福禱告 ──────────────────────────────────
 // 用 <img> 載入的 SVG 跑得動 CSS 動畫（跑不動 JS），所以動畫寫在 <style> 裡。

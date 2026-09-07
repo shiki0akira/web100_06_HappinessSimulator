@@ -17,7 +17,6 @@
   .status { position: sticky; top: 0; z-index: 5; background: var(--surface); border-bottom: 4px solid var(--edge); padding: 10px 16px 12px; }
   .status .row1 { display: flex; align-items: center; gap: 8px; font-size: 15px; color: var(--ink-3); }
   .status .row1 b { color: var(--ink); font-size: 20px; font-weight: 900; }
-  .status .row1 .pts { margin-left: auto; font-family: var(--pixel); font-size: 13px; color: var(--gold); }
   .gauge { margin-top: 9px; }
   .gauge .lbl { display: flex; justify-content: space-between; font-family: var(--pixel); font-size: 13px; color: var(--ink-3); margin-bottom: 4px; }
   .gauge .lbl b { font-size: 13px; color: var(--vol); }
@@ -42,17 +41,38 @@
   .visits { display: flex; gap: 10px; margin-top: 16px; }
   .visits button { flex: 1; padding: 16px 0; font-size: 19px; }
 
-  /* 勾選上一關買到的東西 */
+  /* 選出要保住的三樣 */
   .lotgrid { display: grid; gap: 9px; margin-top: 16px; }
-  .lotchk { display: flex; align-items: center; gap: 12px; padding: 13px 14px;
+  .lotchk { display: flex; align-items: center; gap: 12px; padding: 11px 14px;
     border: 3px solid var(--edge); background: var(--surface); font-size: 18px; font-weight: 700;
     box-shadow: 3px 3px 0 var(--hard); cursor: pointer; }
   .lotchk.on { border-color: var(--vol); background: #3A1E14; color: var(--vol); }
   .lotchk .box { width: 24px; height: 24px; border: 3px solid currentColor; flex: none; }
   .lotchk.on .box { background: var(--vol); }
-  .lotchk.mystery { border-style: dashed; }
-  .lotchk.mystery.on { border-color: var(--gold); background: #3A2E12; color: var(--gold); }
-  .lotchk.mystery.on .box { background: var(--gold); }
+  /* 圖示墊一塊深色底：有幾張圖本來就是淺色的，白底的淺色主題會整張消失 */
+  .lotchk .chkart { width: 32px; height: 32px; flex: none; image-rendering: pixelated;
+    background: #12211E; padding: 3px; }
+  /* 選滿三樣之後，其他的暗下來 —— 不禁用，按了還是可以先取消一樣 */
+  .lotchk.off { opacity: .42; }
+  /* 那一格看得到、按得到，但選不走 */
+  .lotchk.locked { border-style: dashed; border-color: var(--gold); color: var(--gold); }
+  .lotchk.locked .box { border: 0; font-family: var(--pixel); font-size: 22px; text-align: center; line-height: 24px; }
+
+  /* 他保住的三樣：接下來每一頁的小看板 */
+  .mine { display: grid; gap: 8px; margin-top: 16px; }
+  .mrow { display: flex; align-items: center; gap: 12px; padding: 9px 12px;
+    border: 3px solid var(--edge-soft); background: var(--surface); }
+  .mrow img { width: 30px; height: 30px; flex: none; image-rendering: pixelated; opacity: .55;
+    background: #12211E; padding: 3px; }
+  .mrow .nm { font-size: 17px; font-weight: 700; color: var(--ink-2); }
+  .mrow .v { margin-left: auto; font-family: var(--pixel); font-size: 15px; color: var(--ink-3); }
+  .mrow.open { border-color: var(--vol); }
+  .mrow.open img { opacity: 1; }
+  .mrow.open .nm { color: var(--ink); }
+  .mrow.open .v { color: var(--vol); }
+  .mine.big .mrow { padding: 13px 14px; }
+  .mine.big .mrow img { width: 40px; height: 40px; }
+  .mine.big .mrow .nm { font-size: 20px; color: var(--ink); }
 
   /* 折舊逐項揭曉 */
   .depcard { text-align: center; padding: 24px 16px; }
@@ -78,8 +98,13 @@
   .verse-p blockquote { font-size: 26px; font-weight: 700; line-height: 1.95; margin: 16px 0 0; letter-spacing: .02em; }
 
   textarea { width: 100%; min-height: 124px; padding: 14px; font-size: 21px; font-weight: 500; resize: vertical; }
-  .checkline { display: flex; gap: 10px; align-items: flex-start; margin-top: 14px; font-size: 17px; color: var(--ink-2); }
-  .checkline input { margin-top: 3px; width: 26px; height: 26px; accent-color: var(--root-c); }
+
+  /* 領受／禱告之後那個「長出來了」的畫面 */
+  .grew { display: flex; align-items: center; gap: 14px; margin-top: 22px;
+    border: 3px solid var(--root-c); background: var(--root-soft); padding: 12px 14px; }
+  .grew img { width: 96px; height: auto; image-rendering: pixelated; flex: none; }
+  .grew p { margin: 0; font-size: 18px; line-height: 1.7; }
+  .grew b { font-family: var(--pixel); font-size: 20px; }
   .privacy { margin-top: 12px; font-size: 16px; color: var(--ink-3); line-height: 1.8; }
 
   /* 卡片蓋在掃描線上面，存下來的圖才是乾淨的觀感 */
@@ -91,7 +116,7 @@
 </head>
 <body>
   <div class="status" id="status" hidden>
-    <div class="row1"><b id="myname">—</b><span id="mystate"></span><span class="pts" id="mypts"></span></div>
+    <div class="row1"><b id="myname">—</b><span id="mystate"></span></div>
     <div class="gauge">
       <div class="lbl"><span>幸福指數</span><b id="outerv">—</b></div>
       <span class="bar"><i id="outerbar" style="width:0%;background:var(--vol)"></i></span>

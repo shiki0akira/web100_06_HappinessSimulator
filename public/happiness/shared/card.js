@@ -15,19 +15,28 @@ var GROUP_NAME = '幸福小組';
   var GOLD = '#A8760B';
   var GREY = '#A8B5AD';
 
-  function wrap(ctx, text, x, y, maxWidth, lineHeight) {
-    var line = '';
+  function splitLines(ctx, text, maxWidth) {
+    var out = [], line = '';
     for (var i = 0; i < text.length; i++) {
       var test = line + text[i];
-      if (ctx.measureText(test).width > maxWidth && line) {
-        ctx.fillText(line, x, y);
-        y += lineHeight;
-        line = text[i];
-      } else {
-        line = test;
-      }
+      if (ctx.measureText(test).width > maxWidth && line) { out.push(line); line = text[i]; }
+      else { line = test; }
     }
-    if (line) { ctx.fillText(line, x, y); y += lineHeight; }
+    if (line) out.push(line);
+    return out;
+  }
+
+  // maxY 是這一塊最低能畫到哪一條基線。放不下的收成一個刪節號 ——
+  // 寧可少一句話，也不要壓到頁尾的日期上面。
+  function wrap(ctx, text, x, y, maxWidth, lineHeight, maxY) {
+    var arr = splitLines(ctx, text, maxWidth);
+    for (var i = 0; i < arr.length; i++) {
+      var last = i === arr.length - 1;
+      var noRoom = maxY && (y + lineHeight > maxY);
+      ctx.fillText(!last && noRoom ? arr[i] + '…' : arr[i], x, y);
+      y += lineHeight;
+      if (!last && noRoom) break;
+    }
     return y;
   }
 
@@ -67,7 +76,7 @@ var GROUP_NAME = '幸福小組';
     7: { banner: 'W7  SET FREE',       title: '釋放與自由' },
   };
 
-  // data: { week, name, outer, outerPrev, inner, innerLabel, verseRef, verseText, burden, bought }
+  // data: { week, name, outer, outerPrev, inner, innerLabel, verseRef, verseText, burden, bought, listLabel }
   function drawWeekCard(canvas, data) {
     var W = 1080, H = 1440, M = 96, CW = W - M * 2;
     canvas.width = W; canvas.height = H;
@@ -150,16 +159,21 @@ var GROUP_NAME = '幸福小組';
     ctx.font = '900 54px ' + SANS;
     y = wrap(ctx, '「' + data.verseText + '」', M, y, CW, 86);
 
-    // 這一關買了什麼（第二關開場要照著勾）
+    // 這一關他手上有什麼。第一關是買到的東西，第二關是他保住的三樣 ——
+    // 標籤用 listLabel 換掉就好。
     if (data.bought && data.bought.length) {
       y += 54;
       ctx.fillStyle = GOLD;
       ctx.font = "400 18px " + PIXEL;
-      ctx.fillText("I BOUGHT", M, y);
+      ctx.fillText(data.listLabel || "I BOUGHT", M, y);
       y += 46;
+      var list = data.bought.join("、");
+      // 東西多的時候字級降一級，不然這一塊會把底下那句話擠掉
+      var lsize = list.length > 24 ? 28 : 34;
       ctx.fillStyle = INK;
-      ctx.font = "700 34px " + SANS;
-      y = wrap(ctx, data.bought.join("、"), M, y, CW, 50);
+      ctx.font = "700 " + lsize + "px " + SANS;
+      // 底下還要留給「他自己寫的那一句」，所以這一塊最多畫到這裡
+      y = wrap(ctx, list, M, y, CW, Math.round(lsize * 1.5), H - M - 210);
     }
 
     // 他自己寫的那一句（整張卡最有重量的地方）
@@ -173,7 +187,7 @@ var GROUP_NAME = '幸福小組';
       var size = data.burden.length <= 24 ? 44 : data.burden.length <= 60 ? 36 : 30;
       ctx.fillStyle = INK;
       ctx.font = '700 ' + size + 'px ' + SANS;
-      y = wrap(ctx, '「' + data.burden + '」', M, y, CW, Math.round(size * 1.68));
+      y = wrap(ctx, '「' + data.burden + '」', M, y, CW, Math.round(size * 1.68), H - M - 96);
     }
 
     // 頁尾

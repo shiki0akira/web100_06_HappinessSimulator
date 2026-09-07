@@ -46,6 +46,18 @@
       el('waitbtn').textContent = '每項之間等我：' + (S.auction.waitForHost ? '開' : '關');
       el('nextlot').textContent = S.auction.status === 'bidding' ? '立即開標' : '下一項 →';
     }
+    // 折舊揭曉那一頁同理：主持人拿著手機也能一項一項開。
+    var dep = el('depctl');
+    var isDep = S.phase.id === 'depreciate' && S.reveal;
+    if (dep) {
+      dep.hidden = !isDep;
+      if (isDep) {
+        el('nextitem').textContent = S.reveal.idx < 0 ? '揭曉第一項'
+          : S.reveal.done ? '開完了' : '揭曉下一項 →';
+        el('nextitem').disabled = S.reveal.done;
+      }
+    }
+
     var next = [S.phaseIdx, live].join('|');
     if (next === sig) return;
     sig = next;
@@ -80,6 +92,7 @@
       onState: function (d) { S = d; render(); },
       onDrop: function () { el('live').textContent = '連線中斷，重連中…'; },
     });
+    var on = function (id, fn) { var b = el(id); if (b) b.onclick = fn; };
     el('prev').onclick = function () { post('prev'); };
     el('next').onclick = function () { post('next'); };
     el('prevlot').onclick = function () { post('prevLot'); };
@@ -89,6 +102,13 @@
     el('restart').onclick = function () {
       if (confirm('整場拍賣重跑？所有人的點數和標到的東西都會還原。')) post('restartAuction');
     };
+    on('nextitem', function () { post('nextItem'); });
+    on('revealall', function () {
+      if (confirm('剩下的全部開完？')) post('revealAll');
+    });
+    on('resetreveal', function () {
+      if (confirm('重跑折舊？所有人的幸福指數會還原到揭曉之前。')) post('resetReveal');
+    });
   }
 
   if (!ROOM) {
