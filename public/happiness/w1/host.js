@@ -55,8 +55,9 @@
         chips.push('<span class="chip' + (done ? ' on' : '') + '">' + (done ? '已作答' : '還沒填') + '</span>');
       }
       if (p.won.length && S.pointsInPlay) chips.push('<span class="chip">標到 ' + p.won.length + ' 樣</span>');
-      if (p.cardFlipped) chips.push('<span class="chip' + (p.cardKind === 'hit' ? ' on' : '') + '">' + (p.cardKind === 'hit' ? '重擊' : '已抽') + '</span>');
-      if (p.metoo) chips.push('<span class="chip on">我遇過</span>');
+      // 抽卡那一頁要看得出還在等誰，但不標他抽到什麼 ——
+      // 「重擊」那種字貼在名字旁邊就是一個評語。
+      if (S.phase.id === 'event_draw' && p.cardFlipped) chips.push('<span class="chip on">已翻開</span>');
       if (p.hasBurden) chips.push('<span class="chip">已填寫</span>');
       if (p.receivedVerse) chips.push('<span class="chip on">已領受</span>');
       // 點數等拍賣會開始才顯示；？？？ 的數字等它真的開始長才出現 ——
@@ -319,7 +320,7 @@
 
     // 七關共用的那一頁，內容在 shared/stage-parts.js
     testimony: function () {
-      return StageParts.testimony({ lede: '主持人先講自己的。講你也抓不住的那一件事，不要講你已經克服的。' });
+      return StageParts.testimony();
     },
 
     verse: function () {

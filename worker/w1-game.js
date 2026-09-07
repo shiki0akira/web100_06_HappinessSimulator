@@ -91,7 +91,6 @@ export function addPlayer(s, name) {
     won: [],
     card: null,         // 模擬事件卡
     cardFlipped: false,
-    metoo: false,       // 「這件事我真的遇過」
     hasBurden: false,   // 重擔內容留在玩家手機上，除非他願意公開
     burdenShared: '',   // 只有按下「我願意分享」才會有內容
     receivedVerse: false,
@@ -207,7 +206,7 @@ export function dealEventCards(s) {
   const players = alive(s);
   const buckets = { A: [], B: [], C: [] };
   players.forEach((p) => {
-    p.card = null; p.cardFlipped = false; p.metoo = false;
+    p.card = null; p.cardFlipped = false;
     buckets[groupOf(p)].push(p);
   });
 
@@ -218,9 +217,9 @@ export function dealEventCards(s) {
     const hit = deck.find((c) => c.kind === 'hit');
     const rest = shuffle(deck.filter((c) => c.kind !== 'hit'));
     // 重擊卡保證發出：該組有人，就一定有人抽到
-    group[0].card = { ...hit, group: k, groupLabel: DECKS[k].label };
+    group[0].card = { ...hit, group: k, groupLabel: DECKS[k].label, groupShort: DECKS[k].short };
     for (let i = 1; i < group.length; i++) {
-      group[i].card = { ...rest[(i - 1) % rest.length], group: k, groupLabel: DECKS[k].label };
+      group[i].card = { ...rest[(i - 1) % rest.length], group: k, groupLabel: DECKS[k].label, groupShort: DECKS[k].short };
     }
   });
 
@@ -266,7 +265,6 @@ export function applyAction(s, pid, msg) {
         if (p.outer !== null) p.outer = clampOuter(p.outer + p.card.delta);
       }
       break;
-    case 'metoo': p.metoo = !p.metoo; break;
     // 這一關幸福根基只有這兩個入口，而且都只算一次
     case 'verse':
       if (!p.receivedVerse) { p.receivedVerse = true; grow(p, INNER_VERSE); }
@@ -371,7 +369,7 @@ export function hostView(s, roomCode) {
   // 某組當天完全沒人 → 主持人把那張卡當旁白念出來
   const narrate = ['A', 'B', 'C']
     .filter((k) => !ps.some((p) => groupOf(p) === k))
-    .map((k) => ({ name: null, group: k, groupLabel: DECKS[k].label, absent: true, delta: DECKS[k].cards[0].delta, text: DECKS[k].cards[0].text }));
+    .map((k) => ({ name: null, group: k, groupLabel: DECKS[k].label, groupShort: DECKS[k].short, absent: true, delta: DECKS[k].cards[0].delta, text: DECKS[k].cards[0].text }));
 
   return {
     role: 'host',
@@ -390,7 +388,7 @@ export function hostView(s, roomCode) {
       warmup: p.warmup,
       cardKind: p.card ? p.card.kind : null, cardFlipped: p.cardFlipped,
       auctionBonus: p.auctionBonus || 0,
-      metoo: p.metoo, hasBurden: p.hasBurden, burdenShare: !!p.burdenShared,
+      hasBurden: p.hasBurden, burdenShare: !!p.burdenShared,
       receivedVerse: p.receivedVerse, adjust: p.adjust,
     })),
     stats: {
@@ -405,7 +403,6 @@ export function hostView(s, roomCode) {
       startAvg: sc.length ? Math.round(sc.reduce((a, b) => a + b.outerStart, 0) / sc.length) : null,
       topBuyers, richest, poorest,
       flipped: ps.filter((p) => p.cardFlipped).length,
-      metoo: ps.filter((p) => p.metoo).map((p) => p.name),
       burdens: ps.filter((p) => p.hasBurden).length,
       sharedBurdens: ps.filter((p) => p.burdenShared).map((p) => ({ name: p.name, text: p.burdenShared })),
       hitCards: hits.concat(narrate),
@@ -446,7 +443,7 @@ export function playerView(s, pid, roomCode) {
       inner: p.inner || 0, innerCap: INNER_CAP,
       points: p.points, won: p.won, auctionBonus: p.auctionBonus || 0,
       card: p.cardFlipped ? p.card : (p.card ? { hidden: true } : null),
-      cardFlipped: p.cardFlipped, metoo: p.metoo,
+      cardFlipped: p.cardFlipped,
       hasBurden: p.hasBurden, burdenShare: !!p.burdenShared,
       receivedVerse: p.receivedVerse, cardDone: p.cardDone,
       myBid: s.auction.bids[p.pid] ? s.auction.bids[p.pid].amount : null,

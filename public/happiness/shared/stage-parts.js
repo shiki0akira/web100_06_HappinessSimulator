@@ -27,8 +27,7 @@ window.StageParts = (function () {
     testimony: function (opts) {
       opts = opts || {};
       return '<h2>' + esc(opts.title || '見證分享') + '</h2>' +
-        (opts.lede ? '<p class="lede">' + esc(opts.lede) + '</p>' : '') +
-        art('testimony.svg');
+        art('testimony.svg', 'wide');
     },
 
     // 領受經文。經文要占滿畫面，說明的話一句都不要 —— 那是主持人的工作。
@@ -40,7 +39,7 @@ window.StageParts = (function () {
         '<div class="receive">' +
           art('verse.svg', 'small') +
           '<div><p class="mono muted" style="margin:0">已領受 ' + (opts.done || 0) + ' / ' + (opts.total || 0) + '</p>' +
-          '<p class="lede" style="margin:6px 0 0">手機上按「領受」，第二條會長。</p></div>' +
+          '<p class="lede" style="margin:6px 0 0">手機上按「領受」。</p></div>' +
         '</div>';
     },
 

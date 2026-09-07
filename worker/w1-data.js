@@ -24,6 +24,7 @@ export const DECKS = {
   A: {
     key: 'A',
     label: '甲・花光型',
+    short: '花光型',
     rule: '剩 ≤ 20 點',
     character: '身負重擔，心裡沒有盼望。什麼都給出去了，剩下自己一個人撐。',
     cards: [
@@ -40,6 +41,7 @@ export const DECKS = {
   B: {
     key: 'B',
     label: '乙・囤積型',
+    short: '囤積型',
     rule: '剩 ≥ 60 點',
     character: '條件令人羨慕，心裡卻是空的。',
     cards: [
@@ -56,6 +58,7 @@ export const DECKS = {
   C: {
     key: 'C',
     label: '丙・均衡型',
+    short: '均衡型',
     rule: '剩 21–59 點',
     character: '一直在追，一直差一點。達不到目標的那種痛。',
     cards: [

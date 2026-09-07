@@ -251,6 +251,8 @@ canvas.qr, .qrbox canvas, .notesqr canvas { image-rendering: pixelated; }
 /* 大螢幕上的共用插圖（見證分享那一頁之類的） */
 .stageart { margin-top: 40px; }
 .stageart img { display: block; width: min(58%, 760px); height: auto; image-rendering: pixelated; }
+/* 見證分享那一頁只有一張圖，可以放大 */
+.stageart.wide img { width: min(88%, 1180px); }
 
 /* 淺／深色切換鈕。三個畫面共用同一顆，擺哪裡各自決定。 */
 .themebtn {

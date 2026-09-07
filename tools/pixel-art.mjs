@@ -18,6 +18,7 @@ const PAL = {
   R: '#FF8A4C', H: '#C4491A', h: '#FF6F43',
   // 灰白／暗
   W: '#B9C7C1', w: '#8A9C96', D: '#3A4A45',
+  g: '#C99B1C', k: '#F3DCC0',   // 燈罩的暗面／膚色
 };
 
 // 同一列同色併成一個 rect，檔案才不會長出幾百個節點
@@ -328,75 +329,6 @@ for (const [id, [label, map]] of Object.entries(LOTS)) {
 }
 console.log('畫好了：standards.svg ＋ ' + n + ' 張標的圖 → ' + OUT);
 
-// ── 共用插圖：跨週都會用到的放這裡 ────────────────────────────────────────
-// 見證分享：一個人在講，兩個人在聽。第一關之後每一關都可能翻到這一頁。
-const SPEAKER = [
-  '................',
-  '.......GG.......',
-  '......GGGG......',
-  '......GGGG......',
-  '.......GG.......',
-  '....GGGGGGGG....',
-  '...GGGGGGGGGG...',
-  '...GG.GGGG.GG...',
-  '...GG.GGGG.GG...',
-  '......GGGG......',
-  '......GGGG......',
-  '.....GG..GG.....',
-  '.....GG..GG.....',
-  '.....GG..GG.....',
-  '................',
-  '................',
-];
-const BUBBLE = [
-  '................',
-  '..CCCCCCCCCCCC..',
-  '..CCCCCCCCCCCC..',
-  '..CCCwwCCwwCCC..',
-  '..CCwwwwwwwwCC..',
-  '..CCCwwwwwwCCC..',
-  '..CCCCwwwwCCCC..',
-  '..CCCCCwwCCCCC..',
-  '..CCCCCCCCCCCC..',
-  '...CCC..........',
-  '...CC...........',
-  '................',
-  '................',
-  '................',
-  '................',
-  '................',
-];
-const LISTENER = [
-  '................',
-  '................',
-  '.......WW.......',
-  '......WWWW......',
-  '......WWWW......',
-  '.......WW.......',
-  '.....WWWWWW.....',
-  '....WWWWWWWW....',
-  '....WWWWWWWW....',
-  '.....WW..WW.....',
-  '.....WW..WW.....',
-  '.....WW..WW.....',
-  '................',
-  '................',
-  '................',
-  '................',
-];
-
-{
-  const OUT_SHARED = 'public/happiness/shared/art';
-  fs.mkdirSync(OUT_SHARED, { recursive: true });
-  let deco = '';
-  for (let x = 0; x < 72; x += 2) deco += `<rect x="${x}" y="17" width="1" height="1" fill="${PAL.C}" opacity=".3"/>`;
-  const body = deco + sprite(BUBBLE, 0, 0) + sprite(SPEAKER, 18, 1) + sprite(LISTENER, 40, 1) + sprite(LISTENER, 56, 1);
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 19" shape-rendering="crispEdges"` +
-    ` role="img" aria-label="見證分享">${body}</svg>\n`;
-  fs.writeFileSync(OUT_SHARED + '/testimony.svg', svg);
-  console.log('也畫了共用的 見證分享 → ' + OUT_SHARED + '/testimony.svg');
-}
-
 // ── 會動的共用插圖：領受經文、祝福禱告 ──────────────────────────────────
 // 用 <img> 載入的 SVG 跑得動 CSS 動畫（跑不動 JS），所以動畫寫在 <style> 裡。
 // 慢、小幅度、不閃 —— 這兩頁的畫面是要讓人安靜下來的，不是要抓注意力。
@@ -471,4 +403,82 @@ function animatedSvg(w, h, css, body, label) {
     `<g class="beat">${sprite(HANDS, 8, 1)}</g>` + drops + spark(3, 5, 0.4) + spark(28, 6, 1.3),
     '禱告'));
   console.log('也畫了會動的：verse.svg／prayer.svg');
+}
+
+// ── 共用插圖：見證分享 ──────────────────────────────────────────────────
+// 一張溫馨的圖，不是三個圖示排排站：一盞燈、圍成一圈坐著的人、幾顆飄起來的心。
+// 格子比其他圖細（一個人 14 格高），放大到大螢幕上才看得出是「人在聽人講話」。
+{
+  const person = (shirt) => [
+    '.....DDDD.....',
+    '....DDDDDD....',
+    '....DkkkkD....',
+    '....DkkkkD....',
+    '.....kkkk.....',
+    '...' + shirt.repeat(8) + '...',
+    '..' + shirt.repeat(10) + '..',
+    '..' + shirt.repeat(10) + '..',
+    '..' + shirt.repeat(10) + '..',
+    '..' + shirt.repeat(3) + 'kk' + shirt.repeat(3) + '..',
+    '..' + shirt.repeat(10) + '..',
+    '...DDD..DDD...',
+    '...DDD..DDD...',
+    '..DDDD..DDDD..',
+  ];
+  const LAMP = [
+    '...GGGGGG...',
+    '..GGGGGGGG..',
+    '.GGGGGGGGGG.',
+    'GGGGGGGGGGGG',
+    '.gggggggggg.',
+    '.....DD.....',
+    '.....DD.....',
+    '.....DD.....',
+    '.....DD.....',
+    '.....DD.....',
+    '.....DD.....',
+    '.....DD.....',
+    '...DDDDDD...',
+    '..DDDDDDDD..',
+  ];
+  const HEART = [
+    '.hh..hh.',
+    'hhhhhhhh',
+    'hhhhhhhh',
+    '.HHHHHH.',
+    '..HHHH..',
+    '...HH...',
+  ];
+
+  const W = 78, H = 34;
+  let body = '';
+  // 地板：一條實線加上一排點點，像室內的地毯邊
+  body += `<rect x="0" y="30" width="${W}" height="1" fill="${PAL.w}" opacity=".55"/>`;
+  for (let x = 1; x < W; x += 3) body += `<rect x="${x}" y="32" width="2" height="1" fill="${PAL.C}" opacity=".35"/>`;
+  // 燈：光用幾顆點點斜斜地灑出來就好。整片半透明的方塊在深色底上會變成一個灰盒子。
+  [[4, 13], [8, 11], [12, 12], [16, 10], [20, 13]].forEach(([x, y]) => {
+    body += `<rect x="${x}" y="${y}" width="1" height="1" fill="${PAL.G}" opacity=".55"/>`;
+  });
+  body += sprite(LAMP, 6, 16);
+  // 講的人在中間偏左，兩個人坐在旁邊聽
+  body += sprite(person('R'), 24, 16);   // 講的人：暖橘
+  body += sprite(person('C'), 42, 16);
+  body += sprite(person('G'), 58, 16);
+  // 對話框：講的人頭上
+  body += `<rect x="24" y="4" width="20" height="9" fill="${PAL.C}"/>` +
+          `<rect x="27" y="12" width="4" height="2" fill="${PAL.C}"/>` +
+          sprite(HEART, 30, 5);
+  // 飄起來的心和光點
+  body += sprite(HEART, 50, 2) + sprite(HEART, 66, 7);
+  [[20, 2], [52, 12], [72, 18]].forEach(([x, y]) => {
+    body += `<rect x="${x}" y="${y}" width="1" height="1" fill="${PAL.G}" opacity=".6"/>` +
+            `<rect x="${x - 1}" y="${y + 1}" width="3" height="1" fill="${PAL.G}" opacity=".3"/>` +
+            `<rect x="${x}" y="${y + 2}" width="1" height="1" fill="${PAL.G}" opacity=".6"/>`;
+  });
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" shape-rendering="crispEdges"` +
+    ` role="img" aria-label="見證分享">${body}</svg>\n`;
+  fs.mkdirSync('public/happiness/shared/art', { recursive: true });
+  fs.writeFileSync('public/happiness/shared/art/testimony.svg', svg);
+  console.log('見證分享重畫了（一張溫馨的場景）');
 }

@@ -156,14 +156,12 @@
           '<button class="flip" id="flip">?<small>點我翻開</small></button>';
       }
       var c = me.card;
+      // 卡片上不標「你是哪一型」—— 那是發牌規則，不是要貼在他身上的標籤
       return '<div class="card-face evcard">' +
-          '<div class="hd"><span>' + esc(c.groupLabel || '') + '</span>' +
+          '<div class="hd"><span>模擬事件' + (c.groupShort ? ' · ' + esc(c.groupShort) : '') + '</span>' +
           '<b class="' + (c.delta > 0 ? 'up' : '') + '">' + (c.delta > 0 ? '+' + c.delta : c.delta === 0 ? '±0' : c.delta) + '</b></div>' +
           '<p>' + esc(c.text) + '</p>' +
-        '</div>' +
-        '<button class="btn ' + (me.metoo ? 'primary' : '') + ' fullbtn" id="metoo">' +
-          (me.metoo ? '✓ 這件事我真的遇過' : '這件事我真的遇過') + '</button>' +
-        '<p class="privacy">按了之後，主持人會看到你的名字，可能會請你說兩句。不想說就再按一次取消。</p>';
+        '</div>';
     },
 
     event_result: function (me) {
@@ -240,8 +238,6 @@
     var f = document.getElementById('flip');
     if (f) f.onclick = function () { act('flip'); };
 
-    var m = document.getElementById('metoo');
-    if (m) m.onclick = function () { act('metoo'); };
 
     var v = document.getElementById('verse');
     if (v) v.onclick = function () { act('verse'); };
@@ -323,7 +319,7 @@
 
     var next = [
       S.phase.id, S.auction.status, S.auction.idx,
-      me.warmup, me.outer, me.inner, me.myBid, me.cardFlipped, me.metoo,
+      me.warmup, me.outer, me.inner, me.myBid, me.cardFlipped,
       me.receivedVerse, me.cardDone, me.hasBurden, me.burdenShare, me.points, me.won.length,
       S.pointsInPlay, S.answeredWarmup, S.answeredScore, S.playerCount, me.auctionBonus,
     ].join('|');

@@ -212,7 +212,7 @@
 
     // 七關共用的那一頁，內容在 shared/stage-parts.js
     message: function () {
-      return StageParts.testimony({ lede: '講你自己買錯過什麼。買錯過的人講，比講得對的人講有用。' });
+      return StageParts.testimony();
     },
 
     verse: function () {
