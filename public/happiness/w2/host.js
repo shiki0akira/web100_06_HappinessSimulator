@@ -272,10 +272,6 @@
     // 折舊控制列只在那一頁出現
     var dep = S.phase.id === 'depreciate';
     document.getElementById('depctl').style.display = dep ? 'inline-flex' : 'none';
-
-    var e = S.stats.energy;
-    document.getElementById('energybar').style.width = e + '%';
-    document.getElementById('energyval').textContent = S.stats.outerAvg == null ? '—' : e + '%';
     document.getElementById('hint').textContent = S.phase.title;
 
     renderPlayers();

@@ -307,10 +307,6 @@
     document.getElementById('waitbtn').textContent = '每項之間等我：' + (S.auction.waitForHost ? '開' : '關');
     document.getElementById('redealbtn').style.display =
       (S.phase.id === 'event_draw' || S.phase.id === 'event_result') ? 'inline-block' : 'none';
-
-    var e = S.stats.energy;
-    document.getElementById('energybar').style.width = e + '%';
-    document.getElementById('energyval').textContent = S.stats.outerAvg == null ? '—' : e + '%';
     document.getElementById('hint').textContent =
       S.phase.id === 'lobby' ? '玩家掃碼進場後按「下一頁」開始' : (S.phase.title || '');
 

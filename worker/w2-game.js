@@ -257,7 +257,6 @@ export function hostView(s, roomCode) {
       outerAvg: outers.length ? Math.round(outers.reduce((a, b) => a + b, 0) / outers.length) : null,
       startAvg: starts.length ? Math.round(starts.reduce((a, b) => a + b, 0) / starts.length) : null,
       innerAvg: ps.length ? Math.round(ps.reduce((a, b) => a + (b.inner || 0), 0) / ps.length) : 0,
-      energy: outers.length ? Math.round(outers.reduce((a, b) => a + b, 0) / outers.length) : 0,
       // 掉最多的那個人 —— 你押在哪裡，決定你掉多少
       hardestHit: (() => {
         const withDrop = sc.map((p) => ({ name: p.name, drop: p.outerStart - p.outer }))

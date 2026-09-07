@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="/happiness/shared/logo.svg">
 <title>幸福模擬器 · 第一關 真幸福 · 主畫面</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -113,10 +114,6 @@
     padding: 14px 16px; margin-top: 22px; max-width: 70ch; font-size: calc(14px * var(--u)); color: var(--ink-2); box-shadow: 5px 5px 0 var(--hard); }
   .note b { color: var(--ink); }
 
-  .energy { display: flex; align-items: center; gap: 14px; padding: 10px 24px; border-top: 4px solid var(--edge);
-    background: var(--surface); font-family: var(--pixel); font-size: calc(11px * var(--u)); color: var(--ink-2); }
-  .energy .bar { flex: 1; height: calc(18px * var(--u)); }
-
   /* HUD 控制列：固定深底淺字，不隨主題翻轉 */
   .controls { display: flex; gap: 10px; align-items: center; padding: 12px 20px;
     background: var(--bar-bg); border-top: 4px solid var(--bar-edge); flex-wrap: wrap; }
@@ -146,12 +143,6 @@
       <div id="plist"></div>
     </aside>
     <main class="stage" id="stage"></main>
-  </div>
-
-  <div class="energy">
-    <span>全場幸福能量</span>
-    <span class="bar"><i id="energybar" style="width:0%;background:var(--gold)"></i></span>
-    <span id="energyval">—</span>
   </div>
 
   <div class="controls">

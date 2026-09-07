@@ -349,7 +349,6 @@ export function hostView(s, roomCode) {
       outerLow: outers.length ? Math.min(...outers) : null,
       outerAvg: outers.length ? Math.round(outers.reduce((a, b) => a + b, 0) / outers.length) : null,
       startAvg: sc.length ? Math.round(sc.reduce((a, b) => a + b.outerStart, 0) / sc.length) : null,
-      energy: outers.length ? Math.round(outers.reduce((a, b) => a + b, 0) / outers.length) : 0,
       mostLots: mostLots ? { name: mostLots.name, won: mostLots.won, points: mostLots.points } : null,
       richest: richest ? { name: richest.name, points: richest.points, won: richest.won } : null,
       empties: ps.filter((p) => p.won.length === 0).map((p) => ({ name: p.name, points: p.points })),
