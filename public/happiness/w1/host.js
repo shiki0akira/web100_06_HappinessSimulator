@@ -331,9 +331,7 @@
     },
 
     burden: function () {
-      return StageParts.prayer({
-        done: S.stats.burdens, total: S.stats.count, shared: S.stats.sharedBurdens,
-      });
+      return StageParts.prayer({ done: S.stats.burdens, total: S.stats.count });
     },
 
     card: function () {
@@ -348,7 +346,7 @@
         avg: S.stats.outerAvg,
         week: '真相大白',
         lines: [
-          '時間會往前推三十年，你今天買的東西要驗貨。',
+          '時間會往後推三十年，你今天買的東西要驗貨。',
           '還有：第二條數值到底是什麼，下一關公布。',
         ],
       });

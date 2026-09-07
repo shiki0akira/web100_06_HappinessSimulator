@@ -38,29 +38,20 @@ window.StageParts = (function () {
           '<blockquote>「' + esc(opts.text) + '」</blockquote></div>' +
         '<div class="receive">' +
           art('verse.svg', 'small') +
-          '<div><p class="mono muted" style="margin:0">已領受 ' + (opts.done || 0) + ' / ' + (opts.total || 0) + '</p>' +
-          '<p class="lede" style="margin:6px 0 0">手機上按「領受」。</p></div>' +
+          '<p class="mono muted" style="margin:0">已領受 ' + (opts.done || 0) + ' / ' + (opts.total || 0) + '</p>' +
         '</div>';
     },
 
-    // 祝福禱告。寫下現在的心情，願意的人才分享。填完主持人帶禱告。
+    // 祝福禱告。寫下來的東西不會上大螢幕 —— 一個字都不會。
+    // 誰願意講，主持人自己在現場問。
     prayer: function (opts) {
       opts = opts || {};
-      var shared = opts.shared || [];
       return '<h2>祝福禱告</h2>' +
-        '<p class="lede">' + esc(opts.lede || '把你現在的心情寫下來。只有你自己看得到，除非你願意分享。') + '</p>' +
-        counter(opts.done, opts.total, '已寫下') +
+        '<p class="lede">' + esc(opts.lede || '領受經文之後，你有什麼想法？寫下來。只有你自己看得到。') + '</p>' +
         '<div class="receive">' +
           art('prayer.svg', 'small') +
-          '<div><p class="lede" style="margin:0">全部寫完，主持人帶大家禱告。<br>寫完的人第二條會長。</p></div>' +
-        '</div>' +
-        (shared.length
-          ? '<div class="hitcards">' + shared.map(function (b) {
-              return '<div class="hitcard up">' +
-                '<p style="font-size:calc(19px * var(--u));font-weight:700">「' + esc(b.text) + '」</p>' +
-                '<div class="nm">' + esc(b.name) + ' · 願意分享</div></div>';
-            }).join('') + '</div>'
-          : '');
+          '<p class="mono muted" style="margin:0">已寫下 ' + (opts.done || 0) + ' / ' + (opts.total || 0) + '</p>' +
+        '</div>';
     },
 
     // 儲存模擬回憶。卡片存在他自己的相簿裡，那是下一關的入場券。
@@ -82,7 +73,7 @@ window.StageParts = (function () {
           '<div class="col3"><h3>今晚全場平均</h3>' +
             '<div class="who" style="font-size:calc(56px * var(--u))">' + (opts.avg == null ? '—' : opts.avg) + '</div></div>' +
           '<div class="col3" style="border-color:var(--gold)">' +
-            '<h3>下一關 · ' + esc(opts.week || '') + '</h3>' +
+            '<h3 class="next">下一關 · ' + esc(opts.week || '') + '</h3>' +
             lines.map(function (l) {
               return '<p style="margin:8px 0 0;font-size:calc(18px * var(--u));color:var(--ink-2)">' + esc(l) + '</p>';
             }).join('') +

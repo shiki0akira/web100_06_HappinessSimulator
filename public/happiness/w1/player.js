@@ -187,12 +187,9 @@
     burden: function (me) {
       var mine = readBurden();
       return '<h2>祝福禱告</h2>' +
-        '<p>你現在的心情是什麼？寫下來，等一下一起禱告。</p>' +
+        '<p>領受經文後，你有什麼想法？寫下來，等一下一起禱告。</p>' +
         '<textarea id="bd" maxlength="120" placeholder="一句話就好">' + esc(mine) + '</textarea>' +
-        '<label class="checkline"><input type="checkbox" id="sh"' + (me.burdenShare ? ' checked' : '') + '>' +
-          '<span>我願意分享（打勾才會出現在大螢幕上）</span></label>' +
         '<button class="btn primary fullbtn" id="savebd">' + (mine ? '更新' : '寫好了') + '</button>' +
-        '<p class="privacy">🔒 <b>這句話只存在你這支手機裡。</b>不打勾的話它根本不會離開這台裝置，主持人的畫面只看得到「已寫下」。它會印在你今天的卡片上。</p>' +
         (me.hasBurden || mine
           ? '<div class="grew"><img src="/happiness/shared/art/prayer.svg" alt="">' +
             '<p class="ok">已存下<br><b>？？？ +5</b></p></div>'
@@ -245,10 +242,9 @@
     var sb = document.getElementById('savebd');
     if (sb) sb.onclick = function () {
       var text = document.getElementById('bd').value;
-      var share = document.getElementById('sh').checked;
       writeBurden(text);
-      // 沒打勾就只送「有寫」這件事，文字留在本機
-      act('burden', { has: !!text.trim(), share: share, text: share ? text : '' });
+      // 只送「有寫」這件事上去。那句話留在這支手機裡，一個字都不會離開。
+      act('burden', { has: !!text.trim() });
       sig = '';
       render();
     };
@@ -320,7 +316,7 @@
     var next = [
       S.phase.id, S.auction.status, S.auction.idx,
       me.warmup, me.outer, me.inner, me.myBid, me.cardFlipped,
-      me.receivedVerse, me.cardDone, me.hasBurden, me.burdenShare, me.points, me.won.length,
+      me.receivedVerse, me.cardDone, me.hasBurden, me.points, me.won.length,
       S.pointsInPlay, S.answeredWarmup, S.answeredScore, S.playerCount, me.auctionBonus,
     ].join('|');
     if (next !== sig) {

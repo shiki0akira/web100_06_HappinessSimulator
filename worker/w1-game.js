@@ -20,7 +20,7 @@ export const PHASES = [
   { id: 'verse',            tag: '經文',     title: '領受經文' },
   { id: 'burden',           tag: '互動點 5', title: '祝福禱告' },
   { id: 'card',             tag: '週卡',     title: '儲存模擬回憶' },
-  { id: 'end',              tag: '散會',     title: '下週預告' },
+  { id: 'end',              tag: '預告',     title: '下週預告' },
 ];
 
 // 點數只有幸福拍賣會用得到。規則頁（auction_intro）之前畫面上不出現點數 ——
@@ -92,7 +92,6 @@ export function addPlayer(s, name) {
     card: null,         // 模擬事件卡
     cardFlipped: false,
     hasBurden: false,   // 重擔內容留在玩家手機上，除非他願意公開
-    burdenShared: '',   // 只有按下「我願意分享」才會有內容
     receivedVerse: false,
     cardDone: false,    // 生成週卡＝禱告收尾做完了
     adjust: 0,
@@ -276,7 +275,6 @@ export function applyAction(s, pid, msg) {
     // 以及他主動按下「我願意分享」時才送上來的那一句。
     case 'burden':
       p.hasBurden = !!msg.has;
-      p.burdenShared = msg.share ? String(msg.text || '').slice(0, 120) : '';
       // 禱告這一頁送出就加分。寫不寫得出來是他的事，一起禱告是大家的事。
       if (!p.prayed) { p.prayed = true; grow(p, INNER_PRAYER); }
       break;
@@ -388,7 +386,7 @@ export function hostView(s, roomCode) {
       warmup: p.warmup,
       cardKind: p.card ? p.card.kind : null, cardFlipped: p.cardFlipped,
       auctionBonus: p.auctionBonus || 0,
-      hasBurden: p.hasBurden, burdenShare: !!p.burdenShared,
+      hasBurden: p.hasBurden,
       receivedVerse: p.receivedVerse, adjust: p.adjust,
     })),
     stats: {
@@ -404,7 +402,6 @@ export function hostView(s, roomCode) {
       topBuyers, richest, poorest,
       flipped: ps.filter((p) => p.cardFlipped).length,
       burdens: ps.filter((p) => p.hasBurden).length,
-      sharedBurdens: ps.filter((p) => p.burdenShared).map((p) => ({ name: p.name, text: p.burdenShared })),
       hitCards: hits.concat(narrate),
       // 每個人抽到的卡，翻開了才進來 —— 第 11 頁一次看完
       allCards: ps.filter((p) => p.cardFlipped && p.card)
@@ -444,7 +441,7 @@ export function playerView(s, pid, roomCode) {
       points: p.points, won: p.won, auctionBonus: p.auctionBonus || 0,
       card: p.cardFlipped ? p.card : (p.card ? { hidden: true } : null),
       cardFlipped: p.cardFlipped,
-      hasBurden: p.hasBurden, burdenShare: !!p.burdenShared,
+      hasBurden: p.hasBurden,
       receivedVerse: p.receivedVerse, cardDone: p.cardDone,
       myBid: s.auction.bids[p.pid] ? s.auction.bids[p.pid].amount : null,
     },
