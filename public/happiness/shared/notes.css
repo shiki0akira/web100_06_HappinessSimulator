@@ -49,6 +49,20 @@ body { padding: 0; }
 .item.warn .k { color: var(--vol); }
 .item.warn p { color: var(--vol); font-weight: 700; }
 
+/* 拍賣中的控制鈕。黏在頁尾上面一層，拇指按得到。 */
+.auc {
+  position: sticky; bottom: 0; z-index: 4;
+  display: flex; flex-wrap: wrap; gap: 8px;
+  padding: 10px 16px;
+  background: var(--bar-bg); border-top: 4px solid var(--bar-edge);
+}
+.auc button {
+  flex: 1 1 auto; border: 3px solid var(--bar-edge); background: #1D2A2C; color: var(--bar-ink);
+  box-shadow: 3px 3px 0 #000; font-weight: 700; padding: 13px 12px; font-size: 15px;
+}
+.auc button:active { transform: translate(3px, 3px); box-shadow: none; }
+#nextlot { background: var(--root-c); border-color: #9CF0D6; color: var(--on-primary); }
+
 .ft {
   position: sticky; bottom: 0;
   display: grid; grid-template-columns: auto 1fr; gap: 10px;

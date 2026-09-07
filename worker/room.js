@@ -109,7 +109,9 @@ export class Room extends DurableObject {
       ws.send(JSON.stringify({ assigned: pid }));
     } else if (msg.t === 'action') {
       if (!att.pid) return;
-      this.game.applyAction(this.state, att.pid, msg);
+      // 玩家的動作也可能推進遊戲（例如全部人都出價了就直接開標），
+      // 所以這裡也要收下一次鬧鐘的時間
+      next = this.game.applyAction(this.state, att.pid, msg, now);
     } else if (msg.t === 'host') {
       if (att.role !== 'host') return;
       if (msg.cmd === 'reset') {

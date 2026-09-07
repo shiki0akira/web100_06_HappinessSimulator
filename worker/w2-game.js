@@ -124,7 +124,7 @@ export function enterPhase(s, idx) {
 }
 
 // ── 玩家動作 ────────────────────────────────────────────────────────────
-export function applyAction(s, pid, msg) {
+export function applyAction(s, pid, msg, now) {
   const p = s.players[pid];
   if (!p) return null;
   switch (msg.type) {

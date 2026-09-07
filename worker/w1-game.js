@@ -151,6 +151,35 @@ function resolveLot(s, now) {
   return a.deadline || null;
 }
 
+// 退回去重跑某一樣：把那一樣（含它之後的）結果撤掉，得標的人把點數和東西還回來。
+// 試拍那一樣本來就不扣點也不進手上的東西，所以找不到、也不會退錯。
+function undoResultsFrom(s, idx) {
+  const a = s.auction;
+  while (a.results.length > idx) {
+    const r = a.results.pop();
+    if (!r || !r.winner) continue;
+    const p = s.players[r.winner.pid];
+    if (!p) continue;
+    const i = p.won.findIndex((w) => w.lotId === r.lot.id && w.price === r.amount);
+    if (i >= 0) { p.won.splice(i, 1); p.points += r.amount; }
+  }
+}
+
+// 回上一樣。現場最常用的情境是有人手機卡住沒出到價 —— 退回去重開就好。
+function prevLot(s, now) {
+  const a = s.auction;
+  if (a.status === 'idle') return null;
+  // 開標畫面上按「上一項」＝重開現在這一樣（主持人剛看到出事）；
+  // 暗標中按＝退回前一樣。都是往回退一步。
+  const target = a.status === 'reveal' ? a.idx : Math.max(0, a.idx - 1);
+  undoResultsFrom(s, target);
+  a.idx = target;
+  a.status = 'bidding';
+  a.bids = {};
+  a.deadline = now + BID_MS;
+  return a.deadline;
+}
+
 function nextLot(s, now) {
   const a = s.auction;
   a.idx += 1;
@@ -238,7 +267,7 @@ export function enterPhase(s, idx, now) {
 }
 
 // ── 玩家動作 ────────────────────────────────────────────────────────────
-export function applyAction(s, pid, msg) {
+export function applyAction(s, pid, msg, now) {
   const p = s.players[pid];
   if (!p) return null;
   switch (msg.type) {
@@ -253,6 +282,10 @@ export function applyAction(s, pid, msg) {
         const prev = a.bids[pid];
         // 同價時先出價者得 → 只有改價才更新時間戳
         a.bids[pid] = { amount, ts: prev && prev.amount === amount ? prev.ts : Date.now() };
+        // 每個人都按過出價了就直接開標。剩下的秒數只會讓全場乾等 ——
+        // 不想買的人本來就不會按，那種情況還是等時間到。
+        const ps = alive(s);
+        if (ps.length && ps.every((x) => a.bids[x.pid])) return resolveLot(s, now || Date.now());
       }
       break;
     }
@@ -291,6 +324,7 @@ export function applyHost(s, msg, now) {
       if (s.auction.status === 'reveal') return nextLot(s, now);
       if (s.auction.status === 'bidding') return resolveLot(s, now);
       return null;
+    case 'prevLot': return prevLot(s, now);
     case 'restartAuction': return startAuction(s, now);
     case 'toggleWait':
       s.auction.waitForHost = !s.auction.waitForHost;

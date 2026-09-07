@@ -37,6 +37,15 @@
     var live = n && n.count ? n.count(S.stats) : (S.stats.count + ' 人在場');
     el('live').textContent = live || '';
 
+    // 拍賣進行中，把大螢幕底下那排控制鈕搬過來 —— 主持人拿著手機在走動，
+    // 不會想為了按「立即開標」跑回電腦前面。
+    var auc = el('auction');
+    var isAuction = S.phase.id === 'auction' && S.auction;
+    auc.hidden = !isAuction;
+    if (isAuction) {
+      el('waitbtn').textContent = '每項之間等我：' + (S.auction.waitForHost ? '開' : '關');
+      el('nextlot').textContent = S.auction.status === 'bidding' ? '立即開標' : '下一項 →';
+    }
     var next = [S.phaseIdx, live].join('|');
     if (next === sig) return;
     sig = next;
@@ -56,6 +65,7 @@
         }).join('');
     }
 
+
     // 上一頁／下一頁在頁尾，拇指按得到 —— 主持人可以站起來走動
     el('prev').disabled = S.phaseIdx <= 0;
     el('next').disabled = S.phaseIdx >= S.phases.length - 1;
@@ -72,6 +82,13 @@
     });
     el('prev').onclick = function () { post('prev'); };
     el('next').onclick = function () { post('next'); };
+    el('prevlot').onclick = function () { post('prevLot'); };
+    el('nextlot').onclick = function () { post('nextLot'); };
+    el('extend').onclick = function () { post('extend'); };
+    el('waitbtn').onclick = function () { post('toggleWait'); };
+    el('restart').onclick = function () {
+      if (confirm('整場拍賣重跑？所有人的點數和標到的東西都會還原。')) post('restartAuction');
+    };
   }
 
   if (!ROOM) {
