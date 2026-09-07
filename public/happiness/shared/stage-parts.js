@@ -14,7 +14,7 @@ window.StageParts = (function () {
 
   // 「N / M 人已…」。每一頁的主持人都在等這個數字追平。
   function counter(done, total, unit) {
-    return '<div class="big" style="margin-top:20px">' + (done || 0) +
+    return '<div class="big counter">' + (done || 0) +
       ' <span class="muted" style="font-size:calc(34px * var(--u))">/ ' + (total || 0) + ' ' + unit + '</span></div>';
   }
 
@@ -38,7 +38,7 @@ window.StageParts = (function () {
           '<blockquote>「' + esc(opts.text) + '」</blockquote></div>' +
         '<div class="receive">' +
           art('verse.svg', 'small') +
-          '<p class="mono muted" style="margin:0">已領受 ' + (opts.done || 0) + ' / ' + (opts.total || 0) + '</p>' +
+          counter(opts.done, opts.total, '已領受') +
         '</div>';
     },
 
@@ -50,7 +50,7 @@ window.StageParts = (function () {
         '<p class="lede">' + esc(opts.lede || '領受經文之後，你有什麼想法？寫下來。只有你自己看得到。') + '</p>' +
         '<div class="receive">' +
           art('prayer.svg', 'small') +
-          '<p class="mono muted" style="margin:0">已寫下 ' + (opts.done || 0) + ' / ' + (opts.total || 0) + '</p>' +
+          counter(opts.done, opts.total, '已寫下') +
         '</div>';
     },
 

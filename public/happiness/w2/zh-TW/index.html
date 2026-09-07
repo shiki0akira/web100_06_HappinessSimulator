@@ -65,6 +65,12 @@
 
   .stage { padding: calc(28px * var(--u)) calc(40px * var(--u)); overflow-y: auto; display: flex; flex-direction: column; }
   .stage h2 { font-size: calc(40px * var(--u)); font-weight: 900; letter-spacing: .02em; }
+  /* 共用元件（領受經文／祝福禱告）：插圖擺在計數旁邊 */
+  .receive { display: flex; align-items: center; gap: calc(24px * var(--u)); margin-top: calc(26px * var(--u)); }
+  .receive .stageart { margin: 0; }
+  .receive .stageart img { width: calc(200px * var(--u)); }
+  .counter { margin-top: calc(20px * var(--u)); }
+  .receive .counter { margin-top: 0; }
   .stage .lede { font-size: calc(17px * var(--u)); color: var(--ink-2); max-width: 62ch; margin: 12px 0 0; }
   .big { font-size: calc(76px * var(--u)); font-family: var(--pixel); line-height: 1.1; }
   .mono { font-family: var(--pixel); }
