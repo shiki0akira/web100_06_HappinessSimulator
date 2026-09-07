@@ -103,11 +103,9 @@ export function addPlayer(s, name) {
 }
 
 // ── 拍賣 ────────────────────────────────────────────────────────────────
-// 幾樣標的。刻意少於人數 —— 這樣「什麼都沒標到」才會真的發生在某些人身上。
+// 幾樣標的。人少就少拍幾樣，人多就整組開下去 —— 拍賣本身就是這一關最好玩的地方。
 function lotCountFor(n) {
-  if (n >= 13) return 9;
-  if (n >= 9) return 7;
-  return 5;
+  return n >= 6 ? 10 : 8;
 }
 
 function buildLots(s) {
