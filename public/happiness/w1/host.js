@@ -114,6 +114,30 @@
       .map(function (p) { return { name: p.name, v: p[key] }; });
   }
 
+  // 每一樣標的有自己的插圖，檔名就是它的 id。圖畫在 tools/pixel-art.mjs。
+  function lotArt(lot) {
+    if (!lot || !lot.id) return '';
+    return '<img class="lotart" src="/happiness/w1/art/lot-' + lot.id + '.svg" alt="">';
+  }
+
+  // 結算頁的完整清單：每個人買了什麼、剩多少。
+  // 三張卡講的是三種策略，這一份是給大家找自己用的。
+  function buyList() {
+    if (!S.players.length) return '';
+    return '<span class="kicker" style="margin-top:26px">每個人買了什麼</span>' +
+      '<div class="buylist">' + S.players.map(function (p) {
+        return '<div class="buyrow">' +
+          '<span class="nm">' + esc(p.name) + '</span>' +
+          '<span class="got">' + (p.won.length
+            ? p.won.map(function (w) {
+                return '<span class="lot">' + esc(w.name) + ' <b>' + w.price + '</b></span>';
+              }).join('')
+            : '<span class="none">什麼都沒標到</span>') + '</span>' +
+          '<span class="rest">剩 ' + p.points + ' 點</span>' +
+        '</div>';
+      }).join('') + '</div>';
+  }
+
   // 20 格的像素倒數條，一秒熄一格
   function timerBlocks(left) {
     var b = '';
@@ -127,7 +151,7 @@
   // ── 各階段畫面 ────────────────────────────────────────────────────────
   var views = {
     lobby: function () {
-      return '<span class="kicker">Join</span><h2>掃碼進場</h2>' +
+      return '<h2>掃碼進場</h2>' +
         '<div class="qrbox">' +
           '<canvas id="qr"></canvas>' +
           '<div>' +
@@ -142,27 +166,27 @@
     },
 
     warmup: function () {
-      return '<span class="kicker">Interaction 1</span><h2>你現在有吃飽嗎？</h2>' +
+      return '<h2>你現在有吃飽嗎？</h2>' +
         '<p class="lede">拉一下你的手機就好。</p>' +
         answering(S.stats.answeredWarmup);
     },
 
     warmup_result: function () {
-      return '<span class="kicker">Interaction 1</span><h2>全場分布</h2>' +
+      return '<h2>全場分布</h2>' +
         histogram(S.stats.warmupDist) +
         answerList(answersOf('warmup'));
     },
 
     selfscore: function () {
-      return '<span class="kicker">Interaction 2</span><h2>你覺得現在自己幸福嗎？</h2>' +
+      return '<h2>你覺得現在自己幸福嗎？</h2>' +
         '<p class="lede">0 到 100，憑直覺。只有你自己看得到你的數字。</p>' +
         answering(S.stats.answeredScore);
     },
 
     selfscore_result: function () {
       var s = S.stats;
-      return '<span class="kicker">Interaction 2</span><h2>全場分布</h2>' +
-        '<p class="lede" style="color:var(--root-c);font-weight:700">轉頭跟旁邊的人講：你為什麼給自己這個分數？</p>' +
+      return '<h2>全場分布</h2>' +
+        '<p class="lede" style="color:var(--root-c);font-weight:700">你為什麼給自己這個分數？</p>' +
         histogram(s.outerDist) +
         '<div class="cols3" style="grid-template-columns:repeat(3,auto);gap:56px">' +
           '<div><span class="kicker">最高</span><div class="big" style="font-size:calc(64px * var(--u))">' + (s.outerHigh == null ? '—' : s.outerHigh) + '</div></div>' +
@@ -173,18 +197,17 @@
     },
 
     standards: function () {
-      return '<span class="kicker">Host</span><h2>幸福的標準</h2>' +
+      return '<h2>幸福的標準</h2>' +
         '<p class="lede">世人怎麼判斷一個人幸不幸福 —— 大概就這三樣。</p>' +
         '<div class="cols3" style="margin-top:26px">' +
           '<div class="col3"><h3>財富豐盛</h3><p class="muted" style="margin:0">有沒有錢、有沒有房、賺得比別人多不多。</p></div>' +
           '<div class="col3"><h3>名聲地位</h3><p class="muted" style="margin:0">頭銜、成就、別人提到你的時候怎麼講。</p></div>' +
           '<div class="col3"><h3>家庭婚姻</h3><p class="muted" style="margin:0">結婚了沒、孩子好不好、家完不完整。</p></div>' +
-        '</div>' +
-        '<div class="note">有時候我也是拿這三把尺，在量自己現在幸不幸福。</div>';
+        '</div>';
     },
 
     auction_intro: function () {
-      return '<span class="kicker">Main game</span><h2>幸福拍賣會</h2>' +
+      return '<h2>幸福拍賣會</h2>' +
         '<div class="cols3" style="margin-top:26px">' +
           '<div class="col3"><h3>每人 100 點</h3><p class="muted" style="margin:0">點數就是錢。</p></div>' +
           '<div class="col3" style="border-color:var(--gold)"><h3>什麼都不買，剩下的點數就是你的財富</h3><p class="muted" style="margin:0">所以不出價是一種策略，不是棄權。</p></div>' +
@@ -196,28 +219,34 @@
     auction: function () {
       var a = S.auction;
       if (a.status === 'done') {
-        return '<span class="kicker">Auction</span><h2>全部開標完畢</h2>';
+        return '<h2>全部開標完畢</h2>';
       }
       var lot = a.lot || { name: '—' };
       if (a.status === 'reveal') {
         var r = a.results[a.results.length - 1] || {};
-        return '<span class="kicker">Auction · 開標</span>' +
+        return '' +
           '<div class="lotidx">' + (a.idx + 1) + ' / ' + a.total + '</div>' +
-          '<div class="lotname" style="margin-top:6px">' + esc(lot.name) + '</div>' +
-          (r.winner
-            ? '<div style="margin-top:26px"><span class="kicker">得標</span><div class="big">' + esc(r.winner.name) + '</div>' +
-              '<div class="mono" style="font-size:calc(28px * var(--u));color:var(--vol);margin-top:8px">' + r.amount + ' 點</div>' +
-              '<p class="muted mono" style="margin-top:10px">' + r.bidders + ' 人出價</p></div>'
-            : '<div style="margin-top:26px"><div class="big" style="color:var(--ink-3)">流標</div>' +
-              '<p class="lede">這一場，沒有人要「' + esc(lot.name) + '」。</p></div>');
+          '<div class="auction-row">' +
+            '<div>' +
+              '<div class="lotname" style="margin-top:6px">' + esc(lot.name) + '</div>' +
+              (r.winner
+                ? '<div style="margin-top:26px"><span class="kicker">得標</span><div class="big">' + esc(r.winner.name) + '</div>' +
+                  '<div class="mono" style="font-size:calc(28px * var(--u));color:var(--vol);margin-top:8px">' + r.amount + ' 點</div>' +
+                  '<p class="muted mono" style="margin-top:10px">' + r.bidders + ' 人出價</p></div>'
+                : '<div style="margin-top:26px"><div class="big" style="color:var(--ink-3)">流標</div>' +
+                  '<p class="lede">這一場，沒有人要「' + esc(lot.name) + '」。</p></div>') +
+            '</div>' +
+            lotArt(lot) +
+          '</div>';
       }
       var left = Math.max(0, Math.ceil((a.deadline - Date.now()) / 1000));
-      return '<span class="kicker">Auction · 暗標中</span>' +
+      return '' +
         '<div class="lotidx">' + (a.idx + 1) + ' / ' + a.total + '</div>' +
         '<div class="auction-row">' +
+          timerBlocks(left) +
           '<div><div class="lotname">' + esc(lot.name) + '</div>' +
           '<p class="muted mono" style="margin-top:16px;font-size:calc(13px * var(--u))">已出價 <b id="bidcount" style="color:var(--ink)">' + a.bidCount + '</b> / ' + S.stats.count + ' 人</p></div>' +
-          timerBlocks(left) +
+          lotArt(lot) +
         '</div>';
     },
 
@@ -228,7 +257,7 @@
           ? '<ul>' + arr.map(function (w) { return '<li>' + esc(w.name) + ' · ' + w.price + ' 點</li>'; }).join('') + '</ul>'
           : '<p class="muted" style="margin:6px 0 0">什麼都沒標到</p>';
       };
-      return '<span class="kicker">Settlement</span><h2>看看大家買了什麼</h2>' +
+      return '<h2>看看大家買了什麼</h2>' +
         '<p class="lede">不是排名，是三種策略。</p>' +
         '<div class="cols3">' +
           '<div class="col3"><h3>買最多樣的人</h3>' +
@@ -242,12 +271,13 @@
           '<div class="col3"><h3>什麼都沒標到的人</h3>' +
             '<div class="who">' + (s.empties.length ? s.empties.map(function (e) { return esc(e.name); }).join('、') : '（沒有人）') + '</div>' +
             '<p class="muted" style="margin:8px 0 0;font-size:calc(14px * var(--u))">滿手現金。那不是輸，是第三種人生策略。</p></div>' +
-        '</div>';
+        '</div>' +
+        buyList();
     },
 
     event_draw: function () {
       var g = S.stats.groupCounts;
-      return '<span class="kicker">Interaction 4</span><h2>模擬生命中的事件</h2>' +
+      return '<h2>模擬生命中的事件</h2>' +
         '<p class="lede">這是幸福模擬器 —— 遊戲跑到這裡，會跑出生活裡真的會發生的事。' +
         '每人抽一張，全場不重複。你剩多少錢，決定你會遇到什麼。</p>' +
         '<div class="big" style="margin-top:20px">' + S.stats.flipped + ' <span class="muted" style="font-size:calc(34px * var(--u))">/ ' + S.stats.count + ' 人已翻開</span></div>' +
@@ -263,7 +293,7 @@
     event_result: function () {
       var s = S.stats;
       var drop = (s.startAvg != null && s.outerAvg != null) ? (s.outerAvg - s.startAvg) : null;
-      return '<span class="kicker">Interaction 4</span><h2>三種策略，三種摔法</h2>' +
+      return '<h2>三種策略，三種摔法</h2>' +
         '<div style="display:flex;gap:56px;align-items:flex-end;margin-top:16px">' +
           '<div><span class="kicker">全場平均</span><div class="big" style="font-size:calc(64px * var(--u))">' + (s.outerAvg == null ? '—' : s.outerAvg) + '</div></div>' +
           '<div><span class="kicker">相對開場</span><div class="big" style="font-size:calc(64px * var(--u));color:var(--vol)">' + (drop == null ? '—' : (drop > 0 ? '+' : '') + drop) + '</div></div>' +
@@ -278,7 +308,7 @@
     },
 
     testimony: function () {
-      return '<span class="kicker">Host</span><h2>我也是那個<br>抓不住的人</h2>';
+      return '<h2>我也是那個<br>抓不住的人</h2>';
     },
 
     verse: function () {
@@ -290,7 +320,7 @@
 
     burden: function () {
       var shared = S.stats.sharedBurdens;
-      return '<span class="kicker">Interaction 5</span><h2>剛剛那些卡，<br>有沒有哪一張其實就是你？</h2>' +
+      return '<h2>剛剛那些卡，<br>有沒有哪一張其實就是你？</h2>' +
         '<p class="lede">如果有，用一句話寫下來。只有你自己看得到。</p>' +
         '<div class="big" style="margin-top:20px">' + S.stats.burdens + ' <span class="muted" style="font-size:calc(34px * var(--u))">/ ' + S.stats.count + ' 已填寫</span></div>' +
         '<div class="note"><b>這句話只存在你自己的手機裡</b>　這個畫面只看得到「已填寫」，看不到內容。除非你自己按下「我願意分享」。</div>' +
@@ -304,14 +334,14 @@
     },
 
     card: function () {
-      return '<span class="kicker">Take-home</span><h2>把卡片存進相簿</h2>' +
+      return '<h2>把卡片存進相簿</h2>' +
         '<p class="lede">長按圖片存進相簿。這張卡是下一關的入場券。</p>' +
         '<div class="big" style="margin-top:20px">' + S.stats.cardsDone + ' <span class="muted" style="font-size:calc(34px * var(--u))">/ ' + S.stats.count + ' 已生成</span></div>';
     },
 
     end: function () {
       var s = S.stats;
-      return '<span class="kicker">Carry forward</span><h2>第一關結束</h2>' +
+      return '<h2>第一關結束</h2>' +
         '<div class="cols3">' +
           '<div class="col3"><h3>全場平均</h3><div class="who">' + (s.outerAvg == null ? '—' : s.outerAvg) + '</div>' +
             '<p class="mono" style="margin:8px 0 0;color:var(--vol)">' +
@@ -350,7 +380,7 @@
     document.getElementById('redealbtn').style.display =
       (S.phase.id === 'event_draw' || S.phase.id === 'event_result') ? 'inline-block' : 'none';
     document.getElementById('hint').textContent =
-      S.phase.id === 'lobby' ? '玩家掃碼進場後按「下一頁」開始' : (S.phase.title || '');
+      S.phase.id === 'lobby' ? '玩家掃碼進場後按「下一頁」開始' : '';
 
     renderPlayers();
     stage.className = 'stage phase-' + S.phase.id;

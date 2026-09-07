@@ -17,6 +17,7 @@ body { padding: 0; }
   border: 2px solid var(--root-c); color: var(--root-c); white-space: nowrap;
 }
 .hd .pos { margin-left: auto; font-family: var(--pixel); font-size: 13px; color: var(--ink-3); }
+.hd .themebtn { margin-left: 10px; }
 .hd h2 { font-size: 25px; font-weight: 900; line-height: 1.35; margin: 10px 0 0; letter-spacing: .02em; }
 .hd .live {
   margin-top: 10px; font-family: var(--pixel); font-size: 13px; color: var(--gold);

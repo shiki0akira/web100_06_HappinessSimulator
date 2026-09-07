@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Press+Start+2P&display=swap">
 <link rel="stylesheet" href="/happiness/shared/pixel.css">
+<script src="/happiness/shared/theme.js"></script>
 <style>
   /* 主畫面會用 HDMI 接 43–75 吋電視，觀看距離 2–4 公尺。
      字級隨畫面寬度整體放大，--u 是縮放係數。 */
@@ -35,6 +36,7 @@
     padding: calc(7px * var(--u)) calc(12px * var(--u));
     border: 3px solid var(--gold); background: transparent; color: var(--gold); }
   .notesbtn:hover { background: var(--gold); color: var(--surface); }
+  .top .themebtn { font-size: calc(13px * var(--u)); padding: calc(7px * var(--u)) calc(10px * var(--u)); }
 
   .body { display: grid; grid-template-columns: calc(272px * var(--u)) 1fr; min-height: 0; }
 
@@ -152,6 +154,7 @@
     <span class="tag" id="ptag">入場</span>
     <span class="spacer"></span>
     <button class="notesbtn" id="notesbtn" title="用手機掃，備忘錄會跟著大螢幕走">📱 主持人備忘錄</button>
+    <button class="themebtn" data-theme-toggle></button>
     <span class="count" id="pcount">0 人在場</span>
   </div>
 

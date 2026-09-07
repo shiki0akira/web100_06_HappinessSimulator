@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Press+Start+2P&display=swap">
 <link rel="stylesheet" href="/happiness/shared/pixel.css">
+<script src="/happiness/shared/theme.js"></script>
 <style>
   /* 主畫面會用 HDMI 接 43–75 吋電視，觀看距離 2–4 公尺。
      字級隨畫面寬度整體放大，--u 是縮放係數。 */
@@ -35,6 +36,7 @@
     padding: calc(7px * var(--u)) calc(12px * var(--u));
     border: 3px solid var(--gold); background: transparent; color: var(--gold); }
   .notesbtn:hover { background: var(--gold); color: var(--surface); }
+  .top .themebtn { font-size: calc(13px * var(--u)); padding: calc(7px * var(--u)) calc(10px * var(--u)); }
 
   .body { display: grid; grid-template-columns: calc(272px * var(--u)) 1fr; min-height: 0; }
 
@@ -87,12 +89,27 @@
   .tblocks { display: flex; gap: 3px; }
   .tb { display: block; width: calc(13px * var(--u)); height: calc(34px * var(--u)); border: 3px solid var(--edge); background: var(--surface-2); }
   .tb.on { background: var(--vol); }
-  .auction-row { display: flex; align-items: center; gap: 46px; margin-top: 24px; }
+  .auction-row { display: flex; align-items: center; gap: calc(46px * var(--u)); margin-top: 24px; }
+  /* 中間那一欄吃掉剩下的寬度，倒數和插圖各自貼在兩邊 */
+  .auction-row > div:not(.timerbox) { flex: 1; min-width: 0; }
+  .lotart { flex: none; width: calc(180px * var(--u)); height: auto; image-rendering: pixelated; }
   .lotname { font-size: calc(58px * var(--u)); font-weight: 900; line-height: 1.2; letter-spacing: .04em; }
   .lotidx { font-family: var(--pixel); color: var(--ink-3); font-size: calc(18px * var(--u)); }
 
   /* 「幸福的標準」的底圖：圖示的中心對齊上面三張卡的中心，所以要滿版貼齊底部 */
-  .stage.phase-standards { background: url(/happiness/w1/standards.svg) no-repeat center bottom / 100% auto; }
+  .stage.phase-standards { background: url(/happiness/w1/art/standards.svg) no-repeat center bottom / 100% auto; }
+
+  /* 結算頁的完整清單 */
+  .buylist { margin-top: 12px; border-top: 3px solid var(--edge-soft); }
+  .buyrow { display: flex; align-items: baseline; gap: calc(16px * var(--u));
+    padding: calc(9px * var(--u)) 0; border-bottom: 2px dashed var(--edge-soft); }
+  .buyrow .nm { flex: none; width: calc(148px * var(--u)); font-size: calc(18px * var(--u)); font-weight: 700; }
+  .buyrow .got { flex: 1; display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
+  .buyrow .lot { font-size: calc(15px * var(--u)); padding: 2px 9px;
+    border: 2px solid var(--edge-soft); background: var(--surface); }
+  .buyrow .lot b { font-family: var(--pixel); font-size: calc(13px * var(--u)); color: var(--vol); margin-left: 4px; }
+  .buyrow .none { font-size: calc(15px * var(--u)); color: var(--ink-3); }
+  .buyrow .rest { flex: none; font-family: var(--pixel); font-size: calc(14px * var(--u)); color: var(--gold); }
 
   .cols3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 24px; }
   .col3 { background: var(--surface); border: 4px solid var(--edge); box-shadow: 6px 6px 0 var(--hard); padding: 18px; }
@@ -137,6 +154,7 @@
     <span class="tag" id="ptag">入場</span>
     <span class="spacer"></span>
     <button class="notesbtn" id="notesbtn" title="用手機掃，備忘錄會跟著大螢幕走">📱 主持人備忘錄</button>
+    <button class="themebtn" data-theme-toggle></button>
     <span class="count" id="pcount">0 人在場</span>
   </div>
 

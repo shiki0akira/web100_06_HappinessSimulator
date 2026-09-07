@@ -104,7 +104,7 @@
   // ── 各階段畫面 ────────────────────────────────────────────────────────
   var views = {
     lobby: function () {
-      return '<span class="kicker">Join</span><h2>掃碼進場</h2>' +
+      return '<h2>掃碼進場</h2>' +
         '<div class="qrbox">' +
           '<canvas id="qr"></canvas>' +
           '<div>' +
@@ -120,7 +120,7 @@
 
     reconnect: function () {
       var s = S.stats;
-      return '<span class="kicker">Reconnect</span><h2>打開上一次的卡片</h2>' +
+      return '<h2>打開上一次的卡片</h2>' +
         '<p class="lede">輸入卡片上的<b>幸福指數</b>，然後選這是你第幾次來。</p>' +
         '<div class="big" style="margin-top:24px">' + s.reconnected + ' <span class="muted" style="font-size:calc(34px * var(--u))">/ ' + s.count + ' 已接上</span></div>' +
         (s.newcomers ? '<p class="mono" style="margin-top:10px;color:var(--root-c)">其中 ' + s.newcomers + ' 位第一次來或忘記帶卡片</p>' : '') +
@@ -129,25 +129,25 @@
 
     holdings: function () {
       var s = S.stats;
-      return '<span class="kicker">Reconnect</span><h2>你手上有什麼</h2>' +
+      return '<h2>你手上有什麼</h2>' +
         '<p class="lede">勾選你標到的東西，再把沒花掉的點數拉出來。</p>' +
         '<div class="big" style="margin-top:24px">' + s.holdingsDone + ' <span class="muted" style="font-size:calc(34px * var(--u))">/ ' + s.count + ' 已填</span></div>' +
         '<div class="note">第一次來的人不用有上一次——直接按你的直覺，把 100 點分配掉。</div>';
     },
 
     q20: function () {
-      return '<span class="kicker">Interaction 1</span><h2>' + esc(S.q20.question) + '</h2>' +
+      return '<h2>' + esc(S.q20.question) + '</h2>' +
         '<p class="lede">四個選項，憑直覺。沒有正確答案。</p>' +
         '<div class="big" style="margin-top:24px">' + S.stats.answeredQ20 + ' <span class="muted" style="font-size:calc(34px * var(--u))">/ ' + S.stats.count + ' 已作答</span></div>';
     },
 
     q20_result: function () {
-      return '<span class="kicker">Interaction 1</span><h2>全場是這樣想的</h2>' +
+      return '<h2>全場是這樣想的</h2>' +
         optionBars();
     },
 
     ff_intro: function () {
-      return '<span class="kicker">Main game</span><h2>時間快轉三十年</h2>' +
+      return '<h2>時間快轉三十年</h2>' +
         '<p class="lede">你們花光籌碼買下的東西，今天要驗貨。一項一項來。</p>' +
         progressStrip();
     },
@@ -155,7 +155,7 @@
     depreciate: function () {
       var r = S.reveal;
       if (r.idx < 0) {
-        return '<span class="kicker">Interaction 2</span><h2>三十年後</h2>' +
+        return '<h2>三十年後</h2>' +
           '<p class="lede">按底下的「揭曉下一項」開始。</p>' + progressStrip();
       }
       var it = r.item;
@@ -176,7 +176,7 @@
 
     mystery: function () {
       var owners = S.stats.mysteryOwners;
-      return '<span class="kicker">The reveal</span>' +
+      return '' +
         '<div class="qmark">？</div>' +
         '<div class="eternal"><div class="nm">' + esc(S.mystery.name) + '</div>' +
           '<div class="rate">折舊率 0%</div>' +
@@ -188,7 +188,7 @@
 
     free: function () {
       var w = S.stats.wants;
-      return '<span class="kicker">Grace</span>' +
+      return '' +
         '<div class="freeline">你上一關出價四十點才搶到它。<br><span style="color:var(--root-c)">今天，它不用錢。誰要都可以拿。</span></div>' +
         '<div class="verse half second" style="margin-top:calc(26px * var(--u))"><span class="ref">' + esc(S.verse.ref) + ' · 下半句</span>' +
           '<blockquote>「' + esc(S.verse.second) + '」</blockquote></div>' +
@@ -200,14 +200,14 @@
     },
 
     naming: function () {
-      return '<span class="kicker">Mechanic</span><h2>那條線有了名字</h2>' +
+      return '<h2>那條線有了名字</h2>' +
         '<div class="eternal" style="text-align:left"><div class="nm" style="font-size:calc(72px * var(--u))">幸福根基</div></div>' +
         '<p class="lede" style="font-size:calc(22px * var(--u))">上一次大家都在掉分的時候，有一條線是往上的。<b>就是它。</b></p>' +
         '<div class="note"><b>這條線不會被任何事件扣掉。</b>　而且它不是比賽——它從你來的第一天開始長。</div>';
     },
 
     message: function () {
-      return '<span class="kicker">Host</span><h2>我也買錯過</h2>';
+      return '<h2>我也買錯過</h2>';
     },
 
     verse: function () {
@@ -219,7 +219,7 @@
 
     burden: function () {
       var shared = S.stats.sharedBurdens;
-      return '<span class="kicker">Interaction 4</span><h2>今天有哪一項的折舊，<br>讓你心裡動了一下？</h2>' +
+      return '<h2>今天有哪一項的折舊，<br>讓你心裡動了一下？</h2>' +
         '<p class="lede">一句話就好，可以略過。</p>' +
         '<div class="big" style="margin-top:20px">' + S.stats.burdens + ' <span class="muted" style="font-size:calc(34px * var(--u))">/ ' + S.stats.count + ' 已填寫</span></div>' +
         '<div class="note"><b>這句話只存在你自己的手機裡</b>　這個畫面只看得到「已填寫」，看不到內容。除非你自己按下「我願意分享」。</div>' +
@@ -233,14 +233,14 @@
     },
 
     card: function () {
-      return '<span class="kicker">Take-home</span><h2>把卡片存進相簿</h2>' +
+      return '<h2>把卡片存進相簿</h2>' +
         '<p class="lede">長按圖片存進相簿。這是你的第二張卡。</p>' +
         '<div class="big" style="margin-top:20px">' + S.stats.cardsDone + ' <span class="muted" style="font-size:calc(34px * var(--u))">/ ' + S.stats.count + ' 已生成</span></div>';
     },
 
     end: function () {
       var s = S.stats;
-      return '<span class="kicker">Carry forward</span><h2>第二關結束</h2>' +
+      return '<h2>第二關結束</h2>' +
         '<div class="cols3">' +
           '<div class="col3"><h3>全場平均</h3><div class="who">' + (s.outerAvg == null ? '—' : s.outerAvg) + '</div>' +
             '<p class="mono" style="margin:8px 0 0;color:var(--vol)">' + (s.startAvg == null ? '' : '開場是 ' + s.startAvg) + '</p></div>' +

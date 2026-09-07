@@ -21,13 +21,16 @@
   --bar-edge: #46605A;
   --on-primary: #FFFFFF;   /* 主要按鈕上的字 */
   --scan: rgba(0, 0, 0, .035);
+  color-scheme: light;
   --sans: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
   --serif: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
   --pixel: "Press Start 2P", "IBM Plex Mono", ui-monospace, monospace;
   --mono: "Press Start 2P", "IBM Plex Mono", ui-monospace, monospace;
 }
+/* 深色：沒選過就跟系統走，選過就以那個選擇為準（theme.js 會在 <html> 上蓋 data-theme）。
+   下面兩塊的內容必須一模一樣 —— 改一個就要改另一個。 */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --ground: #0D1315;
     --surface: #182124;
     --surface-2: #222E31;
@@ -47,7 +50,30 @@
     --bar-edge: #46605A;
     --on-primary: #04120E;
     --scan: rgba(0, 0, 0, .13);
+    color-scheme: dark;
   }
+}
+:root[data-theme="dark"] {
+    --ground: #0D1315;
+    --surface: #182124;
+    --surface-2: #222E31;
+    --ink: #E9F1EC;
+    --ink-2: #A7BBB4;
+    --ink-3: #7A8F88;
+    --edge: #6E8A82;
+    --edge-soft: #2A383C;
+    --hard: #04080A;
+    --root-c: #54D6AF;
+    --root-soft: #113A32;
+    --vol: #FF8A4C;
+    --vol-soft: #3A2116;
+    --gold: #F0C64B;
+    --bar-bg: #05090A;
+    --bar-ink: #E9F1EC;
+    --bar-edge: #46605A;
+    --on-primary: #04120E;
+    --scan: rgba(0, 0, 0, .13);
+    color-scheme: dark;
 }
 
 * { box-sizing: border-box; border-radius: 0 !important; }
@@ -214,3 +240,14 @@ canvas.qr, .qrbox canvas, .notesqr canvas { image-rendering: pixelated; }
   letter-spacing: .06em; margin-bottom: 10px;
 }
 .hostqr .u { font-family: var(--pixel); color: var(--ink-3); margin-top: 10px; word-break: break-all; }
+
+
+/* 淺／深色切換鈕。三個畫面共用同一顆，擺哪裡各自決定。 */
+.themebtn {
+  font-family: var(--sans); font-size: 13px; font-weight: 700; line-height: 1;
+  padding: 7px 10px; border: 2px solid var(--edge-soft);
+  background: var(--surface); color: var(--ink-3);
+}
+.themebtn:hover, .themebtn:focus-visible { border-color: var(--ink-3); color: var(--ink); }
+/* 手機上釘在右下角，要蓋在掃描線上面才點得到 */
+.themebtn.floating { position: fixed; right: 12px; bottom: 12px; z-index: 96; box-shadow: 3px 3px 0 var(--hard); }
