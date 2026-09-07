@@ -71,11 +71,6 @@ export const DECKS = {
   },
 };
 
-// 問號卡：不加不扣，第一關完全不解釋。第五關「當上帝來敲門」會把它調出來。
-export const QUESTION_CARDS = [
-  { kind: 'question', delta: 0, text: '那段最難的日子，有一個人一直在。你不知道為什麼是他。' },
-  { kind: 'question', delta: 0, text: '有一件事，本來可以更糟。但它沒有。' },
-];
 
 export const VERSE = {
   ref: '馬太福音 11:28',

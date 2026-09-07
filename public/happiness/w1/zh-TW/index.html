@@ -102,6 +102,11 @@
   .lotidx { font-family: var(--pixel); color: var(--ink-3); font-size: calc(18px * var(--u)); }
 
   /* 「幸福的標準」的底圖：圖示的中心對齊上面三張卡的中心，所以要滿版貼齊底部 */
+  /* 領受／禱告：插圖擺在計數旁邊，不要自己占一整排 */
+  .receive { display: flex; align-items: center; gap: calc(24px * var(--u)); margin-top: calc(26px * var(--u)); }
+  .receive .stageart { margin: 0; }
+  .receive .stageart img { width: calc(200px * var(--u)); }
+
   .stage.phase-standards { background: url(/happiness/w1/art/standards.svg) no-repeat center bottom / 100% auto; }
 
   /* 結算頁的完整清單 */
@@ -134,8 +139,10 @@
   .hitcard p { margin: 12px 0 0; font-size: calc(15px * var(--u)); line-height: 1.8; }
   .hitcard .nm { margin-top: 12px; font-size: calc(14px * var(--u)); font-weight: 700; color: var(--ink-2); }
 
-  .verse { max-width: 30ch; }
-  .verse blockquote { font-size: calc(48px * var(--u)); font-weight: 900; line-height: 1.6; margin: 18px 0 0; }
+  .verse { margin-top: calc(10px * var(--u)); }
+  /* 用 em 限行長：ch 在中文字體上量的是數字寬度，會把整段擠成一條 */
+  .verse blockquote { font-size: calc(44px * var(--u)); font-weight: 900; line-height: 1.6;
+    margin: 18px 0 0; max-width: 20em; }
   .verse .ref { font-family: var(--pixel); color: var(--gold); font-size: calc(20px * var(--u)); }
 
   .note { background: var(--surface); border: 3px solid var(--edge); border-left-width: 10px; border-left-color: var(--gold);

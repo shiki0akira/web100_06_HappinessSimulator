@@ -181,26 +181,30 @@
       return '<div class="verse-p"><span class="ref">' + esc(S.verse.ref) + '</span>' +
         '<blockquote>「' + esc(S.verse.text) + '」</blockquote></div>' +
         (me.receivedVerse
-          ? '<p class="ok" style="text-align:center;margin-top:20px">已收進你的經文卡包</p>'
+          ? '<div class="grew"><img src="/happiness/shared/art/verse.svg" alt="">' +
+            '<p class="ok">已領受<br><b>？？？ +10</b></p></div>'
           : '<button class="btn primary fullbtn" id="verse">領受</button>');
     },
 
     burden: function (me) {
       var mine = readBurden();
-      return '<h2>剛剛那些卡</h2>' +
-        '<p>有沒有哪一張其實就是你？<br>如果有，用一句話寫下來。</p>' +
+      return '<h2>祝福禱告</h2>' +
+        '<p>你現在的心情是什麼？寫下來，等一下一起禱告。</p>' +
         '<textarea id="bd" maxlength="120" placeholder="一句話就好">' + esc(mine) + '</textarea>' +
         '<label class="checkline"><input type="checkbox" id="sh"' + (me.burdenShare ? ' checked' : '') + '>' +
           '<span>我願意分享（打勾才會出現在大螢幕上）</span></label>' +
         '<button class="btn primary fullbtn" id="savebd">' + (mine ? '更新' : '寫好了') + '</button>' +
-        '<p class="privacy">🔒 <b>這句話只存在你這支手機裡。</b>不打勾的話它根本不會離開這台裝置，主持人的畫面只看得到「已填寫」。它會印在你今天的卡片上——第七關會請你把這張卡找出來。</p>' +
-        (mine ? '<p class="ok" style="margin-top:8px">已存下。</p>' : '');
+        '<p class="privacy">🔒 <b>這句話只存在你這支手機裡。</b>不打勾的話它根本不會離開這台裝置，主持人的畫面只看得到「已寫下」。它會印在你今天的卡片上。</p>' +
+        (me.hasBurden || mine
+          ? '<div class="grew"><img src="/happiness/shared/art/prayer.svg" alt="">' +
+            '<p class="ok">已存下<br><b>？？？ +5</b></p></div>'
+          : '');
     },
 
     card: function (me) {
       // 等 +5 記上去了再畫 —— 卡片上要印的是禱告之後的數字，不是之前的
-      if (!me.cardDone) return '<h2>你的第一張卡片</h2>' + wait('生成中');
-      return '<h2>你的第一張卡片</h2>' +
+      if (!me.cardDone) return '<h2>儲存模擬回憶</h2>' + wait('生成中');
+      return '<h2>儲存模擬回憶</h2>' +
         '<p>長按圖片存進相簿。這張卡是下一關的入場券。</p>' +
         '<img class="weekcard" id="cardimg" alt="第一關週卡">' +
         '<a class="btn primary fullbtn" id="dl" style="display:block;text-align:center;text-decoration:none" download="幸福模擬器-W1-真幸福.png">下載這張卡</a>' +
@@ -208,7 +212,7 @@
     },
 
     end: function (me) {
-      return '<h2>第一關結束</h2>' +
+      return '<h2>下週見</h2>' +
         '<p>下次見。記得帶著你的卡片——開場會請你輸入上面那個數字。</p>' +
         (cardURL ? '<img class="weekcard" src="' + cardURL + '" alt="第一關週卡">' : '') +
         '<p class="privacy">忘記存也沒關係。下一關直接重新評估現在的自己，一樣算數。</p>';
@@ -269,6 +273,7 @@
         drawWeekCard(cv, {
           name: me.name, outer: me.outer, inner: me.inner,
           verseRef: S.verse.ref, verseText: S.verse.text, burden: readBurden(),
+          bought: me.won.map(function (w) { return w.name; }),
         });
         cardURL = cv.toDataURL('image/png');
         img.src = cardURL;

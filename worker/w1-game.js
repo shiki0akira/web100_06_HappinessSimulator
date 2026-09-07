@@ -1,5 +1,5 @@
 // 第一關「真幸福」的規則。純函式，不碰網路也不碰儲存 —— 房間（Durable Object）負責把它接上線。
-import { LOTS, PRACTICE_LOT, DECKS, QUESTION_CARDS, VERSE } from './w1-data.js';
+import { LOTS, PRACTICE_LOT, DECKS, VERSE } from './w1-data.js';
 
 export const BID_MS = 20000;    // 暗標一輪 20 秒
 export const REVEAL_MS = 6000;  // 開標停留 6 秒
@@ -17,10 +17,10 @@ export const PHASES = [
   { id: 'event_draw',       tag: '互動點 4', title: '模擬生命中的事件' },
   { id: 'event_result',     tag: '互動點 4', title: '追求幸福的結果' },
   { id: 'testimony',        tag: '見證',     title: '見證分享' },
-  { id: 'verse',            tag: '經文',     title: '馬太福音 11:28' },
-  { id: 'burden',           tag: '互動點 5', title: '禱告，順手把石頭收下來' },
-  { id: 'card',             tag: '週卡',     title: '生成你的第一張卡片' },
-  { id: 'end',              tag: '散會',     title: '第一關結束' },
+  { id: 'verse',            tag: '經文',     title: '領受經文' },
+  { id: 'burden',           tag: '互動點 5', title: '祝福禱告' },
+  { id: 'card',             tag: '週卡',     title: '儲存模擬回憶' },
+  { id: 'end',              tag: '散會',     title: '下週預告' },
 ];
 
 // 點數只有幸福拍賣會用得到。規則頁（auction_intro）之前畫面上不出現點數 ——
@@ -98,6 +98,7 @@ export function addPlayer(s, name) {
     cardDone: false,    // 生成週卡＝禱告收尾做完了
     adjust: 0,
     auctionBonus: 0,   // 拍賣結算加了幾分
+    prayed: false,     // 祝福禱告那一頁送出過了沒
   };
   s.order.push(pid);
   return pid;
@@ -223,13 +224,6 @@ export function dealEventCards(s) {
     }
   });
 
-  // 問號卡：跨組隨機 1–2 張，不動到抽中重擊的人
-  const pool = shuffle(players.filter((p) => p.card && p.card.kind !== 'hit'));
-  const qn = Math.min(pool.length, players.length >= 8 ? 2 : 1);
-  const qcards = shuffle(QUESTION_CARDS);
-  for (let i = 0; i < qn; i++) {
-    pool[i].card = { ...qcards[i % qcards.length], group: pool[i].card.group, groupLabel: pool[i].card.groupLabel };
-  }
   s.eventDealt = true;
 }
 
@@ -278,13 +272,15 @@ export function applyAction(s, pid, msg) {
       if (!p.receivedVerse) { p.receivedVerse = true; grow(p, INNER_VERSE); }
       break;
     case 'card':
-      if (!p.cardDone) { p.cardDone = true; grow(p, INNER_PRAYER); }
+      p.cardDone = true;
       break;
     // 重擔：文字留在玩家自己的手機上。這裡只收「有沒有寫」，
     // 以及他主動按下「我願意分享」時才送上來的那一句。
     case 'burden':
       p.hasBurden = !!msg.has;
       p.burdenShared = msg.share ? String(msg.text || '').slice(0, 120) : '';
+      // 禱告這一頁送出就加分。寫不寫得出來是他的事，一起禱告是大家的事。
+      if (!p.prayed) { p.prayed = true; grow(p, INNER_PRAYER); }
       break;
     case 'rename': p.name = String(msg.name || '').slice(0, 12) || p.name; break;
   }

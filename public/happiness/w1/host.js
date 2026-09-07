@@ -55,7 +55,7 @@
         chips.push('<span class="chip' + (done ? ' on' : '') + '">' + (done ? '已作答' : '還沒填') + '</span>');
       }
       if (p.won.length && S.pointsInPlay) chips.push('<span class="chip">標到 ' + p.won.length + ' 樣</span>');
-      if (p.cardFlipped) chips.push('<span class="chip' + (p.cardKind === 'hit' ? ' on' : '') + '">' + (p.cardKind === 'hit' ? '重擊' : p.cardKind === 'question' ? '？卡' : '已抽') + '</span>');
+      if (p.cardFlipped) chips.push('<span class="chip' + (p.cardKind === 'hit' ? ' on' : '') + '">' + (p.cardKind === 'hit' ? '重擊' : '已抽') + '</span>');
       if (p.metoo) chips.push('<span class="chip on">我遇過</span>');
       if (p.hasBurden) chips.push('<span class="chip">已填寫</span>');
       if (p.receivedVerse) chips.push('<span class="chip on">已領受</span>');
@@ -323,49 +323,34 @@
     },
 
     verse: function () {
-      return '<div class="verse"><span class="ref">' + esc(S.verse.ref) + '</span>' +
-        '<blockquote>「' + esc(S.verse.text) + '」</blockquote></div>' +
-        '<p class="lede" style="margin-top:26px">全場的分數都掉了——買很多的、囤著錢的、什麼都沒標到的。所以這句話的對象不是某些人，是在場每一個人。</p>' +
-        '<p class="mono muted" style="margin-top:12px">已領受 ' + S.stats.versesReceived + ' / ' + S.stats.count + '</p>';
+      return StageParts.verse({
+        ref: S.verse.ref, text: S.verse.text,
+        done: S.stats.versesReceived, total: S.stats.count,
+      });
     },
 
     burden: function () {
-      var shared = S.stats.sharedBurdens;
-      return '<h2>剛剛那些卡，<br>有沒有哪一張其實就是你？</h2>' +
-        '<p class="lede">如果有，用一句話寫下來。只有你自己看得到。</p>' +
-        '<div class="big" style="margin-top:20px">' + S.stats.burdens + ' <span class="muted" style="font-size:calc(34px * var(--u))">/ ' + S.stats.count + ' 已填寫</span></div>' +
-        '<div class="note"><b>這句話只存在你自己的手機裡</b>　這個畫面只看得到「已填寫」，看不到內容。除非你自己按下「我願意分享」。</div>' +
-        (shared.length
-          ? '<div class="hitcards">' + shared.map(function (b) {
-              return '<div class="hitcard" style="border-left-color:var(--root-c)">' +
-                '<p style="font-size:calc(19px * var(--u));font-weight:700">「' + esc(b.text) + '」</p>' +
-                '<div class="nm">' + esc(b.name) + ' · 願意分享</div></div>';
-            }).join('') + '</div>'
-          : '');
+      return StageParts.prayer({
+        done: S.stats.burdens, total: S.stats.count, shared: S.stats.sharedBurdens,
+      });
     },
 
     card: function () {
-      return '<h2>把卡片存進相簿</h2>' +
-        '<p class="lede">長按圖片存進相簿。這張卡是下一關的入場券。</p>' +
-        '<div class="big" style="margin-top:20px">' + S.stats.cardsDone + ' <span class="muted" style="font-size:calc(34px * var(--u))">/ ' + S.stats.count + ' 已生成</span></div>';
+      return StageParts.keepsake({
+        done: S.stats.cardsDone, total: S.stats.count,
+        extra: '你在拍賣會買了什麼',
+      });
     },
 
     end: function () {
-      var s = S.stats;
-      return '<h2>第一關結束</h2>' +
-        '<div class="cols3">' +
-          '<div class="col3"><h3>全場平均</h3><div class="who">' + (s.outerAvg == null ? '—' : s.outerAvg) + '</div>' +
-            '<p class="mono" style="margin:8px 0 0;color:var(--vol)">' +
-            (s.startAvg == null || s.outerAvg == null ? '' : '開場是 ' + s.startAvg) + '</p></div>' +
-          '<div class="col3"><h3>抽到重擊卡的人</h3><p style="font-size:calc(18px * var(--u));font-weight:700;margin:6px 0 0">' +
-            (s.hitCards.filter(function (h) { return !h.absent; }).map(function (h) { return esc(h.name); }).join('、') || '—') +
-            '</p></div>' +
-          '<div class="col3"><h3>剩最多錢的人</h3><p style="font-size:calc(18px * var(--u));font-weight:700;margin:6px 0 0">' +
-            (s.richest.length
-              ? s.richest.map(function (x) { return esc(x.name); }).join('、') + ' · ' + s.richest[0].points + ' 點'
-              : '—') +
-            '</p></div>' +
-        '</div>';
+      return StageParts.nextWeek({
+        avg: S.stats.outerAvg,
+        week: '真相大白',
+        lines: [
+          '時間會往前推三十年，你今天買的東西要驗貨。',
+          '還有：第二條數值到底是什麼，下一關公布。',
+        ],
+      });
     },
   };
 

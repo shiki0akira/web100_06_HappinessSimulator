@@ -396,3 +396,79 @@ const LISTENER = [
   fs.writeFileSync(OUT_SHARED + '/testimony.svg', svg);
   console.log('也畫了共用的 見證分享 → ' + OUT_SHARED + '/testimony.svg');
 }
+
+// ── 會動的共用插圖：領受經文、祝福禱告 ──────────────────────────────────
+// 用 <img> 載入的 SVG 跑得動 CSS 動畫（跑不動 JS），所以動畫寫在 <style> 裡。
+// 慢、小幅度、不閃 —— 這兩頁的畫面是要讓人安靜下來的，不是要抓注意力。
+function animatedSvg(w, h, css, body, label) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" shape-rendering="crispEdges"` +
+    ` role="img" aria-label="${label}"><style>${css}</style>${body}</svg>\n`;
+}
+
+{
+  const OUT_SHARED = 'public/happiness/shared/art';
+  fs.mkdirSync(OUT_SHARED, { recursive: true });
+
+  // 領受經文：一顆心一格一格長出來，旁邊的光點慢慢眨
+  const HEART = [
+    '................',
+    '................',
+    '...hhh....hhh...',
+    '..hhhhhhhhhhhh..',
+    '..hhhhhhhhhhhh..',
+    '..HHHHHHHHHHHH..',
+    '...HHHHHHHHHH...',
+    '....HHHHHHHH....',
+    '.....HHHHHH.....',
+    '......HHHH......',
+    '.......HH.......',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+  ];
+  const HANDS = [
+    '................',
+    '................',
+    '.......CC.......',
+    '......CCCC......',
+    '......CCCC......',
+    '.....CCCCCC.....',
+    '....CCCCCCCC....',
+    '....CC.CC.CC....',
+    '....CC.CC.CC....',
+    '....CCCCCCCC....',
+    '.....CCCCCC.....',
+    '.....CCCCCC.....',
+    '......CCCC......',
+    '................',
+    '................',
+    '................',
+  ];
+  const spark = (x, y, d) =>
+    `<g class="sp" style="animation-delay:${d}s">` +
+    `<rect x="${x}" y="${y}" width="1" height="1" fill="${PAL.G}"/>` +
+    `<rect x="${x - 1}" y="${y + 1}" width="3" height="1" fill="${PAL.G}"/>` +
+    `<rect x="${x}" y="${y + 2}" width="1" height="1" fill="${PAL.G}"/></g>`;
+
+  const css =
+    '.sp{animation:tw 2.6s steps(1) infinite}' +
+    '@keyframes tw{0%,45%{opacity:.15}50%,95%{opacity:1}100%{opacity:.15}}' +
+    '.beat{animation:bt 2.6s steps(1) infinite;transform-origin:16px 10px}' +
+    '@keyframes bt{0%,70%{transform:translateY(0)}75%,85%{transform:translateY(-1px)}100%{transform:translateY(0)}}' +
+    '.rise{animation:rs 3.4s steps(1) infinite}' +
+    '@keyframes rs{0%{opacity:0;transform:translateY(2px)}25%{opacity:1}70%{opacity:1;transform:translateY(-3px)}100%{opacity:0;transform:translateY(-4px)}}';
+
+  fs.writeFileSync(OUT_SHARED + '/verse.svg', animatedSvg(32, 18, css,
+    `<g class="beat">${sprite(HEART, 8, 1)}</g>` + spark(2, 4, 0) + spark(27, 3, 0.9) + spark(4, 12, 1.7),
+    '領受'));
+
+  const drops = [ [10, 12, 0], [16, 13, 0.8], [22, 12, 1.6] ]
+    .map(([x, y, d]) => `<g class="rise" style="animation-delay:${d}s">` +
+      `<rect x="${x}" y="${y}" width="2" height="2" fill="${PAL.G}"/></g>`).join('');
+  fs.writeFileSync(OUT_SHARED + '/prayer.svg', animatedSvg(32, 18, css,
+    `<g class="beat">${sprite(HANDS, 8, 1)}</g>` + drops + spark(3, 5, 0.4) + spark(28, 6, 1.3),
+    '禱告'));
+  console.log('也畫了會動的：verse.svg／prayer.svg');
+}

@@ -67,7 +67,7 @@ var GROUP_NAME = '幸福小組';
     7: { banner: 'W7  SET FREE',       title: '釋放與自由' },
   };
 
-  // data: { week, name, outer, outerPrev, inner, innerLabel, verseRef, verseText, burden }
+  // data: { week, name, outer, outerPrev, inner, innerLabel, verseRef, verseText, burden, bought }
   function drawWeekCard(canvas, data) {
     var W = 1080, H = 1440, M = 96, CW = W - M * 2;
     canvas.width = W; canvas.height = H;
@@ -149,6 +149,18 @@ var GROUP_NAME = '幸福小組';
     ctx.fillStyle = INK;
     ctx.font = '900 54px ' + SANS;
     y = wrap(ctx, '「' + data.verseText + '」', M, y, CW, 86);
+
+    // 這一關買了什麼（第二關開場要照著勾）
+    if (data.bought && data.bought.length) {
+      y += 54;
+      ctx.fillStyle = GOLD;
+      ctx.font = "400 18px " + PIXEL;
+      ctx.fillText("I BOUGHT", M, y);
+      y += 46;
+      ctx.fillStyle = INK;
+      ctx.font = "700 34px " + SANS;
+      y = wrap(ctx, data.bought.join("、"), M, y, CW, 50);
+    }
 
     // 他自己寫的那一句（整張卡最有重量的地方）
     if (data.burden) {
