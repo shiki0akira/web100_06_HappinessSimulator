@@ -14,7 +14,7 @@ export const PHASES = [
   { id: 'auction_intro',    tag: '主遊戲',   title: '幸福拍賣會 · 規則' },
   { id: 'auction',          tag: '互動點 3', title: '幸福拍賣會' },
   { id: 'auction_result',   tag: '結算頁',   title: '看看大家買了什麼' },
-  { id: 'event_draw',       tag: '互動點 4', title: '機會與命運' },
+  { id: 'event_draw',       tag: '互動點 4', title: '模擬生命中的事件' },
   { id: 'event_result',     tag: '互動點 4', title: '三種策略，三種摔法' },
   { id: 'testimony',        tag: '主持人',   title: '你的見證' },
   { id: 'verse',            tag: '經文',     title: '馬太福音 11:28' },
@@ -84,7 +84,7 @@ export function addPlayer(s, name) {
     inner: 0,
     points: 100,        // 人生籌碼
     won: [],
-    card: null,         // 機會與命運
+    card: null,         // 模擬事件卡
     cardFlipped: false,
     metoo: false,       // 「這件事我真的遇過」
     hasBurden: false,   // 重擔內容留在玩家手機上，除非他願意公開
@@ -161,7 +161,7 @@ export function advanceAuction(s, now) {
   return null;
 }
 
-// ── 機會與命運 ──────────────────────────────────────────────────────────
+// ── 模擬生命中的事件 ──────────────────────────────────────────────────────────
 export function dealEventCards(s) {
   const players = alive(s);
   const buckets = { A: [], B: [], C: [] };

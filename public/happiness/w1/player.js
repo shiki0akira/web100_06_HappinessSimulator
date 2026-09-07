@@ -151,7 +151,7 @@
     event_draw: function (me) {
       if (!me.card) return wait('等主持人發牌');
       if (!me.cardFlipped) {
-        return '<h2>機會與命運</h2><p>每個人抽到的不一樣。點一下翻開。</p>' +
+        return '<h2>模擬生命中的事件</h2><p>每個人抽到的不一樣。點一下翻開。</p>' +
           '<button class="flip" id="flip">?<small>點我翻開</small></button>';
       }
       var c = me.card;

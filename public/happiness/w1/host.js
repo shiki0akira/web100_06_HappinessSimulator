@@ -247,8 +247,9 @@
 
     event_draw: function () {
       var g = S.stats.groupCounts;
-      return '<span class="kicker">Interaction 4</span><h2>機會與命運</h2>' +
-        '<p class="lede">每人抽一張，全場不重複。你剩多少錢，決定你會遇到什麼。</p>' +
+      return '<span class="kicker">Interaction 4</span><h2>模擬生命中的事件</h2>' +
+        '<p class="lede">這是幸福模擬器 —— 遊戲跑到這裡，會跑出生活裡真的會發生的事。' +
+        '每人抽一張，全場不重複。你剩多少錢，決定你會遇到什麼。</p>' +
         '<div class="big" style="margin-top:20px">' + S.stats.flipped + ' <span class="muted" style="font-size:calc(34px * var(--u))">/ ' + S.stats.count + ' 人已翻開</span></div>' +
         '<div class="cols3">' +
           S.stats.decks.map(function (d) {
