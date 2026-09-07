@@ -61,9 +61,13 @@
   .wk .n { font-family: var(--pixel); font-size: 26px; color: var(--vol); text-align: center; }
   .wk.soon .n { color: var(--ink-3); }
   .wk h3 { font-size: 22px; font-weight: 900; letter-spacing: .04em; }
-  .wk .go { font-family: var(--pixel); font-size: 10px; padding: 10px 12px; border: 3px solid var(--edge);
+  /* 中文套 pixel 字型其實是掉回系統字，10px 根本看不清楚。
+     標籤改用正常字體放大，只留箭頭保留 pixel 味道。 */
+  .wk .go { font-size: 18px; font-weight: 900; letter-spacing: .06em; padding: 14px 20px;
+    border: 3px solid var(--edge); box-shadow: 4px 4px 0 var(--hard);
     background: var(--root-c); color: var(--on-primary); text-decoration: none; white-space: nowrap; }
-  .wk .lock { font-family: var(--pixel); font-size: 9px; color: var(--ink-3); white-space: nowrap; }
+  .wk .go span { font-family: var(--pixel); font-size: 13px; margin-left: 8px; }
+  .wk .lock { font-size: 14px; font-weight: 700; color: var(--ink-3); white-space: nowrap; }
   /* 當週的主題經文。這是主持人在準備台上最想看到的一行。 */
   .wk .verse { grid-column: 2 / -1; margin-top: 8px;
     border-left: 6px solid var(--gold); padding-left: 12px; }
@@ -71,18 +75,14 @@
   .wk .verse p { font-size: 15px; line-height: 1.85; color: var(--ink); margin: 5px 0 0; font-weight: 500; }
   .wk.soon .verse p { color: var(--ink-2); }
 
-  .notes { background: var(--surface); border: 4px solid var(--edge); box-shadow: 6px 6px 0 var(--hard); padding: 20px; }
-  .notes p.why { font-size: 14px; color: var(--ink-2); margin: 0 0 16px; }
-  .nrow { display: grid; grid-template-columns: 1fr; gap: 14px; }
-  @media (min-width: 720px) { .nrow { grid-template-columns: repeat(3, 1fr); } }
-  .nrow label { display: block; font-family: var(--pixel); font-size: 10px; color: var(--ink-3); margin-bottom: 7px; }
-  .nrow textarea { width: 100%; min-height: 84px; padding: 10px; font-size: 15px; font-weight: 500; resize: vertical; }
-  .saved { font-family: var(--pixel); font-size: 10px; color: var(--root-c); margin-top: 12px; min-height: 14px; }
-
-  .prep-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
-  .prep-list li { display: flex; gap: 12px; align-items: flex-start; background: var(--surface);
-    border: 3px solid var(--edge-soft); padding: 12px 14px; font-size: 15px; }
-  .prep-list b { font-family: var(--pixel); font-size: 10px; color: var(--vol); white-space: nowrap; padding-top: 3px; }
+  /* 一關的流程。編號用 pixel 字型，內文用正常字體 —— 中文在 pixel 字型下是掉回系統字，撐不住小字級。 */
+  .flow { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; counter-reset: step; }
+  .flow li { display: flex; gap: 16px; align-items: flex-start; background: var(--surface);
+    border: 3px solid var(--edge-soft); padding: 14px 16px; }
+  .flow li::before { counter-increment: step; content: counter(step, decimal-leading-zero);
+    font-family: var(--pixel); font-size: 15px; color: var(--vol); flex: none; padding-top: 4px; }
+  .flow b { display: block; font-size: 17px; font-weight: 900; letter-spacing: .02em; margin-bottom: 5px; }
+  .flow span { font-size: 15px; line-height: 1.85; color: var(--ink-2); }
 
   footer { margin-top: 52px; padding-top: 22px; border-top: 3px dashed var(--edge-soft);
     font-size: 13px; color: var(--ink-3); }
@@ -97,7 +97,7 @@
     <p class="lead">幸福不是一個分數。<br>但如果它是，你會給自己打幾分？</p>
     <p>七關下來，那個數字會被生活推來推去——升遷、意外、一通電話、一張檢查報告。<b>沒有人控制得了它。這正是重點。</b></p>
     <p>而在它底下，還有第二條線。什麼事都扣不到它，而且它只會往上。七關走完，每個人都會看見自己的那兩條——一條起起伏伏、到最後也不見得高，一條從頭到尾往上長。</p>
-    <p class="quiet">這件事不用講，他們自己看得出來。</p>
+    <p class="quiet">不用誰告訴你哪一條才算數。走到第七關，你自己會看出來。</p>
     <div class="meta">
       <span>七週 · 每關 20–25 分</span>
       <span>大螢幕 ＋ 每人一支手機</span>
@@ -118,33 +118,15 @@
   <h2 class="sec">SEVEN LEVELS · 七關</h2>
   <div class="weeks" id="weeks"></div>
 
-  <h2 class="sec">TONIGHT · 準備清單</h2>
-  <ul class="prep-list">
-    <li><b>大螢幕</b><span>電腦接投影機，開第一關的網址，按 F11 全螢幕。</span></li>
-    <li><b>手機</b><span>提醒大家先關掉自動鎖屏。掃 QR 或輸入四碼房號進場。</span></li>
-    <li><b>散會前</b><span>問一句「卡片存好的舉手」。那張卡是下一關的入場券。</span></li>
-    <li><b>斷網備案</b><span>紙本標單、印出來的機會與命運卡、白板記分。整關照樣跑得完。</span></li>
-  </ul>
-
-  <h2 class="sec">CARRY FORWARD · 現場筆記</h2>
-  <div class="notes">
-    <p class="why">系統不跨關存資料，所以這三件事要你自己記。散會前打進來，下一關開場打開這頁就看得到。只存在這台裝置的瀏覽器裡。</p>
-    <div class="nrow">
-      <div>
-        <label>拍賣配置</label>
-        <textarea id="n1" placeholder="誰買了什麼、花了多少"></textarea>
-      </div>
-      <div>
-        <label>誰抽到重擊卡</label>
-        <textarea id="n2" placeholder="下一關開場問：金融風暴那位，還好嗎"></textarea>
-      </div>
-      <div>
-        <label>誰標到「？」</label>
-        <textarea id="n3" placeholder="第二關揭曉永生時，全場會看向他"></textarea>
-      </div>
-    </div>
-    <p class="saved" id="saved"></p>
-  </div>
+  <h2 class="sec">HOW IT WORKS · 一關怎麼走</h2>
+  <ol class="flow">
+    <li><div><b>大家看同一個大螢幕</b><span>題目、拍賣、揭曉，全部在那面螢幕上發生。你不用自己找進度。</span></div></li>
+    <li><div><b>手機掃 QR 進場</b><span>掃大螢幕上的 QR 就直接進來；掃不到就輸入螢幕上的四碼房號。手機是你的答案、你的下注、你的選擇。</span></div></li>
+    <li><div><b>先給現在的自己打一個分數</b><span>0 到 100，你的幸福。這個數字接下來會被生活推來推去。</span></div></li>
+    <li><div><b>一起走完這一關</b><span>20 到 25 分鐘。中間會發生什麼，沒有人事先知道 —— 包括你。</span></div></li>
+    <li><div><b>收關拿一張卡</b><span>卡上是你這一關的兩條線。存好，下一關要用它接上。</span></div></li>
+    <li><div><b>七週，七關</b><span>走完最後一關，那兩條線的全貌才會出來。這件事不用誰解釋。</span></div></li>
+  </ol>
 
   <footer>
     依福氣教會幸福小組八週組題設計。第八週「幸福的教會」不設關卡，改為回顧與幸福護照發放。<br>
@@ -198,7 +180,7 @@
       '<div class="n">' + pad + '</div>' +
       '<div><h3>' + esc(w.name) + '</h3></div>' +
       (w.ready
-        ? '<a class="go" href="/happiness/w' + w.n + '/zh-TW/">開場 →</a>'
+        ? '<a class="go" href="/happiness/w' + w.n + '/zh-TW/">開場<span>&rarr;</span></a>'
         : '<span class="lock">尚未開放</span>') +
       (w.verse
         ? '<div class="verse"><span class="ref">' + esc(w.ref) + '</span>' +
@@ -256,20 +238,6 @@
     var ready = WEEKS.filter(function (w) { return w.ready; });
     if (ready.length === 1) go(ready[0].n);
   };
-
-  // 現場筆記：純本機，不上傳
-  var saved = document.getElementById('saved');
-  var timer = null;
-  ['n1', 'n2', 'n3'].forEach(function (id) {
-    var el = document.getElementById(id);
-    try { el.value = localStorage.getItem('happiness_note_' + id) || ''; } catch (e) {}
-    el.addEventListener('input', function () {
-      try { localStorage.setItem('happiness_note_' + id, el.value); } catch (e) {}
-      saved.textContent = '已存到這台裝置';
-      clearTimeout(timer);
-      timer = setTimeout(function () { saved.textContent = ''; }, 1800);
-    });
-  });
 })();
 </script>
 </body>
