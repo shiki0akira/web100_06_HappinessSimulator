@@ -220,9 +220,7 @@
           '<div class="col3"><h3>每人 100 點</h3><p class="muted" style="margin:0">點數就是錢。</p></div>' +
           '<div class="col3" style="border-color:var(--gold)"><h3>什麼都不買，剩下的點數就是你的財富</h3><p class="muted" style="margin:0">所以不出價是一種策略，不是棄權。</p></div>' +
           '<div class="col3"><h3>每樣 20 秒同時暗標</h3><p class="muted" style="margin:0">最高者得，同價時先出價者得。</p></div>' +
-        '</div>' +
-        '<div class="note"><b>第一樣是試拍</b>，讓大家先按一次，不扣點也不計分。' +
-        '正式的共 ' + (S.auction.lots.length ? S.auction.lots.length - 1 : '—') + ' 樣 —— 標的比人少，所以一定有人什麼都沒標到。</div>';
+        '</div>';
     },
 
     auction: function () {
