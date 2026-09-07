@@ -88,8 +88,14 @@
   .flow b { display: block; font-size: 17px; font-weight: 900; letter-spacing: .02em; margin-bottom: 5px; }
   .flow span { font-size: 15px; line-height: 1.85; color: var(--ink-2); }
 
-  footer { margin-top: 52px; padding-top: 22px; border-top: 3px dashed var(--edge-soft);
-    font-size: 13px; color: var(--ink-3); }
+  /* 跟 Web100 系列其他專案同一個頁尾。 */
+  .site-footer { margin-top: 52px; padding-top: 20px; border-top: 3px solid var(--edge-soft);
+    font-size: 13px; color: var(--ink-3);
+    display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .site-footer .left { display: flex; align-items: center; gap: 20px; }
+  .site-footer a { color: inherit; font-weight: 700; text-decoration: none; }
+  .site-footer a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; }
+  .site-footer .project-id { font-family: var(--pixel); font-size: 11px; }
 </style>
 </head>
 <body>
@@ -132,9 +138,12 @@
     <li><div><b>七週，七關</b><span>走完最後一關，那兩條線的全貌才會出來。這件事不用誰解釋。</span></div></li>
   </ol>
 
-  <footer>
-    依福氣教會幸福小組八週組題設計。第八週「幸福的教會」不設關卡，改為回顧與幸福護照發放。<br>
-    這是主持人的工具，不是自助遊戲 —— 沒有人帶，它只是一堆會跑的動畫。
+  <footer class="site-footer">
+    <div class="left">
+      <a href="https://www.vibeweb100.com/">← Web100</a>
+      <span class="project-id">06_HappinessSimulator</span>
+    </div>
+    <span>© 2026 Web100 Series</span>
   </footer>
 </div>
 
