@@ -44,10 +44,14 @@
   .side h4 { font-family: var(--pixel); font-size: calc(13px * var(--u)); letter-spacing: .06em; color: var(--ink-3); margin: 0 0 12px; text-transform: uppercase; }
   .prow { padding: 10px 0; border-bottom: 2px dashed var(--edge-soft); }
   .prow .nm { display: flex; align-items: center; gap: 6px; font-size: calc(15px * var(--u)); font-weight: 700; }
-  .prow .nm .val { margin-left: auto; font-family: var(--pixel); font-size: calc(13px * var(--u)); color: var(--vol); }
   .prow .nm .drop { font-family: var(--pixel); font-size: calc(13px * var(--u)); color: var(--vol); }
-  .prow .bars { display: grid; gap: 4px; margin: 7px 0 6px; }
-  .prow .bars .bar { height: calc(13px * var(--u)); }
+  /* 兩條槽各自寫上名字：主持人不用猜哪一條是什麼 */
+  .prow .gauge { display: flex; align-items: baseline; gap: 6px;
+    margin: calc(7px * var(--u)) 0 3px; font-family: var(--pixel);
+    font-size: calc(13px * var(--u)); color: var(--ink-3); }
+  .prow .gauge b { margin-left: auto; font-size: calc(15px * var(--u)); }
+  .prow .gauge .adj { margin-left: 8px; }
+  .prow .bar { height: calc(13px * var(--u)); }
   .prow .meta { display: flex; gap: 6px; align-items: center; font-size: calc(13px * var(--u)); color: var(--ink-3); font-family: var(--pixel); }
   .prow .meta b { color: var(--ink-2); }
   .chip { font-family: var(--sans); font-size: calc(13px * var(--u)); font-weight: 700; padding: 1px 6px; border: 2px solid var(--edge-soft); background: var(--surface-2); color: var(--ink-2); }

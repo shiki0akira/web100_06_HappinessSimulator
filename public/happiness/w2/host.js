@@ -27,6 +27,17 @@
   function joinUrl() { return location.origin + JOIN_PATH + '?room=' + ROOM; }
   function pct(r) { return '−' + Math.round(r * 100) + '%'; }
 
+  // 側欄的兩條槽。主持人要一眼看出哪一條是什麼，所以把名字寫在旁邊 ——
+  // 名字後面那個數字就不用再寫一次了。
+  function gauge(label, value, pct, color, extra) {
+    return '<div class="gauge">' +
+        '<span>' + label + '</span>' +
+        '<b style="color:' + color + '">' + value + '</b>' +
+        (extra || '') +
+      '</div>' +
+      '<span class="bar"><i style="width:' + pct + '%;background:' + color + '"></i></span>';
+  }
+
   // ── 側欄玩家狀態 ──────────────────────────────────────────────────────
   function renderPlayers() {
     var el = document.getElementById('plist');
@@ -48,19 +59,14 @@
         '<div class="prow">' +
           '<div class="nm">' + esc(p.name) +
             (drop > 0 ? '<span class="drop">−' + drop + '</span>' : '') +
-            '<span class="val">' + (p.outer == null ? '—' : p.outer) + '</span>' +
           '</div>' +
           // 上面是幸福指數（今晚會一直往下掉），下面是幸福根基（今晚才有名字）
-          '<div class="bars">' +
-            '<span class="bar" title="幸福指數"><i style="width:' + outer + '%;background:var(--vol)"></i></span>' +
-            '<span class="bar" title="' + (S.named ? '幸福根基' : '？？？') + '"><i style="width:' + (p.inner || 0) + '%;background:var(--root-c)"></i></span>' +
-          '</div>' +
-          '<div class="meta">' + (S.named ? '根基' : '？？？') + ' <b style="color:var(--root-c)">' + (p.inner || 0) + '</b>' +
+          gauge('幸福指數', p.outer == null ? '—' : p.outer, outer, 'var(--vol)',
             '<span class="adj">' +
               '<button data-adj="' + p.pid + '" data-d="-5">−</button>' +
               '<button data-adj="' + p.pid + '" data-d="5">＋</button>' +
-            '</span>' +
-          '</div>' +
+            '</span>') +
+          gauge(S.named ? '幸福根基' : '？？？', p.inner || 0, p.inner || 0, 'var(--root-c)') +
           (chips.length ? '<div class="meta" style="margin-top:4px;flex-wrap:wrap">' + chips.join('') + '</div>' : '') +
         '</div>';
     }).join('');
@@ -272,7 +278,9 @@
     // 折舊控制列只在那一頁出現
     var dep = S.phase.id === 'depreciate';
     document.getElementById('depctl').style.display = dep ? 'inline-flex' : 'none';
-    document.getElementById('hint').textContent = S.phase.title;
+    // 頁名在翻頁選單上就有了，右邊不用再寫一次
+    document.getElementById('hint').textContent =
+      S.phase.id === 'lobby' ? '玩家掃碼進場後按「下一頁」開始' : '';
 
     renderPlayers();
     stage.innerHTML = (views[S.phase.id] || function () { return ''; })();

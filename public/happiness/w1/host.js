@@ -26,6 +26,16 @@
   function post(cmd, extra) { if (conn) conn.host(cmd, extra); }
   function joinUrl() { return location.origin + JOIN_PATH + '?room=' + ROOM; }
 
+  // 側欄的兩條槽。主持人要一眼看出哪一條是什麼，所以把名字寫在旁邊 ——
+  // 名字後面那個數字就不用再寫一次了。
+  function gauge(label, value, pct, color) {
+    return '<div class="gauge">' +
+        '<span>' + label + '</span>' +
+        '<b style="color:' + color + '">' + value + '</b>' +
+      '</div>' +
+      '<span class="bar"><i style="width:' + pct + '%;background:' + color + '"></i></span>';
+  }
+
   // ── 側欄玩家狀態 ──────────────────────────────────────────────────────
   function renderPlayers() {
     var el = document.getElementById('plist');
@@ -51,20 +61,17 @@
       if (p.receivedVerse) chips.push('<span class="chip on">已領受</span>');
       // 點數等拍賣會開始才顯示；？？？ 的數字等它真的開始長才出現 ——
       // 憑空冒出來比一直掛 0 有戲
+      // 暗標進行中不顯示點數 —— 那是暗標，誰手上還有多少籌碼不該掛在牆上。
+      // 開標結束、進到結算頁才又看得到。
       var meta = [];
-      if (S.pointsInPlay) meta.push('剩 <b>' + p.points + '</b> 點');
-      if (p.inner) meta.push('<b class="mono" style="color:var(--root-c)">？？？ ' + p.inner + '</b>');
+      if (S.pointsInPlay && S.phase.id !== 'auction') meta.push('剩 <b>' + p.points + '</b> 點');
       return '' +
         '<div class="prow">' +
-          '<div class="nm">' + esc(p.name) +
-            '<span class="val">' + ((hideScore || p.outer == null) ? '—' : p.outer) + '</span>' +
-          '</div>' +
+          '<div class="nm">' + esc(p.name) + '</div>' +
           // 上面是幸福指數，下面那條第一關還沒有名字。它有數字、它會動，
           // 但畫面上只有三個問號 —— 有人問就說「下一關」。
-          '<div class="bars">' +
-            '<span class="bar" title="幸福指數"><i style="width:' + outer + '%;background:var(--vol)"></i></span>' +
-            '<span class="bar" title="？？？"><i style="width:' + (p.inner || 0) + '%;background:var(--root-c)"></i></span>' +
-          '</div>' +
+          gauge('幸福指數', (hideScore || p.outer == null) ? '—' : p.outer, outer, 'var(--vol)') +
+          gauge('？？？', p.inner || 0, p.inner || 0, 'var(--root-c)') +
           (meta.length ? '<div class="meta">' + meta.join('') + '</div>' : '') +
           (chips.length ? '<div class="meta" style="margin-top:4px;flex-wrap:wrap">' + chips.join('') + '</div>' : '') +
         '</div>';
@@ -213,7 +220,7 @@
           '<div class="col3" style="border-color:var(--gold)"><h3>什麼都不買，剩下的點數就是你的財富</h3><p class="muted" style="margin:0">所以不出價是一種策略，不是棄權。</p></div>' +
           '<div class="col3"><h3>每樣 20 秒同時暗標</h3><p class="muted" style="margin:0">最高者得，同價時先出價者得。</p></div>' +
         '</div>' +
-        '<div class="note">本場共 ' + (S.auction.lots.length || '—') + ' 樣，最後一樣是「？」。</div>';
+        '<div class="note">本場共 ' + (S.auction.lots.length || '—') + ' 樣。標的比人少，所以一定有人什麼都沒標到。</div>';
     },
 
     auction: function () {
@@ -243,9 +250,11 @@
       return '' +
         '<div class="lotidx">' + (a.idx + 1) + ' / ' + a.total + '</div>' +
         '<div class="auction-row">' +
-          timerBlocks(left) +
-          '<div><div class="lotname">' + esc(lot.name) + '</div>' +
-          '<p class="muted mono" style="margin-top:16px;font-size:calc(13px * var(--u))">已出價 <b id="bidcount" style="color:var(--ink)">' + a.bidCount + '</b> / ' + S.stats.count + ' 人</p></div>' +
+          '<div>' +
+            '<div class="lotname">' + esc(lot.name) + '</div>' +
+            '<p class="muted mono" style="margin-top:16px;font-size:calc(13px * var(--u))">已出價 <b id="bidcount" style="color:var(--ink)">' + a.bidCount + '</b> / ' + S.stats.count + ' 人</p>' +
+            timerBlocks(left) +
+          '</div>' +
           lotArt(lot) +
         '</div>';
     },
@@ -349,11 +358,8 @@
           '<div class="col3"><h3>抽到重擊卡的人</h3><p style="font-size:calc(18px * var(--u));font-weight:700;margin:6px 0 0">' +
             (s.hitCards.filter(function (h) { return !h.absent; }).map(function (h) { return esc(h.name); }).join('、') || '—') +
             '</p></div>' +
-          '<div class="col3"><h3>標到「？」的人</h3><p style="font-size:calc(18px * var(--u));font-weight:700;margin:6px 0 0">' +
-            (function () {
-              var who = S.players.filter(function (p) { return p.won.some(function (w) { return w.mystery; }); });
-              return who.length ? who.map(function (p) { return esc(p.name); }).join('、') : '（流標）';
-            })() +
+          '<div class="col3"><h3>剩最多錢的人</h3><p style="font-size:calc(18px * var(--u));font-weight:700;margin:6px 0 0">' +
+            (s.richest ? esc(s.richest.name) + ' · ' + s.richest.points + ' 點' : '—') +
             '</p></div>' +
         '</div>';
     },

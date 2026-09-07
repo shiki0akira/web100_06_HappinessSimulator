@@ -85,7 +85,7 @@
       return sliderScreen('你覺得現在自己幸福嗎？', '0 到 100，憑直覺。只有你自己看得到你的數字。', 50, 'selfscore', '0', '100');
     },
     selfscore_result: function () { return wait('看大螢幕'); },
-    standards: function () { return wait('看大螢幕', '世人的三個標準'); },
+    standards: function () { return wait('看大螢幕'); },
 
     auction_intro: function (me) {
       return '<h2>幸福拍賣會</h2>' +

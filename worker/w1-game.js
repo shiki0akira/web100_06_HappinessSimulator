@@ -1,5 +1,5 @@
 // 第一關「真幸福」的規則。純函式，不碰網路也不碰儲存 —— 房間（Durable Object）負責把它接上線。
-import { LOTS, MYSTERY_LOT, DECKS, QUESTION_CARDS, VERSE } from './w1-data.js';
+import { LOTS, DECKS, QUESTION_CARDS, VERSE } from './w1-data.js';
 
 export const BID_MS = 20000;    // 暗標一輪 20 秒
 export const REVEAL_MS = 6000;  // 開標停留 6 秒
@@ -98,16 +98,16 @@ export function addPlayer(s, name) {
 }
 
 // ── 拍賣 ────────────────────────────────────────────────────────────────
+// 幾樣標的。刻意少於人數 —— 這樣「什麼都沒標到」才會真的發生在某些人身上。
 function lotCountFor(n) {
-  if (n >= 13) return 10;
-  if (n >= 9) return 8;
-  return 6;
+  if (n >= 13) return 9;
+  if (n >= 9) return 7;
+  return 5;
 }
 
 function buildLots(s) {
   const count = lotCountFor(Math.max(alive(s).length, 1));
-  // 「？」永遠是最後一樣；標的數少於人數，「什麼都沒標到」才會真的發生
-  s.lots = LOTS.slice(0, Math.max(count - 1, 2)).concat([{ ...MYSTERY_LOT }]);
+  s.lots = LOTS.slice(0, Math.min(Math.max(count, 2), LOTS.length));
 }
 
 export function startAuction(s, now) {
