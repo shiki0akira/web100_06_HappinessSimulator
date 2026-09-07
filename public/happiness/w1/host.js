@@ -26,14 +26,14 @@
   function post(cmd, extra) { if (conn) conn.host(cmd, extra); }
   function joinUrl() { return location.origin + JOIN_PATH + '?room=' + ROOM; }
 
-  // 側欄的兩條槽。主持人要一眼看出哪一條是什麼，所以把名字寫在旁邊 ——
-  // 名字後面那個數字就不用再寫一次了。
+  // 側欄的兩條槽。名稱、槽、數字擠在同一行 —— 八個人以上也要能不捲動就看完，
+  // 每個人多一行就是少一個人。
   function gauge(label, value, pct, color) {
-    return '<div class="gauge">' +
-        '<span>' + label + '</span>' +
+    return '<div class="g">' +
+        '<span class="lbl">' + label + '</span>' +
+        '<span class="bar"><i style="width:' + Math.min(pct, 100) + '%;background:' + color + '"></i></span>' +
         '<b style="color:' + color + '">' + value + '</b>' +
-      '</div>' +
-      '<span class="bar"><i style="width:' + pct + '%;background:' + color + '"></i></span>';
+      '</div>';
   }
 
   // ── 側欄玩家狀態 ──────────────────────────────────────────────────────
@@ -67,13 +67,12 @@
       if (S.pointsInPlay && S.phase.id !== 'auction') meta.push('剩 <b>' + p.points + '</b> 點');
       return '' +
         '<div class="prow">' +
-          '<div class="nm">' + esc(p.name) + '</div>' +
+          '<div class="nm">' + esc(p.name) + chips.join('') + '</div>' +
           // 上面是幸福指數，下面那條第一關還沒有名字。它有數字、它會動，
           // 但畫面上只有三個問號 —— 有人問就說「下一關」。
           gauge('幸福指數', (hideScore || p.outer == null) ? '—' : p.outer, outer, 'var(--vol)') +
           gauge('？？？', p.inner || 0, p.inner || 0, 'var(--root-c)') +
           (meta.length ? '<div class="meta">' + meta.join('') + '</div>' : '') +
-          (chips.length ? '<div class="meta" style="margin-top:4px;flex-wrap:wrap">' + chips.join('') + '</div>' : '') +
         '</div>';
     }).join('');
   }
@@ -271,6 +270,7 @@
       var names = function (arr) {
         return arr.length ? arr.map(function (x) { return esc(x.name); }).join('、') : '—';
       };
+      var plus = function (n) { return '<span class="plus">+' + n + '</span>'; };
       var withPoints = function (arr) {
         return arr.length
           ? '<p class="mono" style="margin:8px 0 0;font-size:calc(22px * var(--u));color:var(--gold)">' + arr[0].points + ' 點</p>'
@@ -278,16 +278,16 @@
       };
       return '<h2>看看大家買了什麼</h2>' +
         '<div class="cols3">' +
-          '<div class="col3"><h3>買最多樣的人</h3>' +
+          '<div class="col3"><h3>買最多樣的人' + plus(S.bonus.mostLots) + '</h3>' +
             '<div class="who">' + names(s.topBuyers) + '</div></div>' +
-          '<div class="col3"><h3>剩最多錢的人</h3>' +
+          '<div class="col3"><h3>剩最多錢的人' + plus(S.bonus.richest) + '</h3>' +
             '<div class="who">' + names(s.richest) + '</div>' + withPoints(s.richest) + '</div>' +
-          '<div class="col3"><h3>剩最少錢的人</h3>' +
+          '<div class="col3"><h3>剩最少錢的人' + plus(S.bonus.poorest) + '</h3>' +
             '<div class="who">' + names(s.poorest) + '</div>' + withPoints(s.poorest) + '</div>' +
         '</div>' +
         '<div class="note" style="border-left-color:var(--root-c)">' +
-          '<b>標到東西是有回報的</b>　每標到一樣 <b>幸福指數 +5</b>；' +
-          '買最多樣的人再 +5，剩最多錢的人 +10，剩最少錢的人 +5。</div>' +
+          '<b>標到東西是有回報的</b>　每標到一樣 <b>幸福指數 +' + S.bonus.perLot + '</b>，' +
+          '再加上面這三張卡的分。</div>' +
         buyList();
     },
 

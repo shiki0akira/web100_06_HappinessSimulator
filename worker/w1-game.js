@@ -381,6 +381,7 @@ export function hostView(s, roomCode) {
     phases: PHASES,
     pointsInPlay: pointsInPlay(s),
     verse: VERSE,
+    bonus: BONUS,
     auction: auctionView(s),
     players: ps.map((p) => ({
       pid: p.pid, name: p.name, outer: p.outer, outerStart: p.outerStart,

@@ -27,15 +27,15 @@
   function joinUrl() { return location.origin + JOIN_PATH + '?room=' + ROOM; }
   function pct(r) { return '−' + Math.round(r * 100) + '%'; }
 
-  // 側欄的兩條槽。主持人要一眼看出哪一條是什麼，所以把名字寫在旁邊 ——
-  // 名字後面那個數字就不用再寫一次了。
+  // 側欄的兩條槽。名稱、槽、數字擠在同一行 —— 八個人以上也要能不捲動就看完，
+  // 每個人多一行就是少一個人。
   function gauge(label, value, pct, color, extra) {
-    return '<div class="gauge">' +
-        '<span>' + label + '</span>' +
+    return '<div class="g">' +
+        '<span class="lbl">' + label + '</span>' +
+        '<span class="bar"><i style="width:' + Math.min(pct, 100) + '%;background:' + color + '"></i></span>' +
         '<b style="color:' + color + '">' + value + '</b>' +
         (extra || '') +
-      '</div>' +
-      '<span class="bar"><i style="width:' + pct + '%;background:' + color + '"></i></span>';
+      '</div>';
   }
 
   // ── 側欄玩家狀態 ──────────────────────────────────────────────────────
@@ -59,6 +59,7 @@
         '<div class="prow">' +
           '<div class="nm">' + esc(p.name) +
             (drop > 0 ? '<span class="drop">−' + drop + '</span>' : '') +
+            chips.join('') +
           '</div>' +
           // 上面是幸福指數（今晚會一直往下掉），下面是幸福根基（今晚才有名字）
           gauge('幸福指數', p.outer == null ? '—' : p.outer, outer, 'var(--vol)',
@@ -67,7 +68,6 @@
               '<button data-adj="' + p.pid + '" data-d="5">＋</button>' +
             '</span>') +
           gauge(S.named ? '幸福根基' : '？？？', p.inner || 0, p.inner || 0, 'var(--root-c)') +
-          (chips.length ? '<div class="meta" style="margin-top:4px;flex-wrap:wrap">' + chips.join('') + '</div>' : '') +
         '</div>';
     }).join('');
 
