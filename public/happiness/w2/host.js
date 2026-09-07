@@ -210,8 +210,9 @@
         '<div class="note"><b>這條線不會被任何事件扣掉。</b>　而且它不是比賽——它從你來的第一天開始長。</div>';
     },
 
+    // 七關共用的那一頁，內容在 shared/stage-parts.js
     message: function () {
-      return '<h2>我也買錯過</h2>';
+      return StageParts.testimony({ lede: '講你自己買錯過什麼。買錯過的人講，比講得對的人講有用。' });
     },
 
     verse: function () {

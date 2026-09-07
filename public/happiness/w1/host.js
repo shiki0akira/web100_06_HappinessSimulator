@@ -54,7 +54,7 @@
         var done = S.phase.id === 'warmup' ? p.warmup !== null : p.outer !== null;
         chips.push('<span class="chip' + (done ? ' on' : '') + '">' + (done ? '已作答' : '還沒填') + '</span>');
       }
-      if (p.won.length) chips.push('<span class="chip">標到 ' + p.won.length + ' 樣</span>');
+      if (p.won.length && S.pointsInPlay) chips.push('<span class="chip">標到 ' + p.won.length + ' 樣</span>');
       if (p.cardFlipped) chips.push('<span class="chip' + (p.cardKind === 'hit' ? ' on' : '') + '">' + (p.cardKind === 'hit' ? '重擊' : p.cardKind === 'question' ? '？卡' : '已抽') + '</span>');
       if (p.metoo) chips.push('<span class="chip on">我遇過</span>');
       if (p.hasBurden) chips.push('<span class="chip">已填寫</span>');
@@ -141,6 +141,7 @@
               }).join('')
             : '<span class="none">什麼都沒標到</span>') + '</span>' +
           '<span class="rest">剩 ' + p.points + ' 點</span>' +
+          (p.auctionBonus ? '<span class="gain">幸福指數 +' + p.auctionBonus + '</span>' : '') +
         '</div>';
       }).join('') + '</div>';
   }
@@ -284,43 +285,41 @@
           '<div class="col3"><h3>剩最少錢的人</h3>' +
             '<div class="who">' + names(s.poorest) + '</div>' + withPoints(s.poorest) + '</div>' +
         '</div>' +
+        '<div class="note" style="border-left-color:var(--root-c)">' +
+          '<b>標到東西是有回報的</b>　每標到一樣 <b>幸福指數 +5</b>；' +
+          '買最多樣的人再 +5，剩最多錢的人 +10，剩最少錢的人 +5。</div>' +
         buyList();
     },
 
     event_draw: function () {
-      var g = S.stats.groupCounts;
       return '<h2>模擬生命中的事件</h2>' +
-        '<p class="lede">這是幸福模擬器 —— 遊戲跑到這裡，會跑出生活裡真的會發生的事。' +
-        '每人抽一張，全場不重複。你剩多少錢，決定你會遇到什麼。</p>' +
-        '<div class="big" style="margin-top:20px">' + S.stats.flipped + ' <span class="muted" style="font-size:calc(34px * var(--u))">/ ' + S.stats.count + ' 人已翻開</span></div>' +
-        '<div class="cols3">' +
-          S.stats.decks.map(function (d) {
-            return '<div class="col3"><h3>' + esc(d.label) + '</h3>' +
-              '<p class="mono muted" style="margin:0;font-size:calc(13px * var(--u))">' + esc(d.rule) + ' · ' + g[d.key] + ' 人</p>' +
-              '<p style="margin:8px 0 0;font-size:calc(14px * var(--u));color:var(--ink-2)">' + esc(d.character) + '</p></div>';
-          }).join('') +
-        '</div>';
+        '<p class="lede">因為這是幸福模擬器，所以在遊戲的過程中，總會出現一些人生的模擬情境。' +
+        '大家可以抽一張卡，看看自己遇到的是什麼。</p>' +
+        '<div class="big" style="margin-top:24px">' + S.stats.flipped + ' <span class="muted" style="font-size:calc(34px * var(--u))">/ ' + S.stats.count + ' 人已翻開</span></div>' +
+        '<div class="note">每個人抽到的都不一樣，全場不重複。翻開了就會看到自己的幸福指數怎麼動。</div>';
     },
 
     event_result: function () {
       var s = S.stats;
       var drop = (s.startAvg != null && s.outerAvg != null) ? (s.outerAvg - s.startAvg) : null;
-      return '<h2>三種策略，三種摔法</h2>' +
+      return '<h2>追求幸福的結果</h2>' +
         '<div style="display:flex;gap:56px;align-items:flex-end;margin-top:16px">' +
           '<div><span class="kicker">全場平均</span><div class="big" style="font-size:calc(64px * var(--u))">' + (s.outerAvg == null ? '—' : s.outerAvg) + '</div></div>' +
           '<div><span class="kicker">相對開場</span><div class="big" style="font-size:calc(64px * var(--u));color:var(--vol)">' + (drop == null ? '—' : (drop > 0 ? '+' : '') + drop) + '</div></div>' +
         '</div>' +
-        '<div class="hitcards">' + s.hitCards.map(function (h) {
-          return '<div class="hitcard">' +
-            '<div class="hd"><span>' + esc(h.groupLabel) + '</span><b>' + h.delta + '</b></div>' +
-            '<p>' + esc(h.text) + '</p>' +
-            '<div class="nm">' + (h.absent ? '今天沒有人走這條路，但我認識走這條路的人。' : esc(h.name)) + '</div>' +
+        // 每個人抽到什麼，一次看完 —— 不標「你是哪一型」，那是評語不是遊戲
+        '<div class="hitcards">' + s.allCards.map(function (c) {
+          return '<div class="hitcard' + (c.delta > 0 ? ' up' : '') + '">' +
+            '<div class="hd"><span>' + esc(c.name) + '</span>' +
+              '<b>' + (c.delta > 0 ? '+' : '') + c.delta + '</b></div>' +
+            '<p>' + esc(c.text) + '</p>' +
           '</div>';
         }).join('') + '</div>';
     },
 
+    // 七關共用的那一頁，內容在 shared/stage-parts.js
     testimony: function () {
-      return '<h2>我也是那個<br>抓不住的人</h2>';
+      return StageParts.testimony({ lede: '主持人先講自己的。講你也抓不住的那一件事，不要講你已經克服的。' });
     },
 
     verse: function () {

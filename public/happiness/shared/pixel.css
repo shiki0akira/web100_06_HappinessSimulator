@@ -242,6 +242,10 @@ canvas.qr, .qrbox canvas, .notesqr canvas { image-rendering: pixelated; }
 .hostqr .u { font-family: var(--pixel); color: var(--ink-3); margin-top: 10px; word-break: break-all; }
 
 
+/* 大螢幕上的共用插圖（見證分享那一頁之類的） */
+.stageart { margin-top: 40px; }
+.stageart img { display: block; width: min(58%, 760px); height: auto; image-rendering: pixelated; }
+
 /* 淺／深色切換鈕。三個畫面共用同一顆，擺哪裡各自決定。 */
 .themebtn {
   font-family: var(--sans); font-size: 13px; font-weight: 700; line-height: 1;

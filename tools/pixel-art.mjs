@@ -327,3 +327,72 @@ for (const [id, [label, map]] of Object.entries(LOTS)) {
   n++;
 }
 console.log('畫好了：standards.svg ＋ ' + n + ' 張標的圖 → ' + OUT);
+
+// ── 共用插圖：跨週都會用到的放這裡 ────────────────────────────────────────
+// 見證分享：一個人在講，兩個人在聽。第一關之後每一關都可能翻到這一頁。
+const SPEAKER = [
+  '................',
+  '.......GG.......',
+  '......GGGG......',
+  '......GGGG......',
+  '.......GG.......',
+  '....GGGGGGGG....',
+  '...GGGGGGGGGG...',
+  '...GG.GGGG.GG...',
+  '...GG.GGGG.GG...',
+  '......GGGG......',
+  '......GGGG......',
+  '.....GG..GG.....',
+  '.....GG..GG.....',
+  '.....GG..GG.....',
+  '................',
+  '................',
+];
+const BUBBLE = [
+  '................',
+  '..CCCCCCCCCCCC..',
+  '..CCCCCCCCCCCC..',
+  '..CCCwwCCwwCCC..',
+  '..CCwwwwwwwwCC..',
+  '..CCCwwwwwwCCC..',
+  '..CCCCwwwwCCCC..',
+  '..CCCCCwwCCCCC..',
+  '..CCCCCCCCCCCC..',
+  '...CCC..........',
+  '...CC...........',
+  '................',
+  '................',
+  '................',
+  '................',
+  '................',
+];
+const LISTENER = [
+  '................',
+  '................',
+  '.......WW.......',
+  '......WWWW......',
+  '......WWWW......',
+  '.......WW.......',
+  '.....WWWWWW.....',
+  '....WWWWWWWW....',
+  '....WWWWWWWW....',
+  '.....WW..WW.....',
+  '.....WW..WW.....',
+  '.....WW..WW.....',
+  '................',
+  '................',
+  '................',
+  '................',
+];
+
+{
+  const OUT_SHARED = 'public/happiness/shared/art';
+  fs.mkdirSync(OUT_SHARED, { recursive: true });
+  let deco = '';
+  for (let x = 0; x < 72; x += 2) deco += `<rect x="${x}" y="17" width="1" height="1" fill="${PAL.C}" opacity=".3"/>`;
+  const body = deco + sprite(BUBBLE, 0, 0) + sprite(SPEAKER, 18, 1) + sprite(LISTENER, 40, 1) + sprite(LISTENER, 56, 1);
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 19" shape-rendering="crispEdges"` +
+    ` role="img" aria-label="見證分享">${body}</svg>\n`;
+  fs.writeFileSync(OUT_SHARED + '/testimony.svg', svg);
+  console.log('也畫了共用的 見證分享 → ' + OUT_SHARED + '/testimony.svg');
+}

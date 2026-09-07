@@ -15,8 +15,8 @@ export const PHASES = [
   { id: 'auction',          tag: '互動點 3', title: '幸福拍賣會' },
   { id: 'auction_result',   tag: '結算頁',   title: '看看大家買了什麼' },
   { id: 'event_draw',       tag: '互動點 4', title: '模擬生命中的事件' },
-  { id: 'event_result',     tag: '互動點 4', title: '三種策略，三種摔法' },
-  { id: 'testimony',        tag: '主持人',   title: '你的見證' },
+  { id: 'event_result',     tag: '互動點 4', title: '追求幸福的結果' },
+  { id: 'testimony',        tag: '見證',     title: '見證分享' },
   { id: 'verse',            tag: '經文',     title: '馬太福音 11:28' },
   { id: 'burden',           tag: '互動點 5', title: '禱告，順手把石頭收下來' },
   { id: 'card',             tag: '週卡',     title: '生成你的第一張卡片' },
@@ -26,7 +26,8 @@ export const PHASES = [
 // 點數只有幸福拍賣會用得到。規則頁（auction_intro）之前畫面上不出現點數 ——
 // 玩家還沒聽到「每人 100 點」，先看到一個數字只會讓人以為現在就該花它。
 const AUCTION_START = PHASES.findIndex((p) => p.id === 'auction_intro');
-const pointsInPlay = (s) => s.phaseIdx >= AUCTION_START;
+const AUCTION_END = PHASES.findIndex((p) => p.id === 'auction_result');
+const pointsInPlay = (s) => s.phaseIdx >= AUCTION_START && s.phaseIdx <= AUCTION_END;
 
 export function createState() {
   return {
@@ -48,6 +49,10 @@ export const INNER_VERSE = 10;   // 領受經文
 export const INNER_PRAYER = 5;   // 收尾禱告
 
 const clamp = (n) => Math.max(0, Math.min(100, Math.round(n)));
+// 幸福指數的上限比 100 高：一開始就填 100 的人，拍賣加分還是要加得上去。
+// 進度條吃 % 寬度，超過 100 就是滿格，數字照實顯示。
+export const OUTER_MAX = 200;
+const clampOuter = (n) => Math.max(0, Math.min(OUTER_MAX, Math.round(n)));
 // 幸福根基只會漲。沒有任何事件扣得到它 —— 那是它唯一的意義。
 // || 0 是為了舊版建立的房間：那時候 inner 還是 null，deploy 之後別讓它變 NaN。
 const grow = (p, n) => { p.inner = Math.min(INNER_CAP, (p.inner || 0) + n); };
@@ -92,6 +97,7 @@ export function addPlayer(s, name) {
     receivedVerse: false,
     cardDone: false,    // 生成週卡＝禱告收尾做完了
     adjust: 0,
+    auctionBonus: 0,   // 拍賣結算加了幾分
   };
   s.order.push(pid);
   return pid;
@@ -114,6 +120,7 @@ function buildLots(s) {
 export function startAuction(s, now) {
   buildLots(s);
   const wait = s.auction.waitForHost;
+  clearAuctionBonus(s);
   alive(s).forEach((p) => { p.points = 100; p.won = []; });
   s.auction = { status: 'bidding', idx: 0, deadline: now + BID_MS, bids: {}, results: [], waitForHost: wait };
   return s.auction.deadline;
@@ -165,6 +172,35 @@ export function advanceAuction(s, now) {
   return null;
 }
 
+// ── 拍賣的加分 ──────────────────────────────────────────────────────────
+// 標到東西是有回報的 —— 不然這場拍賣只是在花錢。加分都記在 auctionBonus 裡，
+// 主持人回頭重跑拍賣的時候整批退掉再算一次。
+export const BONUS = { perLot: 5, mostLots: 5, richest: 10, poorest: 5 };
+
+export function applyAuctionBonus(s) {
+  const ps = alive(s);
+  if (!ps.length) return;
+  clearAuctionBonus(s);
+  const maxWon = Math.max(...ps.map((p) => p.won.length));
+  const maxPts = Math.max(...ps.map((p) => p.points));
+  const minPts = Math.min(...ps.map((p) => p.points));
+  ps.forEach((p) => {
+    let b = p.won.length * BONUS.perLot;
+    if (maxWon > 0 && p.won.length === maxWon) b += BONUS.mostLots;
+    if (p.points === maxPts) b += BONUS.richest;
+    if (p.points === minPts) b += BONUS.poorest;
+    p.auctionBonus = b;
+    if (p.outer !== null) p.outer = clampOuter(p.outer + b);
+  });
+}
+
+function clearAuctionBonus(s) {
+  alive(s).forEach((p) => {
+    if (p.auctionBonus && p.outer !== null) p.outer = clampOuter(p.outer - p.auctionBonus);
+    p.auctionBonus = 0;
+  });
+}
+
 // ── 模擬生命中的事件 ──────────────────────────────────────────────────────────
 export function dealEventCards(s) {
   const players = alive(s);
@@ -206,6 +242,7 @@ export function enterPhase(s, idx, now) {
     if (s.auction.status === 'idle' || s.auction.status === 'done') return startAuction(s, now);
     return s.auction.deadline || null;
   }
+  if (id === 'auction_result') applyAuctionBonus(s);
   if (id === 'event_draw' && !s.eventDealt) dealEventCards(s);
   return null;
 }
@@ -232,7 +269,7 @@ export function applyAction(s, pid, msg) {
     case 'flip':
       if (p.card && !p.cardFlipped) {
         p.cardFlipped = true;
-        if (p.outer !== null) p.outer = clamp(p.outer + p.card.delta);
+        if (p.outer !== null) p.outer = clampOuter(p.outer + p.card.delta);
       }
       break;
     case 'metoo': p.metoo = !p.metoo; break;
@@ -273,7 +310,7 @@ export function applyHost(s, msg, now) {
       return null;
     case 'redeal':
       alive(s).forEach((p) => {
-        if (p.cardFlipped && p.card && p.outer !== null) p.outer = clamp(p.outer - p.card.delta);
+        if (p.cardFlipped && p.card && p.outer !== null) p.outer = clampOuter(p.outer - p.card.delta);
       });
       dealEventCards(s);
       return null;
@@ -281,7 +318,7 @@ export function applyHost(s, msg, now) {
       const p = s.players[msg.pid];
       if (p && p.outer !== null) {
         const d = Number(msg.delta) || 0;
-        p.outer = clamp(p.outer + d);
+        p.outer = clampOuter(p.outer + d);
         p.adjust += d;
       }
       return null;
@@ -355,6 +392,7 @@ export function hostView(s, roomCode) {
       points: p.points, won: p.won, group: groupOf(p),
       warmup: p.warmup,
       cardKind: p.card ? p.card.kind : null, cardFlipped: p.cardFlipped,
+      auctionBonus: p.auctionBonus || 0,
       metoo: p.metoo, hasBurden: p.hasBurden, burdenShare: !!p.burdenShared,
       receivedVerse: p.receivedVerse, adjust: p.adjust,
     })),
@@ -374,6 +412,10 @@ export function hostView(s, roomCode) {
       burdens: ps.filter((p) => p.hasBurden).length,
       sharedBurdens: ps.filter((p) => p.burdenShared).map((p) => ({ name: p.name, text: p.burdenShared })),
       hitCards: hits.concat(narrate),
+      // 每個人抽到的卡，翻開了才進來 —— 第 11 頁一次看完
+      allCards: ps.filter((p) => p.cardFlipped && p.card)
+        .map((p) => ({ name: p.name, text: p.card.text, delta: p.card.delta, kind: p.card.kind }))
+        .sort((a, b) => a.delta - b.delta),
       decks: Object.values(DECKS).map((d) => ({ key: d.key, label: d.label, rule: d.rule, character: d.character })),
       groupCounts: { A: ps.filter((p) => groupOf(p) === 'A').length, B: ps.filter((p) => groupOf(p) === 'B').length, C: ps.filter((p) => groupOf(p) === 'C').length },
       versesReceived: ps.filter((p) => p.receivedVerse).length,
@@ -405,7 +447,7 @@ export function playerView(s, pid, roomCode) {
     me: {
       pid: p.pid, name: p.name, warmup: p.warmup, outer: p.outer, outerStart: p.outerStart,
       inner: p.inner || 0, innerCap: INNER_CAP,
-      points: p.points, won: p.won,
+      points: p.points, won: p.won, auctionBonus: p.auctionBonus || 0,
       card: p.cardFlipped ? p.card : (p.card ? { hidden: true } : null),
       cardFlipped: p.cardFlipped, metoo: p.metoo,
       hasBurden: p.hasBurden, burdenShare: !!p.burdenShared,

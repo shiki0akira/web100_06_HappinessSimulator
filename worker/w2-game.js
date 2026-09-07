@@ -21,7 +21,7 @@ export const PHASES = [
   { id: 'mystery',    tag: '高潮',     title: '還有一樣，沒上過拍賣台' },
   { id: 'free',       tag: '高潮',     title: '今天它不用錢' },
   { id: 'naming',     tag: '機制事件', title: '那條線有了名字' },
-  { id: 'message',    tag: '主持人',   title: '你的信息與見證' },
+  { id: 'message',    tag: '見證',     title: '見證分享' },
   { id: 'verse',      tag: '經文',     title: '約翰福音 10:10' },
   { id: 'burden',     tag: '互動點 4', title: '禱告，哪一項讓你動了一下' },
   { id: 'card',       tag: '週卡',     title: '生成你的第二張卡片' },

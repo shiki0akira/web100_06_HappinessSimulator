@@ -143,13 +143,16 @@
             }).join('') + '</div>'
           : '<p>你什麼都沒標到。你手上滿手現金——那不是輸，是第三種策略。</p>') +
         '<p class="mono" style="margin-top:16px;color:var(--gold);font-size:23px">剩下的財富 ' + me.points + ' 點</p>' +
+        (me.auctionBonus
+          ? '<p class="mono ok" style="margin-top:8px;font-size:23px">幸福指數 +' + me.auctionBonus + '</p>'
+          : '') +
         wait('看大螢幕');
     },
 
     event_draw: function (me) {
       if (!me.card) return wait('等主持人發牌');
       if (!me.cardFlipped) {
-        return '<h2>模擬生命中的事件</h2><p>每個人抽到的不一樣。點一下翻開。</p>' +
+        return '<h2>模擬生命中的事件</h2><p>每個人抽到的都不一樣。點一下翻開。</p>' +
           '<button class="flip" id="flip">?<small>點我翻開</small></button>';
       }
       var c = me.card;
@@ -317,7 +320,7 @@
       S.phase.id, S.auction.status, S.auction.idx,
       me.warmup, me.outer, me.inner, me.myBid, me.cardFlipped, me.metoo,
       me.receivedVerse, me.cardDone, me.hasBurden, me.burdenShare, me.points, me.won.length,
-      S.pointsInPlay, S.answeredWarmup, S.answeredScore, S.playerCount,
+      S.pointsInPlay, S.answeredWarmup, S.answeredScore, S.playerCount, me.auctionBonus,
     ].join('|');
     if (next !== sig) {
       sig = next;
