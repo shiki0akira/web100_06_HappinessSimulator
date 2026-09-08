@@ -98,15 +98,27 @@
   .tile { display: flex; align-items: center; gap: calc(10px * var(--u));
     background: var(--surface); border: 4px solid var(--edge); box-shadow: 5px 5px 0 var(--hard);
     padding: min(calc(7px * var(--u)), 1.1vh) calc(10px * var(--u)); }
-  .tile .nm { font-size: min(calc(16px * var(--u)), 2.7vh); font-weight: 700; line-height: 1.3; }
+  .tile .txt { min-width: 0; }
+  .tile .nm { display: flex; align-items: baseline; gap: 8px; font-size: min(calc(16px * var(--u)), 2.7vh); font-weight: 700; line-height: 1.3; }
+  /* 牌的正面：剛剛誰挑了它。翻開之前那是這張牌上唯一的字。 */
+  .tile .by { display: block; margin-top: 3px; font-size: min(calc(14px * var(--u)), 2.2vh);
+    font-weight: 700; line-height: 1.5; color: var(--vol); }
+  .tile .by.none { color: var(--ink-3); font-weight: 500; }
+  .tile.face { cursor: pointer; border-color: var(--gold); }
+  .tile.face:hover { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 var(--hard); }
+  .tile.face:active { transform: translate(2px, 2px); box-shadow: none; }
+  .afterhd .flipcount { font-family: var(--pixel); font-size: calc(14px * var(--u)); color: var(--ink-3); }
+  /* 三十年後每一格的「為什麼」。那句話才是他們會記住的東西，百分比只是引子。 */
+  .tile .why { display: block; margin-top: 3px; font-size: min(calc(13px * var(--u)), 2vh);
+    font-weight: 500; line-height: 1.55; color: var(--ink-3); }
   .tile .sub { display: block; margin-top: 2px; font-size: min(calc(13px * var(--u)), 2.2vh); font-weight: 500; color: var(--ink-3); }
-  .tile .left { display: block; margin-top: 2px; font-family: var(--pixel); font-size: min(calc(15px * var(--u)), 2.4vh); color: var(--vol); }
+  .tile .left { margin-left: auto; white-space: nowrap; font-family: var(--pixel); font-size: min(calc(15px * var(--u)), 2.4vh); color: var(--vol); }
   /* 圖示墊一塊深色底：有幾張圖本來就是淺色的，白底的淺色主題會整張消失 */
   .tileart { width: min(calc(40px * var(--u)), 6vh); height: auto; flex: none; image-rendering: pixelated;
     background: #12211E; padding: calc(3px * var(--u)); }
-  .tile.aged { border-color: var(--edge-soft); }
-  .tile.aged .nm { color: var(--ink-3); }
-  .tile.aged .tileart { opacity: .45; }
+  .tile.aged { border-color: var(--edge-soft); align-items: flex-start; }
+  .tile.aged .tileart { margin-top: 2px; }
+  .tile.aged .tileart { opacity: .75; }
   /* 買三送一的那一格。挑滿三樣它就是你的了 —— 只是還不知道是什麼 */
   .tile.gift { border-style: dashed; border-color: var(--gold); }
   .tile.gift .nm { color: var(--gold); }
@@ -149,7 +161,12 @@
   .keeplist.dense .nm { font-size: calc(15px * var(--u)); }
   .keeplist.dense .lot { font-size: calc(13px * var(--u)); padding: 1px 7px; }
 
-  .deprow { display: flex; align-items: baseline; gap: calc(40px * var(--u)); margin-top: calc(10px * var(--u)); flex-wrap: wrap; }
+  /* 三十年後那一頁：標題和全場的變化擠在同一行，版面留給十二格的「為什麼」 */
+  .afterhd { display: flex; align-items: baseline; gap: calc(28px * var(--u)); flex-wrap: wrap; }
+  .afterhd .stat { font-family: var(--pixel); font-size: min(calc(38px * var(--u)), 5vh); line-height: 1; }
+  .afterhd .stat > span { font-family: var(--sans); font-weight: 700; font-size: calc(14px * var(--u));
+    color: var(--ink-3); margin-right: 8px; }
+  .afterhd .stat.drop { color: var(--vol); }
 
   /* 「世界越來越進步，但人卻越來越痛苦」 */
   .claim { font-size: min(calc(46px * var(--u)), 6.4vh); font-weight: 900; line-height: 1.5; max-width: 22em;
@@ -240,9 +257,6 @@
     <button class="btn" data-cmd="prev">← 上一頁</button>
     <button class="btn primary" data-cmd="next">下一頁 →</button>
     <select id="jump"></select>
-    <span id="agectl" style="display:none;gap:8px;">
-      <button class="btn" data-cmd="resetAging">重跑三十年</button>
-    </span>
     <span class="sp"></span>
     <span class="hint" id="hint"></span>
     <button class="btn" data-cmd="reset" id="resetbtn">全部重置</button>

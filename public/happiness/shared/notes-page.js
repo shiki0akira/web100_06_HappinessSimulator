@@ -46,9 +46,19 @@
       el('waitbtn').textContent = '每項之間等我：' + (S.auction.waitForHost ? '開' : '關');
       el('nextlot').textContent = S.auction.status === 'bidding' ? '立即開標' : '下一項 →';
     }
-    // 第二關的「三十年後」那一頁：主持人拿著手機也能把分數還原重跑。
-    var age = el('agectl');
-    if (age) age.hidden = S.phase.id !== 'after30';
+
+    // 第二關的「三十年後」：十二張牌一張一張翻，主持人拿著手機也控得動。
+    var flip = el('flipctl');
+    var isFlip = S.phase.id === 'after30' && S.shelf;
+    if (flip) {
+      flip.hidden = !isFlip;
+      if (isFlip) {
+        var doneAll = S.shelf.flipped >= S.shelf.total;
+        el('flipnext').textContent = doneAll ? '都翻完了' : '翻下一張（' + S.shelf.flipped + '/' + S.shelf.total + '）';
+        el('flipnext').disabled = doneAll;
+        el('flipall').disabled = doneAll;
+      }
+    }
 
     var next = [S.phaseIdx, live].join('|');
     if (next === sig) return;
@@ -84,7 +94,6 @@
       onState: function (d) { S = d; render(); },
       onDrop: function () { el('live').textContent = '連線中斷，重連中…'; },
     });
-    var on = function (id, fn) { var b = el(id); if (b) b.onclick = fn; };
     el('prev').onclick = function () { post('prev'); };
     el('next').onclick = function () { post('next'); };
     el('prevlot').onclick = function () { post('prevLot'); };
@@ -94,8 +103,10 @@
     el('restart').onclick = function () {
       if (confirm('整場拍賣重跑？所有人的點數和標到的東西都會還原。')) post('restartAuction');
     };
-    on('resetaging', function () {
-      if (confirm('重跑三十年？所有人的幸福指數會還原到進時光機之前。')) post('resetAging');
+    var on = function (id, fn) { var b = el(id); if (b) b.onclick = fn; };
+    on('flipnext', function () { post('flipNext'); });
+    on('flipall', function () {
+      if (confirm('剩下的全部翻開？')) post('flipAll');
     });
   }
 

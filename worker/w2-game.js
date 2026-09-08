@@ -26,10 +26,9 @@ export const PHASES = [
   { id: 'after30',      tag: '主遊戲',   title: '三十年後的幸福人生商店' },
   { id: 'verse_second', tag: '經文',     title: '我來了，是要叫羊得生命' },
   { id: 'gift',         tag: '高潮',     title: '買三送一的那一樣' },
+  { id: 'naming',       tag: '機制事件', title: '那條線有了名字' },
   { id: 'verse',        tag: '經文',     title: '領受經文' },
   { id: 'teach',        tag: '信息',     title: '盜賊和「我」分別是什麼' },
-  { id: 'naming',       tag: '機制事件', title: '那條線有了名字' },
-  { id: 'testimony',    tag: '見證',     title: '見證分享' },
   { id: 'prayer',       tag: '互動點 3', title: '祝福禱告' },
   { id: 'card',         tag: '週卡',     title: '儲存模擬回憶' },
   { id: 'end',          tag: '預告',     title: '下週預告' },
@@ -44,7 +43,7 @@ export function createState() {
     phaseIdx: 0,
     players: {},
     order: [],
-    aged: false,        // 三十年的折舊算過了沒（一次全開）
+    flipped: [],        // 三十年後翻開了哪幾張（asset id）
     giftOpen: false,    // 「？」揭曉了沒
     named: false,       // 幸福根基正名了沒
     seq: 0,
@@ -89,33 +88,28 @@ export function addPlayer(s, name) {
 }
 
 // ── 三十年 ──────────────────────────────────────────────────────────────
-// 他挑的那三樣折舊的時候算在他頭上；沒挑的不算。
-// 所以「你挑了什麼，決定你掉多少」—— 挑工作和名聲的掉最慘，挑關係的掉最少。
-// 送的那一樣折舊率 0%，怎麼算都扣不到他。
-function lossOf(p) {
-  return bagIds(p).reduce((sum, id) => {
-    const a = assetOf(id);
-    return sum + (a ? Math.round(a.rate * LOSS_UNIT) : 0);
-  }, 0);
+// 十二張牌攤在同一頁，主持人一張一張翻。
+// 正面是「剛剛誰挑了它」，翻過去才是折舊率和為什麼 ——
+// 翻開的那一秒，挑了它的人才掉分。挑工作和名聲的掉最慘，挑關係的掉最少。
+const flippedIds = (s) => (Array.isArray(s.flipped) ? s.flipped : (s.flipped = []));
+
+export function flipCard(s, id) {
+  const a = assetOf(Number(id));
+  if (!a || flippedIds(s).indexOf(a.id) >= 0) return false;
+  s.flipped.push(a.id);
+  const loss = Math.round(a.rate * LOSS_UNIT);
+  alive(s).forEach((p) => {
+    if (p.outer === null || bagIds(p).indexOf(a.id) < 0) return;
+    p.outer = clamp(p.outer - loss);
+    p.loss = (p.loss || 0) + loss;
+  });
+  return true;
 }
 
-// 一次全開。逐項揭曉留給第一關的拍賣 —— 這一關的戲在「走進時光機，再走出來」。
-export function ageThirtyYears(s) {
-  if (s.aged) return;
-  alive(s).forEach((p) => {
-    if (p.outer === null) { p.loss = 0; return; }
-    p.loss = lossOf(p);
-    p.outer = clamp(p.outer - p.loss);
-  });
-  s.aged = true;
-}
-
-export function resetAging(s) {
-  alive(s).forEach((p) => {
-    if (p.outer !== null) p.outer = clamp(p.outer + (p.loss || 0));
-    p.loss = 0;
-  });
-  s.aged = false;
+// 備忘錄上的「翻下一張」：照三十年後的排序，由重到輕。
+export function flipNext(s) {
+  const next = SHELF_ORDER.find((id) => flippedIds(s).indexOf(id) < 0);
+  return next === undefined ? false : flipCard(s, next);
 }
 
 // 他袋子裡的東西。三十年還沒過就不給折舊率 —— 手機上先看到答案就沒戲了。
@@ -123,7 +117,7 @@ function bagOf(s, p) {
   const items = bagIds(p).map((id) => {
     const a = assetOf(id);
     if (!a) return null;
-    return s.aged
+    return flippedIds(s).indexOf(a.id) >= 0
       ? { id: a.id, name: a.name, aged: true, rate: a.rate,
           left: Math.round((1 - a.rate) * 100), loss: Math.round(a.rate * LOSS_UNIT) }
       : { id: a.id, name: a.name, aged: false };
@@ -131,19 +125,33 @@ function bagOf(s, p) {
   // 買三送一：挑滿三樣，第四格就是他的了 —— 只是還不知道是什麼
   if (p.bagDone) {
     items.push(s.giftOpen
-      ? { gift: true, name: GIFT.name, aged: s.aged, rate: 0, left: 100, loss: 0 }
+      ? { gift: true, name: GIFT.name, aged: true, rate: 0, left: 100, loss: 0 }
       : { gift: true, name: GIFT.mask, aged: false });
   }
   return items;
 }
 
-// 三十年後的貨架：一次全開，掉最慘的排前面。「？」那一格要到最後才翻。
+// 三十年後的貨架，由重到輕。**沒翻開的那幾張不給折舊率和為什麼** ——
+// 那是牌的背面，先送出去就等於先攤開答案。
 function shelf(s) {
+  const done = flippedIds(s);
   return {
-    aged: s.aged,
+    flipped: done.length,
+    total: SHELF_ORDER.length,
     rows: SHELF_ORDER.map((id) => {
       const a = assetOf(id);
-      return { id: a.id, name: a.name, rate: a.rate, left: Math.round((1 - a.rate) * 100), why: a.why };
+      const open = done.indexOf(id) >= 0;
+      const row = {
+        id: a.id, name: a.name, open,
+        // 正面記著剛剛誰挑了它 —— 翻開之前那就是這張牌上唯一的字
+        pickedBy: alive(s).filter((p) => bagIds(p).indexOf(a.id) >= 0).map((p) => p.name),
+      };
+      if (open) {
+        row.rate = a.rate;
+        row.left = Math.round((1 - a.rate) * 100);
+        row.why = a.why;
+      }
+      return row;
     }),
   };
 }
@@ -153,7 +161,6 @@ export function enterPhase(s, idx) {
   s.phaseIdx = Math.max(0, Math.min(PHASES.length - 1, idx));
   const id = PHASES[s.phaseIdx].id;
   // 走到哪一頁，機制就跟著發生 —— 主持人不用多按一次
-  if (id === 'after30') ageThirtyYears(s);
   if (id === 'gift') s.giftOpen = true;
   if (id === 'naming') s.named = true;
   return null;
@@ -216,8 +223,12 @@ export function applyHost(s, msg) {
     case 'next': return enterPhase(s, s.phaseIdx + 1);
     case 'prev': return enterPhase(s, s.phaseIdx - 1);
     case 'goto': return enterPhase(s, Number(msg.idx));
-    // 重跑三十年：分數完全還原，商店回到今天
-    case 'resetAging': resetAging(s); return null;
+    // 三十年後那一頁：一張一張翻。翻開的那一秒，挑了它的人才掉分。
+    case 'flip': flipCard(s, msg.id); return null;
+    case 'flipNext': flipNext(s); return null;
+    case 'flipAll':
+      while (flipNext(s)) { /* 趕時間的時候用 */ }
+      return null;
     case 'adjust': {
       const p = s.players[msg.pid];
       if (p && p.outer !== null) {
@@ -276,7 +287,6 @@ export function hostView(s, roomCode) {
     gift: GIFT,
     assets: shelfMenu(),
     shelf: shelf(s),
-    aged: s.aged,
     giftOpen: s.giftOpen,
     named: s.named,
     shopOpen: shopOpen(s),
@@ -330,7 +340,6 @@ export function playerView(s, pid, roomCode) {
     gift: GIFT,
     assets: shelfMenu(),
     shelf: shelf(s),
-    aged: s.aged,
     giftOpen: s.giftOpen,
     named: s.named,
     shopOpen: shopOpen(s),

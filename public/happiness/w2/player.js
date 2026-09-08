@@ -162,8 +162,9 @@
     },
 
     after30: function (me) {
+      var waiting = S.shelf.flipped === 0;
       return '<h2>三十年後</h2>' +
-        '<p>你袋子裡的東西，現在長這樣。</p>' +
+        '<p>' + (waiting ? '看大螢幕。主持人會一張一張翻開。' : '你袋子裡的東西，翻到哪一張就亮哪一張。') + '</p>' +
         bagBoard(me.bag, true) +
         (me.loss > 0 ? '<div class="hit">你 −' + me.loss + ' 分</div>' : '') +
         '<p class="mono" style="text-align:center;margin-top:14px;color:var(--ink-3)">' +
@@ -188,6 +189,14 @@
           : '不按也完全沒關係。今天沒準備好，後面還有五關。') + '</p>';
     },
 
+    naming: function (me) {
+      return '<h2>它有名字了</h2>' +
+        '<div class="eternal" style="margin-top:22px"><div class="nm" style="font-size:44px">幸福根基</div>' +
+          '<div class="rate">' + me.inner + '</div></div>' +
+        '<p style="margin-top:20px">上一關大家都在掉分的時候，有一條線是往上的。<b>就是它。</b></p>' +
+        '<p>這條線不會被任何事件扣掉。它從你來的第一天開始長。</p>';
+    },
+
     verse: function (me) {
       return '<div class="verse-p"><span class="ref">' + esc(S.verse.ref) + '</span>' +
         '<blockquote>「' + esc(S.verse.text) + '」</blockquote></div>' +
@@ -198,16 +207,6 @@
     },
 
     teach: function () { return wait('聽主持人說'); },
-
-    naming: function (me) {
-      return '<h2>它有名字了</h2>' +
-        '<div class="eternal" style="margin-top:22px"><div class="nm" style="font-size:44px">幸福根基</div>' +
-          '<div class="rate">' + me.inner + '</div></div>' +
-        '<p style="margin-top:20px">上一關大家都在掉分的時候，有一條線是往上的。<b>就是它。</b></p>' +
-        '<p>這條線不會被任何事件扣掉。它從你來的第一天開始長。</p>';
-    },
-
-    testimony: function () { return wait('聽主持人分享'); },
 
     prayer: function (me) {
       var mine = readBurden();
@@ -390,7 +389,7 @@
     document.getElementById('innerbar').style.width = me.inner + '%';
 
     var next = [
-      S.phase.id, S.aged, S.named, S.giftOpen, S.shopOpen,
+      S.phase.id, S.shelf.flipped, S.named, S.giftOpen, S.shopOpen,
       me.outer, me.inner, me.visits, me.bagDone, me.bagIds.join(','),
       me.poll, me.opened, me.receivedVerse, me.cardDone, me.hasBurden,
       draft.newcomer, draft.editing, draft.bag.join(','),

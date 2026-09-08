@@ -94,23 +94,40 @@
   }
 
   // 幸福人生商店的貨架。十一樣 ＋ 買三送一的那一格 = 十二格，四欄三列。
-  // aged = true 的時候每一格印出三十年後剩幾成。
-  function shelfBoard(aged) {
-    var rows = S.shelf.rows;
-    var order = aged ? rows : S.assets;
-    return '<div class="board">' + order.map(function (a) {
-      var row = null;
-      for (var i = 0; i < rows.length; i++) if (rows[i].id === a.id) row = rows[i];
-      return '<div class="tile' + (aged ? ' aged' : '') + '">' +
-        assetArt(a.id) +
-        '<span><span class="nm">' + esc(a.name) + '</span>' +
-          (aged ? '<span class="left">剩 ' + row.left + '%</span>' : '') +
+  function shopBoard() {
+    return '<div class="board">' + S.assets.map(function (a) {
+      return '<div class="tile">' + assetArt(a.id) +
+        '<span class="txt"><span class="nm">' + esc(a.name) + '</span></span>' +
+      '</div>';
+    }).join('') + giftTile(false) + '</div>';
+  }
+
+  // 三十年後的同一家店：十二張牌攤在同一頁，主持人一張一張翻。
+  // **正面是剛剛誰挑了它，翻過去才是折舊率和為什麼。** 點卡片就翻。
+  function flipBoard() {
+    return '<div class="board flip">' + S.shelf.rows.map(function (r) {
+      if (!r.open) {
+        return '<div class="tile face" data-flip="' + r.id + '">' +
+          assetArt(r.id) +
+          '<span class="txt"><span class="nm">' + esc(r.name) + '</span>' +
+            (r.pickedBy.length
+              ? '<span class="by">' + r.pickedBy.map(esc).join('・') + '</span>'
+              : '<span class="by none">沒有人挑</span>') +
+          '</span>' +
+        '</div>';
+      }
+      return '<div class="tile aged">' +
+        assetArt(r.id) +
+        '<span class="txt"><span class="nm">' + esc(r.name) +
+          '<b class="left">剩 ' + r.left + '%</b></span>' +
+          '<span class="why">' + esc(r.why) + '</span>' +
         '</span>' +
       '</div>';
-    }).join('') + giftTile(aged) + '</div>';
+    }).join('') + giftTile(true) + '</div>';
   }
 
   // 買三送一的那一格。挑滿三樣它就是你的了 —— 但要到最後才知道是什麼。
+  // 這一格不在三十年後那一頁翻，它留到下下一頁才拆。
   function giftTile(aged) {
     if (S.giftOpen) {
       return '<div class="tile gift open">' +
@@ -175,10 +192,8 @@
     var s = S.stats;
     if (s.outerAvg == null) return '';
     var d = (s.startAvg == null) ? null : s.outerAvg - s.startAvg;
-    return '<div class="deprow">' +
-      '<div><span class="kicker">全場平均</span><div class="big" style="font-size:calc(58px * var(--u))">' + s.outerAvg + '</div></div>' +
-      (d == null ? '' : '<div><span class="kicker">相對開場</span><div class="big" style="font-size:calc(58px * var(--u));color:var(--vol)">' + (d > 0 ? '+' : '') + d + '</div></div>') +
-    '</div>';
+    return '<span class="stat"><span>全場平均</span>' + s.outerAvg + '</span>' +
+      (d == null ? '' : '<span class="stat drop"><span>相對開場</span>' + (d > 0 ? '+' : '') + d + '</span>');
   }
 
   // ── 各階段畫面 ────────────────────────────────────────────────────────
@@ -211,7 +226,7 @@
       return '<h2>' + esc(S.shop.name) + '</h2>' +
         '<p class="lede">' + esc(S.shop.rule) + '　<b style="color:var(--gold)">' + esc(S.shop.deal) + '</b></p>' +
         answering(S.stats.bagsDone, '人挑好了') +
-        shelfBoard(false);
+        shopBoard();
     },
 
     shop_result: function () {
@@ -246,9 +261,9 @@
     },
 
     after30: function () {
-      return '<h2>三十年後的' + esc(S.shop.name) + '</h2>' +
-        avgLine() +
-        shelfBoard(true);
+      return '<div class="afterhd"><h2>三十年後的' + esc(S.shop.name) + '</h2>' + avgLine() +
+          '<span class="flipcount">' + S.shelf.flipped + ' / ' + S.shelf.total + ' 已翻開</span></div>' +
+        flipBoard();
     },
 
     verse_second: function () {
@@ -265,6 +280,13 @@
         '<div class="wantlist">' + (w.length
           ? w.map(function (n) { return '<span>' + esc(n) + '</span>'; }).join('')
           : '<span class="muted" style="background:none;border-color:var(--edge-soft);color:var(--ink-3);box-shadow:none">還沒有人打開</span>') + '</div>';
+    },
+
+    naming: function () {
+      return '<h2>那條線有了名字</h2>' +
+        '<div class="eternal" style="text-align:left;margin:calc(14px * var(--u)) 0"><div class="nm" style="font-size:min(calc(72px * var(--u)),9vh)">幸福根基</div></div>' +
+        '<p class="lede" style="font-size:calc(22px * var(--u))">上一次大家都在掉分的時候，有一條線是往上的。<b>就是它。</b></p>' +
+        '<div class="note"><b>這條線不會被任何事件扣掉。</b>　而且它不是比賽——它從你來的第一天開始長。</div>';
     },
 
     // 七關共用的那幾頁，內容在 shared/stage-parts.js
@@ -286,17 +308,6 @@
         '<div class="cols3" style="grid-template-columns:1fr 1fr">' +
           col('thief', S.teach.thief) + col('jesus', S.teach.jesus) +
         '</div>';
-    },
-
-    naming: function () {
-      return '<h2>那條線有了名字</h2>' +
-        '<div class="eternal" style="text-align:left;margin:calc(14px * var(--u)) 0"><div class="nm" style="font-size:min(calc(72px * var(--u)),9vh)">幸福根基</div></div>' +
-        '<p class="lede" style="font-size:calc(22px * var(--u))">上一次大家都在掉分的時候，有一條線是往上的。<b>就是它。</b></p>' +
-        '<div class="note"><b>這條線不會被任何事件扣掉。</b>　而且它不是比賽——它從你來的第一天開始長。</div>';
-    },
-
-    testimony: function () {
-      return StageParts.testimony();
     },
 
     prayer: function () {
@@ -360,14 +371,16 @@
     }
     jump.value = String(S.phaseIdx);
 
-    // 三十年那一頁底下才有「重跑三十年」
-    document.getElementById('agectl').style.display = S.phase.id === 'after30' ? 'inline-flex' : 'none';
     document.getElementById('hint').textContent =
       S.phase.id === 'lobby' ? '玩家掃碼進場後按「下一頁」開始' : '';
 
     renderPlayers();
     stage.className = 'stage phase-' + S.phase.id;
     stage.innerHTML = (views[S.phase.id] || function () { return ''; })();
+
+    stage.querySelectorAll('[data-flip]').forEach(function (t) {
+      t.onclick = function () { post('flip', { id: Number(t.dataset.flip) }); };
+    });
 
     // 每次回到入場頁都要重畫：stage.innerHTML 一被改寫，canvas 就是全新的空白元素
     var qr = document.getElementById('qr');
@@ -400,7 +413,6 @@
     b.onclick = function () {
       var cmd = b.dataset.cmd;
       if (cmd === 'reset' && !confirm('把這個房間整個重置？所有人的分數和接關資料都會清掉。')) return;
-      if (cmd === 'resetAging' && !confirm('重跑三十年？所有人的幸福指數會還原到進時光機之前。')) return;
       post(cmd);
     };
   });
@@ -425,6 +437,11 @@
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
     if (e.key === 'n' || e.key === 'N') { e.preventDefault(); toggleNotes(); return; }
     if (e.key === 'Escape') { toggleNotes(false); return; }
+    // 三十年後那一頁，空白鍵是「翻下一張」—— 翻完再用右方向鍵翻頁
+    if (S && S.phase.id === 'after30' && (e.key === ' ' || e.key === 'Enter')) {
+      e.preventDefault();
+      if (S.shelf.flipped < S.shelf.total) { post('flipNext'); return; }
+    }
     if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); post('next'); }
     if (e.key === 'ArrowLeft') { e.preventDefault(); post('prev'); }
   });
