@@ -104,6 +104,8 @@
   .tile .by { display: block; margin-top: 3px; font-size: min(calc(14px * var(--u)), 2.2vh);
     font-weight: 700; line-height: 1.5; color: var(--vol); }
   .tile .by.none { color: var(--ink-3); font-weight: 500; }
+  /* 翻開前後一樣大：先把牌的高度定死，翻開之後版面才不會跳 */
+  .board.flip .tile { min-height: min(calc(106px * var(--u)), 14.7vh); }
   .tile.face { cursor: pointer; border-color: var(--gold); }
   .tile.face:hover { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 var(--hard); }
   .tile.face:active { transform: translate(2px, 2px); box-shadow: none; }
@@ -188,11 +190,13 @@
     letter-spacing: .4em; color: var(--ink-2); position: relative; }
 
   /* 買三送一那一樣 */
-  .giftline { font-size: min(calc(30px * var(--u)), 4.2vh); font-weight: 900; line-height: 1.6;
-    text-align: center; max-width: 34em; margin: calc(6px * var(--u)) auto 0; }
-  .eternal { text-align: center; margin: min(calc(20px * var(--u)), 2.4vh) 0; }
-  .eternal .nm { font-size: min(calc(96px * var(--u)), 12vh); font-weight: 900; color: var(--root-c); letter-spacing: .1em; }
-  .eternal .rate { font-family: var(--pixel); font-size: min(calc(48px * var(--u)), 5.4vh); color: var(--root-c); margin-top: 8px; }
+  .giftline { font-size: min(calc(28px * var(--u)), 3.6vh); font-weight: 900; line-height: 1.5;
+    text-align: center; max-width: 34em; margin: 0 auto; }
+  .eternal { text-align: center; margin: min(calc(14px * var(--u)), 1.8vh) 0; }
+  .eternal .chest { display: block; margin: 0 auto min(calc(10px * var(--u)), 1.4vh);
+    width: min(calc(80px * var(--u)), 9vh); image-rendering: pixelated; }
+  .eternal .nm { font-size: min(calc(96px * var(--u)), 10vh); font-weight: 900; color: var(--root-c); letter-spacing: .1em; }
+  .eternal .rate { font-family: var(--pixel); font-size: min(calc(48px * var(--u)), 4.6vh); color: var(--root-c); margin-top: 6px; }
   .wantlist { display: flex; flex-wrap: wrap; gap: 10px; margin-top: calc(14px * var(--u)); justify-content: center; }
   .wantlist span { padding: 8px 14px; background: var(--root-soft); border: 3px solid var(--root-c); color: var(--root-c);
     font-size: calc(17px * var(--u)); font-weight: 700; box-shadow: 3px 3px 0 var(--hard); }

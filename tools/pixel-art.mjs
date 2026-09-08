@@ -328,6 +328,43 @@ const LOTS = {
   ]],
   // 11 只有第二關用得到：第一關的規則是「不買就是財富」，錢不在標的裡。
   11: ['財富自由', COINS],
+  // 買三送一的那一份。蓋著的時候是一個關著的寶箱，拆開之後蓋子打開、有光跑出來。
+  gift: ['買三送一的那一份', [
+    '................',
+    '................',
+    '....oooooooo....',
+    '...oGGGGGGGGo...',
+    '..oGGSSSSSSGGo..',
+    '..oGGGGGGGGGGo..',
+    '..oooooooooooo..',
+    '..oGGGoooooGGo..',
+    '..oGGGoSSSoGGo..',
+    '..oGGGoooooGGo..',
+    '..oGGGGGGGGGGo..',
+    '..oGGGGGGGGGGo..',
+    '..oooooooooooo..',
+    '................',
+    '................',
+    '................',
+  ]],
+  'gift-open': ['生命', [
+    '................',
+    '.....C....C.....',
+    '...oooooooooo...',
+    '..oGGGGGGGGGGo..',
+    '..oGSSSSSSSSGo..',
+    '...oooooooooo...',
+    '................',
+    '.....C..C.C.....',
+    '..oooooooooooo..',
+    '..oGGGGGGGGGGo..',
+    '..oGGGGGGGGGGo..',
+    '..oGGGGGGGGGGo..',
+    '..oooooooooooo..',
+    '................',
+    '................',
+    '................',
+  ]],
 };
 
 let n = 0;

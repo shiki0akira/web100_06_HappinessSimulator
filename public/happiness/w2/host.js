@@ -92,6 +92,10 @@
   function assetArt(id) {
     return '<img class="tileart" src="/happiness/shared/art/asset-' + id + '.svg" alt="">';
   }
+  // 買三送一那一格的寶箱。蓋著的時候關著，拆開之後打開。
+  function chestArt(open) {
+    return assetArt(open ? 'gift-open' : 'gift');
+  }
 
   // 幸福人生商店的貨架。十一樣 ＋ 買三送一的那一格 = 十二格，四欄三列。
   function shopBoard() {
@@ -119,7 +123,7 @@
       return '<div class="tile aged">' +
         assetArt(r.id) +
         '<span class="txt"><span class="nm">' + esc(r.name) +
-          '<b class="left">剩 ' + r.left + '%</b></span>' +
+          '<b class="left">−' + r.down + '%</b></span>' +
           '<span class="why">' + esc(r.why) + '</span>' +
         '</span>' +
       '</div>';
@@ -131,14 +135,14 @@
   function giftTile(aged) {
     if (S.giftOpen) {
       return '<div class="tile gift open">' +
-        '<span class="q">✦</span>' +
-        '<span><span class="nm">' + esc(S.gift.name) + '</span>' +
-          '<span class="left">剩 100%</span></span>' +
+        chestArt(true) +
+        '<span class="txt"><span class="nm">' + esc(S.gift.name) +
+          '<b class="left">−0%</b></span></span>' +
       '</div>';
     }
     return '<div class="tile gift">' +
-      '<span class="q">' + esc(S.gift.mask) + '</span>' +
-      '<span><span class="nm">' + esc(S.shop.deal) + '</span>' +
+      chestArt(false) +
+      '<span class="txt"><span class="nm">' + esc(S.shop.deal) + '</span>' +
         '<span class="sub">' + (aged ? '還沒拆' : '挑滿三樣就送你') + '</span></span>' +
     '</div>';
   }
@@ -180,7 +184,7 @@
           '<span class="got">' + (p.bag.length
             ? p.bag.map(function (it) {
                 return '<span class="lot' + (it.gift ? ' gift' : '') + '">' + esc(it.name) +
-                  (aged && it.aged ? ' <b>剩 ' + it.left + '%</b>' : '') + '</span>';
+                  (aged && it.aged ? ' <b>−' + it.down + '%</b>' : '') + '</span>';
               }).join('')
             : '<span class="none">還沒挑</span>') + '</span>' +
           (aged && p.loss > 0 ? '<span class="drop">−' + p.loss + '</span>' : '') +
@@ -276,6 +280,11 @@
         flipBoard();
     },
 
+    after30_sum: function () {
+      return '<div class="afterhd"><h2>三十年後，你掉了多少</h2>' + avgLine() + '</div>' +
+        bagList(true);
+    },
+
     verse_second: function () {
       return verseHalf(1);
     },
@@ -283,12 +292,15 @@
     gift: function () {
       var w = S.stats.opened;
       return '<div class="giftline">' + esc(S.gift.line) + '</div>' +
-        '<div class="eternal"><div class="nm">' + esc(S.gift.name) + '</div>' +
+        '<div class="eternal"><img class="chest" src="/happiness/shared/art/asset-gift-open.svg" alt="">' +
+          '<div class="nm">' + esc(S.gift.name) + '</div>' +
           '<div class="rate">折舊率 0%</div></div>' +
         '<p class="lede" style="text-align:center;margin:0 auto">' + esc(S.gift.why) + '　' + esc(S.gift.from) + '</p>' +
         '<div class="wantlist">' + (w.length
           ? w.map(function (n) { return '<span>' + esc(n) + '</span>'; }).join('')
-          : '<span class="muted" style="background:none;border-color:var(--edge-soft);color:var(--ink-3);box-shadow:none">還沒有人打開</span>') + '</div>';
+          : '<span class="muted" style="background:none;border-color:var(--edge-soft);color:var(--ink-3);box-shadow:none">還沒有人打開</span>') + '</div>' +
+        '<div class="note" style="border-left-color:var(--root-c);text-align:left">' +
+          '<b>全場幸福指數 +' + S.giftPlus + '</b>　這一份不用你做什麼，它本來就在你的袋子裡。</div>';
     },
 
     naming: function () {

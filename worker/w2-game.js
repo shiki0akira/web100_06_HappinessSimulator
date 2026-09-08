@@ -6,13 +6,16 @@
 //
 // 一句話講完這一關：在幸福人生商店挑三樣（買三送一），走進人生時光機，
 // 三十年後回同一家店驗貨，最後才知道送的那一樣是什麼。
-import { ASSETS, SHOP, PICK, GIFT, SHELF_ORDER, VERSE, POLL, TEACH, LOSS_UNIT } from './w2-data.js';
+import { ASSETS, SHOP, PICK, GIFT, SHELF_ORDER, VERSE, POLL, TEACH, LOSS_MAX } from './w2-data.js';
 
 // 幸福根基的規則跟第一關一樣，七關都一樣。上限 95 不是 100 —— 你自己填不滿。
 export const INNER_CAP = 95;
 export const INNER_PER_WEEK = 15;
 export const INNER_VERSE = 10;
 export const INNER_PRAYER = 5;
+// 拆開那一份的時候，全場的幸福指數補回來一點。
+// **給所有人，不是給按了「我打開它」的人** —— 一綁上按鈕就變成用分數換恩典。
+export const GIFT_PLUS = 10;
 
 export const PHASES = [
   { id: 'lobby',        tag: '入場',     title: '掃碼進場' },
@@ -24,6 +27,7 @@ export const PHASES = [
   { id: 'verse_first',  tag: '經文',     title: '盜賊來，無非要偷竊，殺害，毀壞' },
   { id: 'timemachine',  tag: '過場',     title: '人生時光機' },
   { id: 'after30',      tag: '主遊戲',   title: '三十年後的幸福人生商店' },
+  { id: 'after30_sum',  tag: '結算頁',   title: '三十年後，你掉了多少' },
   { id: 'verse_second', tag: '經文',     title: '我來了，是要叫羊得生命' },
   { id: 'gift',         tag: '高潮',     title: '買三送一的那一樣' },
   { id: 'naming',       tag: '機制事件', title: '那條線有了名字' },
@@ -77,6 +81,7 @@ export function addPlayer(s, name) {
     poll: null,
     loss: 0,              // 三十年一共掉了幾分，重跑時要還原
     opened: false,        // 按了「我打開它」
+    gift: 0,              // 拆開那一份的時候補回來的幸福指數
     hasBurden: false,     // 那句話留在玩家自己的手機上
     prayed: false,
     receivedVerse: false,
@@ -93,11 +98,14 @@ export function addPlayer(s, name) {
 // 翻開的那一秒，挑了它的人才掉分。挑工作和名聲的掉最慘，挑關係的掉最少。
 const flippedIds = (s) => (Array.isArray(s.flipped) ? s.flipped : (s.flipped = []));
 
+// 折舊率換成掉幾分。夾在 1–5，所以每一樣都會扣一點，但不會有一樣扣到爆。
+const lossOf = (rate) => Math.max(1, Math.min(LOSS_MAX, Math.round(rate * LOSS_MAX)));
+
 export function flipCard(s, id) {
   const a = assetOf(Number(id));
   if (!a || flippedIds(s).indexOf(a.id) >= 0) return false;
   s.flipped.push(a.id);
-  const loss = Math.round(a.rate * LOSS_UNIT);
+  const loss = lossOf(a.rate);
   alive(s).forEach((p) => {
     if (p.outer === null || bagIds(p).indexOf(a.id) < 0) return;
     p.outer = clamp(p.outer - loss);
@@ -119,13 +127,13 @@ function bagOf(s, p) {
     if (!a) return null;
     return flippedIds(s).indexOf(a.id) >= 0
       ? { id: a.id, name: a.name, aged: true, rate: a.rate,
-          left: Math.round((1 - a.rate) * 100), loss: Math.round(a.rate * LOSS_UNIT) }
+          down: Math.round(a.rate * 100), loss: lossOf(a.rate) }
       : { id: a.id, name: a.name, aged: false };
   }).filter(Boolean);
   // 買三送一：挑滿三樣，第四格就是他的了 —— 只是還不知道是什麼
   if (p.bagDone) {
     items.push(s.giftOpen
-      ? { gift: true, name: GIFT.name, aged: true, rate: 0, left: 100, loss: 0 }
+      ? { gift: true, name: GIFT.name, aged: true, rate: 0, down: 0, loss: 0 }
       : { gift: true, name: GIFT.mask, aged: false });
   }
   return items;
@@ -148,7 +156,7 @@ function shelf(s) {
       };
       if (open) {
         row.rate = a.rate;
-        row.left = Math.round((1 - a.rate) * 100);
+        row.down = Math.round(a.rate * 100);
         row.why = a.why;
       }
       return row;
@@ -161,6 +169,14 @@ export function enterPhase(s, idx) {
   s.phaseIdx = Math.max(0, Math.min(PHASES.length - 1, idx));
   const id = PHASES[s.phaseIdx].id;
   // 走到哪一頁，機制就跟著發生 —— 主持人不用多按一次
+  if (id === 'gift' && !s.giftOpen) {
+    // 只算一次：翻回去再翻回來不會重複加
+    alive(s).forEach((p) => {
+      if (p.outer === null) return;
+      p.outer = clamp(p.outer + GIFT_PLUS);
+      p.gift = GIFT_PLUS;
+    });
+  }
   if (id === 'gift') s.giftOpen = true;
   if (id === 'naming') s.named = true;
   return null;
@@ -288,6 +304,7 @@ export function hostView(s, roomCode) {
     assets: shelfMenu(),
     shelf: shelf(s),
     giftOpen: s.giftOpen,
+    giftPlus: GIFT_PLUS,
     named: s.named,
     shopOpen: shopOpen(s),
     players: ps.map((p) => ({
@@ -341,6 +358,7 @@ export function playerView(s, pid, roomCode) {
     assets: shelfMenu(),
     shelf: shelf(s),
     giftOpen: s.giftOpen,
+    giftPlus: GIFT_PLUS,
     named: s.named,
     shopOpen: shopOpen(s),
     playerCount: alive(s).length,
@@ -359,6 +377,7 @@ export function playerView(s, pid, roomCode) {
       visits: p.visits, newcomer: p.newcomer,
       bag: bagOf(s, p), bagIds: bagIds(p), bagDone: !!p.bagDone, loss: p.loss || 0,
       poll: typeof p.poll === 'number' ? p.poll : null, opened: !!p.opened,
+      gift: p.gift || 0,
       hasBurden: !!p.hasBurden,
       receivedVerse: !!p.receivedVerse, cardDone: !!p.cardDone,
     },

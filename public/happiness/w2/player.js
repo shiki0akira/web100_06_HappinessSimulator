@@ -54,12 +54,11 @@
   function bagBoard(items, big) {
     if (!items.length) return '';
     return '<div class="mine' + (big ? ' big' : '') + '">' + items.map(function (it) {
-      var art = it.gift
-        ? '<span class="gicon">' + (S.giftOpen ? '✦' : esc(S.gift.mask)) + '</span>'
-        : '<img src="/happiness/shared/art/asset-' + it.id + '.svg" alt="">';
+      var art = '<img src="/happiness/shared/art/asset-' +
+        (it.gift ? (S.giftOpen ? 'gift-open' : 'gift') : it.id) + '.svg" alt="">';
       // 還沒拆的那一份不寫名字，也不寫數字 —— 它就是今晚的伏筆
       var name = (it.gift && !S.giftOpen) ? '買三送一的那一樣' : it.name;
-      var val = it.aged ? '剩 ' + it.left + '%' : (it.gift ? '尚未拆封' : '');
+      var val = it.aged ? '折舊 ' + it.down + '%' : (it.gift ? '尚未拆封' : '');
       return '<div class="mrow' + (it.aged ? ' open' : '') + (it.gift ? ' gift' : '') + '">' +
         art +
         '<span class="nm">' + esc(name) + '</span>' +
@@ -123,7 +122,8 @@
             '<img class="chkart" src="/happiness/shared/art/asset-' + a.id + '.svg" alt="">' +
             '<span>' + esc(a.name) + '</span></div>';
         }).join('') +
-          '<div class="lotchk gift' + (left <= 0 ? ' on' : '') + '" id="gifttile"><span class="box">' + esc(S.gift.mask) + '</span>' +
+          '<div class="lotchk gift' + (left <= 0 ? ' on' : '') + '" id="gifttile">' +
+            '<img class="chkart" src="/happiness/shared/art/asset-gift.svg" alt="">' +
             '<span>' + (left <= 0 ? '這一樣是送你的' : '買三送一的那一樣') +
             '<span class="sub">' + (left <= 0 ? '最後才會知道是什麼' : '挑滿三樣就進你的袋子') + '</span></span></div>' +
         '</div>' +
@@ -144,6 +144,15 @@
         }).join('') + '</div>';
     },
     poll_result: function () { return wait('看大螢幕', '聽主持人分享'); },
+
+    after30_sum: function (me) {
+      return '<h2>三十年後，你手上剩下</h2>' +
+        bagBoard(me.bag, true) +
+        (me.loss > 0 ? '<div class="hit">你 −' + me.loss + ' 分</div>' : '') +
+        '<p class="mono" style="text-align:center;margin-top:14px;color:var(--ink-3)">' +
+          '開場 ' + me.outerStart + ' → 現在 ' + me.outer + '</p>' +
+        wait('看大螢幕');
+    },
 
     verse_first: function () { return verseHalf(0) + wait('聽主持人說'); },
 
@@ -168,9 +177,11 @@
 
     gift: function (me) {
       return '<h2>買三送一的那一樣</h2>' +
-        '<div class="eternal"><div class="nm">' + esc(S.gift.name) + '</div>' +
+        '<div class="eternal"><img class="chest" src="/happiness/shared/art/asset-gift-open.svg" alt="">' +
+          '<div class="nm">' + esc(S.gift.name) + '</div>' +
           '<div class="rate">折舊率 0%</div></div>' +
         '<p style="text-align:center;margin-top:14px">' + esc(S.gift.line) + '</p>' +
+        (me.gift ? '<div class="hit up">幸福指數 +' + me.gift + '</div>' : '') +
         '<button class="btn ' + (me.opened ? 'primary' : '') + ' wantbtn" id="open">' +
           (me.opened ? '✓ 已打開' : '我 打 開 它') + '</button>' +
         '<p class="privacy">' + (me.opened
@@ -313,7 +324,7 @@
           verseRef: S.verse.ref, verseText: S.verse.text, burden: readBurden(),
           listLabel: 'MY BAG',
           bought: me.bag.map(function (it) {
-            return it.name + (it.aged ? ' 剩' + it.left + '%' : '');
+            return it.name + (it.aged ? ' 折舊' + it.down + '%' : '');
           }),
         });
         cardURL = cv.toDataURL('image/png');
