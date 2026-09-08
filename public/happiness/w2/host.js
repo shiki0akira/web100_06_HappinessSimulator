@@ -188,6 +188,17 @@
       }).join('') + '</div>';
   }
 
+  // 兩頁經文都印整節，只有要念的那一半有顏色，另一半淡下去。
+  function verseHalf(i) {
+    var h = S.verse.halves;
+    return '<div class="verse half' + (i ? ' second' : '') + '">' +
+      '<span class="ref">' + esc(S.verse.ref) + (i ? ' · 下半句' : ' · 上半句') + '</span>' +
+      '<blockquote>「' +
+        '<span class="' + (i === 0 ? 'on' : 'off') + '">' + esc(h[0]) + '</span>' +
+        '<span class="' + (i === 1 ? 'on' : 'off') + '">' + esc(h[1]) + '</span>' +
+      '」</blockquote></div>';
+  }
+
   function avgLine() {
     var s = S.stats;
     if (s.outerAvg == null) return '';
@@ -248,8 +259,7 @@
     },
 
     verse_first: function () {
-      return '<div class="verse half"><span class="ref">' + esc(S.verse.ref) + '</span>' +
-        '<blockquote>「' + esc(S.verse.first) + '」</blockquote></div>';
+      return verseHalf(0);
     },
 
     timemachine: function () {
@@ -267,8 +277,7 @@
     },
 
     verse_second: function () {
-      return '<div class="verse half second"><span class="ref">' + esc(S.verse.ref) + ' · 下半句</span>' +
-        '<blockquote>「' + esc(S.verse.second) + '」</blockquote></div>';
+      return verseHalf(1);
     },
 
     gift: function () {

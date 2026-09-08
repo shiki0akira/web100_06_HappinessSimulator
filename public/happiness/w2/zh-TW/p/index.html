@@ -98,6 +98,10 @@
   .verse-p { text-align: center; padding: 10px 0; }
   .verse-p .ref { font-family: var(--pixel); font-size: 13px; color: var(--gold); }
   .verse-p blockquote { font-size: 26px; font-weight: 700; line-height: 1.95; margin: 16px 0 0; letter-spacing: .02em; }
+  /* 兩頁經文都印整節：要念的那一半有顏色，還沒講到的那一半淡下去 */
+  .verse-p.half blockquote .on { color: var(--vol); }
+  .verse-p.half.second blockquote .on { color: var(--root-c); }
+  .verse-p.half blockquote .off { color: var(--ink-3); opacity: .5; }
 
   textarea { width: 100%; min-height: 124px; padding: 14px; font-size: 21px; font-weight: 500; resize: vertical; }
 

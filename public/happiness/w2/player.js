@@ -68,6 +68,17 @@
     }).join('') + '</div>';
   }
 
+  // 兩頁經文都印整節，只有要念的那一半有顏色。
+  function verseHalf(i) {
+    var h = S.verse.halves;
+    return '<div class="verse-p half' + (i ? ' second' : '') + '">' +
+      '<span class="ref">' + esc(S.verse.ref) + (i ? ' · 下半句' : ' · 上半句') + '</span>' +
+      '<blockquote>「' +
+        '<span class="' + (i === 0 ? 'on' : 'off') + '">' + esc(h[0]) + '</span>' +
+        '<span class="' + (i === 1 ? 'on' : 'off') + '">' + esc(h[1]) + '</span>' +
+      '」</blockquote></div>';
+  }
+
   var views = {
     lobby: function (me) {
       return '<h2>你已經進場了</h2>' +
@@ -134,11 +145,7 @@
     },
     poll_result: function () { return wait('看大螢幕', '聽主持人分享'); },
 
-    verse_first: function () {
-      return '<div class="verse-p"><span class="ref">' + esc(S.verse.ref) + ' · 上半句</span>' +
-        '<blockquote style="color:var(--vol)">「' + esc(S.verse.first) + '」</blockquote></div>' +
-        wait('聽主持人說');
-    },
+    verse_first: function () { return verseHalf(0) + wait('聽主持人說'); },
 
     timemachine: function (me) {
       return '<h2>人生時光機</h2>' +
@@ -157,11 +164,7 @@
           '開場 ' + me.outerStart + ' → 現在 ' + me.outer + '</p>';
     },
 
-    verse_second: function () {
-      return '<div class="verse-p"><span class="ref">' + esc(S.verse.ref) + ' · 下半句</span>' +
-        '<blockquote style="color:var(--root-c)">「' + esc(S.verse.second) + '」</blockquote></div>' +
-        wait('聽主持人說');
-    },
+    verse_second: function () { return verseHalf(1) + wait('聽主持人說'); },
 
     gift: function (me) {
       return '<h2>買三送一的那一樣</h2>' +

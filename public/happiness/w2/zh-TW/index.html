@@ -214,8 +214,10 @@
   .verse blockquote { font-size: min(calc(44px * var(--u)), 4.8vh); font-weight: 900; line-height: 1.6;
     margin: 18px 0 0; max-width: 20em; }
   .verse .ref { font-family: var(--pixel); color: var(--gold); font-size: calc(20px * var(--u)); }
-  .verse.half blockquote { color: var(--vol); }
-  .verse.half.second blockquote { color: var(--root-c); }
+  /* 兩頁經文都印整節：要念的那一半有顏色，還沒講到的那一半淡下去 */
+  .verse.half blockquote .on { color: var(--vol); }
+  .verse.half.second blockquote .on { color: var(--root-c); }
+  .verse.half blockquote .off { color: var(--ink-3); opacity: .5; }
 
   .note { background: var(--surface); border: 3px solid var(--edge); border-left-width: 10px; border-left-color: var(--gold);
     padding: 14px 16px; margin-top: calc(16px * var(--u)); max-width: 70ch; font-size: calc(14px * var(--u)); color: var(--ink-2); box-shadow: 5px 5px 0 var(--hard); }
