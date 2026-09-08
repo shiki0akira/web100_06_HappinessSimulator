@@ -16,20 +16,18 @@
 
   var conn = null;
   var ROOM = '';
+  var YEARS = 30;
 
   // 每個模組畫幾像素。跟著 --u 走，canvas 就能 1:1 顯示 ——
   // 交給 CSS 去縮放 canvas 會把模組邊緣糊掉，掃描器就讀不到了。
+  // 視窗矮的時候 QR 也要跟著小一號，不然入場頁會擠出捲軸
   function qrScale(base) {
     var u = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--u')) || 1;
-    return Math.max(3, Math.round(base * u));
+    var h = Math.min(1, (window.innerHeight || 720) / 700);
+    return Math.max(3, Math.round(base * u * h));
   }
   function post(cmd, extra) { if (conn) conn.host(cmd, extra); }
   function joinUrl() { return location.origin + JOIN_PATH + '?room=' + ROOM; }
-  function pct(r) { return '−' + Math.round(r * 100) + '%'; }
-  function assetName(id) {
-    for (var i = 0; i < S.assets.length; i++) if (S.assets[i].id === id) return S.assets[i].name;
-    return '';
-  }
 
   // 側欄的兩條槽。名稱、槽、數字擠在同一行 —— 八個人以上也要能不捲動就看完，
   // 每個人多一行就是少一個人。
@@ -48,30 +46,31 @@
       el.innerHTML = '<p class="muted" style="font-size:calc(13px * var(--u))">還沒有人進場。</p>';
       return;
     }
-    // 選三樣的時候側欄只顯示「選好了沒」，不顯示他選了什麼 ——
-    // 全場都看得到誰押哪裡，就會有人改跟別人一樣。開始揭曉之後才攤開。
-    var choosing = S.phase.id === 'keep_intro' || S.phase.id === 'keep';
-    var showKeep = !choosing && S.phaseIdx >= 4;
+    // 挑東西的時候側欄只顯示「挑好了沒」，不顯示他挑了什麼 ——
+    // 全場都看得到別人挑哪些，就會有人改成跟別人一樣。翻到結算頁才攤開。
+    var choosing = S.phase.id === 'shop';
+    var showBag = !choosing && S.phaseIdx >= 3;
     el.innerHTML = S.players.map(function (p) {
       var outer = p.outer == null ? 0 : p.outer;
-      var drop = (p.outer != null && p.outerStart != null) ? p.outerStart - p.outer : 0;
       var chips = [];
       if (p.newcomer) chips.push('<span class="chip">新朋友</span>');
-      if (choosing) chips.push('<span class="chip' + (p.keepDone ? ' on' : '') + '">' + (p.keepDone ? '已選好' : '還沒選') + '</span>');
-      if (p.want) chips.push('<span class="chip want">我要</span>');
+      if (choosing) chips.push('<span class="chip' + (p.bagDone ? ' on' : '') + '">' + (p.bagDone ? '挑好了' : '還沒挑') + '</span>');
+      if (p.opened) chips.push('<span class="chip want">已打開</span>');
       if (p.hasBurden) chips.push('<span class="chip">已填寫</span>');
       if (p.receivedVerse) chips.push('<span class="chip on">已領受</span>');
-      // 第三行：他保住的那三樣。主持人接話全靠這一行 ——「你押在工作上」。
-      var meta = (showKeep && p.keep.length)
-        ? '<div class="meta keep">' + p.keep.map(function (id) { return esc(assetName(id)); }).join('・') + '</div>'
+      // 第三行：他挑的那三樣。主持人接話全靠這一行 ——「你挑了工作」。
+      // 買三送一的那一格不列 —— 每個人都有，寫出來只是佔位子。
+      var picked = p.bag.filter(function (it) { return !it.gift; });
+      var meta = (showBag && picked.length)
+        ? '<div class="meta keep">' + picked.map(function (it) { return esc(it.name); }).join('・') + '</div>'
         : '';
       return '' +
         '<div class="prow">' +
           '<div class="nm">' + esc(p.name) +
-            (drop > 0 ? '<span class="drop">−' + drop + '</span>' : '') +
+            (p.loss > 0 ? '<span class="drop">−' + p.loss + '</span>' : '') +
             chips.join('') +
           '</div>' +
-          // 上面是幸福指數（今晚會一直往下掉），下面是幸福根基（今晚才有名字）
+          // 上面是幸福指數（三十年後會掉），下面是幸福根基（今晚才有名字）
           gauge('幸福指數', p.outer == null ? '—' : p.outer, outer, 'var(--vol)') +
           gauge(S.named ? '幸福根基' : '？？？', p.inner || 0, p.inner || 0, 'var(--root-c)') +
           meta +
@@ -84,34 +83,68 @@
   // 而且主持人少了「翻頁」這個把注意力收回來的動作。
   function answering(n, unit) {
     var all = S.stats.count > 0 && n >= S.stats.count;
-    return '<div class="big" style="margin-top:24px">' + n +
+    return '<div class="big" style="margin-top:16px">' + n +
         ' <span class="muted" style="font-size:calc(34px * var(--u))">/ ' + S.stats.count + ' ' + (unit || '人已作答') + '</span></div>' +
       (all ? '<div class="note" style="border-left-color:var(--root-c);color:var(--ink)">' +
-        '<b>大家都作答完了</b>　按「下一頁」看結果。</div>' : '');
+        '<b>大家都好了</b>　按「下一頁」。</div>' : '');
   }
 
   function assetArt(id) {
     return '<img class="tileart" src="/happiness/shared/art/asset-' + id + '.svg" alt="">';
   }
 
-  // 十一樣人生資產＋那一格選不到的。它會掛在牆上十五分鐘，然後才翻開。
-  // 這裡不顯示誰選了什麼 —— 全場看得到別人押哪裡，就會有人改跟別人一樣。
-  function board() {
-    return '<div class="board">' + S.assets.map(function (a) {
-      return '<div class="tile">' +
+  // 幸福人生商店的貨架。十一樣 ＋ 買三送一的那一格 = 十二格，四欄三列。
+  // aged = true 的時候每一格印出三十年後剩幾成。
+  function shelfBoard(aged) {
+    var rows = S.shelf.rows;
+    var order = aged ? rows : S.assets;
+    return '<div class="board">' + order.map(function (a) {
+      var row = null;
+      for (var i = 0; i < rows.length; i++) if (rows[i].id === a.id) row = rows[i];
+      return '<div class="tile' + (aged ? ' aged' : '') + '">' +
         assetArt(a.id) +
-        '<span class="nm">' + esc(a.name) + '</span>' +
+        '<span><span class="nm">' + esc(a.name) + '</span>' +
+          (aged ? '<span class="left">剩 ' + row.left + '%</span>' : '') +
+        '</span>' +
       '</div>';
-    }).join('') +
-      '<div class="tile locked"><span class="q">' + esc(S.locked.name) + '</span>' +
-        '<span class="nm">' + esc(S.locked.label) + '</span></div>' +
+    }).join('') + giftTile(aged) + '</div>';
+  }
+
+  // 買三送一的那一格。挑滿三樣它就是你的了 —— 但要到最後才知道是什麼。
+  function giftTile(aged) {
+    if (S.giftOpen) {
+      return '<div class="tile gift open">' +
+        '<span class="q">✦</span>' +
+        '<span><span class="nm">' + esc(S.gift.name) + '</span>' +
+          '<span class="left">剩 100%</span></span>' +
+      '</div>';
+    }
+    return '<div class="tile gift">' +
+      '<span class="q">' + esc(S.gift.mask) + '</span>' +
+      '<span><span class="nm">' + esc(S.shop.deal) + '</span>' +
+        '<span class="sub">' + (aged ? '還沒拆' : '挑滿三樣就送你') + '</span></span>' +
     '</div>';
   }
 
-  function optionBars() {
-    var c = S.stats.q20Counts;
+  // 全場最多人挑的。長條由多到少，前三名有名次牌。
+  function rankBars() {
+    var rows = S.stats.counts.filter(function (x) { return x.n > 0; }).slice(0, 3);
+    if (!rows.length) return '<p class="lede">還沒有人挑。</p>';
+    var max = rows[0].n;
+    return '<div class="opts">' + rows.map(function (x, i) {
+      return '<div class="opt">' +
+        '<span class="rank' + (i < 3 ? ' top' : '') + '">' + (i + 1) + '</span>' +
+        '<span class="lbl">' + esc(x.name) + '</span>' +
+        '<span class="track"><i style="width:' + (x.n / max * 100) + '%"></i></span>' +
+        '<span class="n">' + x.n + ' 人</span>' +
+      '</div>';
+    }).join('') + '</div>';
+  }
+
+  function pollBars() {
+    var c = S.stats.pollCounts;
     var max = Math.max.apply(null, c.concat([1]));
-    return '<div class="opts">' + S.q20.options.map(function (o, i) {
+    return '<div class="opts">' + S.poll.options.map(function (o, i) {
       return '<div class="opt">' +
         '<span class="lbl">' + esc(o) + '</span>' +
         '<span class="track"><i style="width:' + (c[i] / max * 100) + '%"></i></span>' +
@@ -120,40 +153,32 @@
     }).join('') + '</div>';
   }
 
-  // 已經開過的項目排成一列，讓全場看得到還剩幾樣。最後那一格是選不到的那一樣。
-  function progressStrip() {
-    var r = S.reveal;
-    return '<div class="deplist">' + Array.apply(null, { length: r.total }).map(function (_, i) {
-      return '<span class="' + (i <= r.idx ? 'on' : '') + '">' + (i + 1) + '</span>';
-    }).join('') + '<span class="q' + (S.phase.id === 'mystery' || S.mysteryOpen ? ' on' : '') + '">？</span></div>';
+  // 每個人的袋子。結算頁只有名字，三十年後那一頁多印各剩幾成。
+  function bagList(aged) {
+    if (!S.players.length) return '';
+    return '<span class="kicker" style="margin-top:18px">' + (aged ? '三十年後，每個人的袋子' : '每個人挑了什麼') + '</span>' +
+      '<div class="keeplist' + (S.players.length > 7 ? ' dense' : '') + '">' + S.players.map(function (p) {
+        return '<div class="keeprow">' +
+          '<span class="nm">' + esc(p.name) + '</span>' +
+          '<span class="got">' + (p.bag.length
+            ? p.bag.map(function (it) {
+                return '<span class="lot' + (it.gift ? ' gift' : '') + '">' + esc(it.name) +
+                  (aged && it.aged ? ' <b>剩 ' + it.left + '%</b>' : '') + '</span>';
+              }).join('')
+            : '<span class="none">還沒挑</span>') + '</span>' +
+          (aged && p.loss > 0 ? '<span class="drop">−' + p.loss + '</span>' : '') +
+        '</div>';
+      }).join('') + '</div>';
   }
 
   function avgLine() {
     var s = S.stats;
     if (s.outerAvg == null) return '';
     var d = (s.startAvg == null) ? null : s.outerAvg - s.startAvg;
-    return '<div class="deprow" style="margin-top:calc(26px * var(--u))">' +
-      '<div><span class="kicker">全場平均</span><div class="big" style="font-size:calc(64px * var(--u))">' + s.outerAvg + '</div></div>' +
-      (d == null ? '' : '<div><span class="kicker">相對開場</span><div class="big" style="font-size:calc(64px * var(--u));color:var(--vol)">' + (d > 0 ? '+' : '') + d + '</div></div>') +
+    return '<div class="deprow">' +
+      '<div><span class="kicker">全場平均</span><div class="big" style="font-size:calc(58px * var(--u))">' + s.outerAvg + '</div></div>' +
+      (d == null ? '' : '<div><span class="kicker">相對開場</span><div class="big" style="font-size:calc(58px * var(--u));color:var(--vol)">' + (d > 0 ? '+' : '') + d + '</div></div>') +
     '</div>';
-  }
-
-  // 每個人選了哪三樣。結算頁那一份還會多印各剩幾成 —— 這一份是給大家找自己用的。
-  function keepList(withRates) {
-    if (!S.stats.survive.length) return '';
-    return '<span class="kicker" style="margin-top:26px">' + (withRates ? '每個人手上剩下什麼' : '每個人選了什麼') + '</span>' +
-      '<div class="keeplist">' + S.stats.survive.map(function (row) {
-        return '<div class="keeprow">' +
-          '<span class="nm">' + esc(row.name) + '</span>' +
-          '<span class="got">' + (row.items.length
-            ? row.items.map(function (it) {
-                return '<span class="lot">' + esc(it.name) +
-                  (withRates && it.revealed ? ' <b>剩 ' + it.left + '%</b>' : '') + '</span>';
-              }).join('')
-            : '<span class="none">還沒選</span>') + '</span>' +
-          (withRates && row.drop > 0 ? '<span class="drop">−' + row.drop + '</span>' : '') +
-        '</div>';
-      }).join('') + '</div>';
   }
 
   // ── 各階段畫面 ────────────────────────────────────────────────────────
@@ -177,134 +202,106 @@
       var s = S.stats;
       return '<h2>打開上一次的卡片</h2>' +
         '<p class="lede">輸入卡片上的<b>幸福指數</b>，然後選這是你第幾次來。</p>' +
-        '<div class="big" style="margin-top:24px">' + s.reconnected + ' <span class="muted" style="font-size:calc(34px * var(--u))">/ ' + s.count + ' 已接上</span></div>' +
-        (s.newcomers ? '<p class="mono" style="margin-top:10px;color:var(--root-c)">其中 ' + s.newcomers + ' 位第一次來或忘記帶卡片</p>' : '') +
-        '<div class="note">第一次來、忘記帶卡片、上次沒來——手機上有一個按鈕，按現在的感覺填就好。<b>兩種都算數，今天的遊戲不吃上一關的任何東西。</b></div>';
+        answering(s.reconnected, '已接上') +
+        (s.newcomers ? '<p class="mono" style="margin-top:8px;color:var(--root-c)">其中 ' + s.newcomers + ' 位第一次來或忘記帶卡片</p>' : '') +
+        '<div class="note">第一次來、忘記帶卡片、上次沒來——手機上有一個按鈕，按現在的感覺填就好。<b>兩種都算數，今天的遊戲不吃上一關的東西。</b></div>';
     },
 
-    keep_intro: function () {
-      return '<h2>人生只能保住三樣</h2>' +
-        '<p class="lede">下面這些，三十年後你只保得住 <b>' + S.keepCount + ' 樣</b>。不用錢、不用搶，每個人都選得到自己要的那三樣。</p>' +
-        board();
+    shop: function () {
+      return '<h2>' + esc(S.shop.name) + '</h2>' +
+        '<p class="lede">' + esc(S.shop.rule) + '　<b style="color:var(--gold)">' + esc(S.shop.deal) + '</b></p>' +
+        answering(S.stats.bagsDone, '人挑好了') +
+        shelfBoard(false);
     },
 
-    keep: function () {
-      return '<h2>選出你要保住的三樣</h2>' +
-        '<p class="lede">在手機上選。選好之前都可以改，翻頁之後就不能改了。</p>' +
-        answering(S.stats.keptDone, '人已選好') +
-        board();
+    shop_result: function () {
+      return '<h2>全場最多人挑的</h2>' +
+        '<p class="lede" style="color:var(--root-c);font-weight:700">你為什麼挑這三樣？</p>' +
+        rankBars() +
+        bagList(false);
     },
 
-    keep_result: function () {
-      var top = S.stats.keepCounts.filter(function (x) { return x.n > 0; }).slice(0, 4);
-      var max = top.length ? top[0].n : 1;
-      return '<h2>全場想保住的</h2>' +
-        '<p class="lede" style="color:var(--root-c);font-weight:700">你為什麼選這三樣？</p>' +
-        '<div class="opts">' + top.map(function (x) {
-          return '<div class="opt">' +
-            '<span class="lbl">' + esc(x.name) + '</span>' +
-            '<span class="track"><i style="width:' + (x.n / max * 100) + '%"></i></span>' +
-            '<span class="n">' + x.n + ' 人</span>' +
-          '</div>';
-        }).join('') + '</div>' +
-        keepList(false);
+    poll: function () {
+      return '<div class="claim">' + esc(S.poll.claim) + '</div>' +
+        '<p class="lede" style="font-size:calc(24px * var(--u));margin-top:16px">' + esc(S.poll.ask) + '</p>' +
+        answering(S.stats.answeredPoll, '人已投票');
     },
 
-    q20: function () {
-      return '<h2>' + esc(S.q20.question) + '</h2>' +
-        '<p class="lede">四個選項，憑直覺。沒有正確答案。</p>' +
-        answering(S.stats.answeredQ20);
+    poll_result: function () {
+      return '<div class="claim small">' + esc(S.poll.claim) + '</div>' +
+        pollBars();
     },
 
-    q20_result: function () {
-      return '<h2>全場是這樣想的</h2>' + optionBars();
-    },
-
-    ff_intro: function () {
-      return '<h2>時間快轉三十年</h2>' +
-        '<p class="lede">你剛剛保住的那三樣，現在要驗貨。一項一項來。</p>' +
-        progressStrip();
-    },
-
-    depreciate: function () {
-      var r = S.reveal;
-      if (r.idx < 0) {
-        return '<h2>三十年後</h2>' +
-          '<p class="lede">按底下的「揭曉下一項」開始。</p>' + progressStrip();
-      }
-      var it = r.item;
-      return '<div class="depidx">' + (r.idx + 1) + ' / ' + r.total + '</div>' +
-        '<div class="deptop">' +
-          '<div>' +
-            '<div class="depname">' + esc(it.name) + '</div>' +
-            '<div class="deprow">' +
-              '<div class="deprate">' + pct(it.rate) + '</div>' +
-              '<div class="depwhy">' + esc(it.why) + '</div>' +
-            '</div>' +
-          '</div>' +
-          assetArt(it.id) +
-        '</div>' +
-        avgLine() +
-        progressStrip();
-    },
-
-    survive: function () {
-      return '<h2>三十年後，你手上剩下什麼</h2>' +
-        avgLine() +
-        keepList(true);
-    },
-
-    verse_half: function () {
+    verse_first: function () {
       return '<div class="verse half"><span class="ref">' + esc(S.verse.ref) + '</span>' +
         '<blockquote>「' + esc(S.verse.first) + '」</blockquote></div>';
     },
 
-    mystery: function () {
-      return '' +
-        '<div class="qmark">？</div>' +
-        '<div class="eternal"><div class="nm">' + esc(S.mystery.name) + '</div>' +
-          '<div class="rate">折舊率 0%</div>' +
-          '<p class="lede" style="margin:14px auto 0;text-align:center">' + esc(S.mystery.why) + '</p></div>' +
-        '<p class="lede" style="text-align:center;margin:22px auto 0">剛剛那張表上，你選不到這一樣。<br>' +
-        '而三十年後，它是唯一還在的。</p>';
+    timemachine: function () {
+      return '<div class="warp">' +
+        '<div class="rails"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>' +
+        '<div class="yr" id="yr">' + new Date().getFullYear() + '</div>' +
+        '<div class="warplbl">人生時光機</div>' +
+      '</div>';
     },
 
-    free: function () {
-      var w = S.stats.wants;
-      return '' +
-        '<div class="freeline">這一樣，你出多少錢都買不到。<br><span style="color:var(--root-c)">今天，它不用錢。誰要都可以拿。</span></div>' +
-        '<div class="verse half second" style="margin-top:calc(26px * var(--u))"><span class="ref">' + esc(S.verse.ref) + ' · 下半句</span>' +
-          '<blockquote>「' + esc(S.verse.second) + '」</blockquote></div>' +
+    after30: function () {
+      return '<h2>三十年後的' + esc(S.shop.name) + '</h2>' +
+        avgLine() +
+        shelfBoard(true);
+    },
+
+    verse_second: function () {
+      return '<div class="verse half second"><span class="ref">' + esc(S.verse.ref) + ' · 下半句</span>' +
+        '<blockquote>「' + esc(S.verse.second) + '」</blockquote></div>';
+    },
+
+    gift: function () {
+      var w = S.stats.opened;
+      return '<div class="giftline">' + esc(S.gift.line) + '</div>' +
+        '<div class="eternal"><div class="nm">' + esc(S.gift.name) + '</div>' +
+          '<div class="rate">折舊率 0%</div></div>' +
+        '<p class="lede" style="text-align:center;margin:0 auto">' + esc(S.gift.why) + '　' + esc(S.gift.from) + '</p>' +
         '<div class="wantlist">' + (w.length
           ? w.map(function (n) { return '<span>' + esc(n) + '</span>'; }).join('')
-          : '<span class="muted" style="background:none;border-color:var(--edge-soft);color:var(--ink-3);box-shadow:none">還沒有人按</span>') + '</div>' +
-        '<p class="mono muted" style="margin-top:12px">' + w.length + ' / ' + S.stats.count + ' 按了「我要」</p>' +
-        '<div class="note">不按也完全沒關係。不扣分、不點名、不追問。</div>';
+          : '<span class="muted" style="background:none;border-color:var(--edge-soft);color:var(--ink-3);box-shadow:none">還沒有人打開</span>') + '</div>';
     },
 
-    naming: function () {
-      return '<h2>那條線有了名字</h2>' +
-        '<div class="eternal" style="text-align:left"><div class="nm" style="font-size:calc(72px * var(--u))">幸福根基</div></div>' +
-        '<p class="lede" style="font-size:calc(22px * var(--u))">上一次大家都在掉分的時候，有一條線是往上的。<b>就是它。</b></p>' +
-        '<div class="note"><b>這條線不會被任何事件扣掉。</b>　而且它不是比賽——它從你來的第一天開始長。</div>';
-    },
-
-    // 七關共用的那四頁，內容在 shared/stage-parts.js
-    message: function () {
-      return StageParts.testimony();
-    },
-
+    // 七關共用的那幾頁，內容在 shared/stage-parts.js
     verse: function () {
       return StageParts.verse({
         ref: S.verse.ref, text: S.verse.text,
         done: S.stats.versesReceived, total: S.stats.count,
-      }) +
-        '<div style="margin-top:calc(26px * var(--u))"><span class="kicker">十五分鐘前，你們是這樣想的</span>' + optionBars() + '</div>';
+      });
+    },
+
+    teach: function () {
+      var col = function (cls, o) {
+        return '<div class="col3 ' + cls + '"><h3>' + esc(o.name) + '</h3>' +
+          o.lines.map(function (l) {
+            return '<p style="margin:10px 0 0;font-size:calc(18px * var(--u));line-height:1.8;color:var(--ink-2)">' + esc(l) + '</p>';
+          }).join('') + '</div>';
+      };
+      return '<h2>' + esc(S.teach.title) + '</h2>' +
+        '<div class="cols3" style="grid-template-columns:1fr 1fr">' +
+          col('thief', S.teach.thief) + col('jesus', S.teach.jesus) +
+        '</div>';
+    },
+
+    naming: function () {
+      return '<h2>那條線有了名字</h2>' +
+        '<div class="eternal" style="text-align:left;margin:calc(14px * var(--u)) 0"><div class="nm" style="font-size:min(calc(72px * var(--u)),9vh)">幸福根基</div></div>' +
+        '<p class="lede" style="font-size:calc(22px * var(--u))">上一次大家都在掉分的時候，有一條線是往上的。<b>就是它。</b></p>' +
+        '<div class="note"><b>這條線不會被任何事件扣掉。</b>　而且它不是比賽——它從你來的第一天開始長。</div>';
+    },
+
+    testimony: function () {
+      return StageParts.testimony();
     },
 
     prayer: function () {
       return StageParts.prayer({
-        lede: '今天有哪一項的折舊，讓你心裡動了一下？寫下來。只有你自己看得到。',
+        lede: '今天有哪一樣的折舊，讓你心裡動了一下？寫下來。只有你自己看得到。',
         done: S.stats.burdens, total: S.stats.count,
       });
     },
@@ -312,7 +309,7 @@
     card: function () {
       return StageParts.keepsake({
         done: S.stats.cardsDone, total: S.stats.count,
-        extra: '你今晚保住的三樣',
+        extra: '你今晚挑的三樣',
       });
     },
 
@@ -328,7 +325,27 @@
     },
   };
 
+  // ── 人生時光機的年份 ──────────────────────────────────────────────────
+  // 從今年跑到三十年後，跑完停住。翻走再回來會重跑一次。
+  var warpTimer = null;
+  function runWarp() {
+    var el = document.getElementById('yr');
+    if (!el) return;
+    var from = new Date().getFullYear();
+    var to = from + YEARS;
+    var t0 = Date.now(), MS = 3200;
+    clearInterval(warpTimer);
+    warpTimer = setInterval(function () {
+      var k = Math.min(1, (Date.now() - t0) / MS);
+      // 先快後慢，最後一年停得住
+      var e = 1 - Math.pow(1 - k, 3);
+      el.textContent = Math.round(from + (to - from) * e);
+      if (k >= 1) clearInterval(warpTimer);
+    }, 60);
+  }
+
   // ── 主渲染 ───────────────────────────────────────────────────────────
+  var lastPhase = '';
   function render() {
     if (!S) return;
     document.getElementById('ptag').textContent = S.phase.tag;
@@ -343,10 +360,8 @@
     }
     jump.value = String(S.phaseIdx);
 
-    // 折舊控制列只在那一頁出現
-    var dep = S.phase.id === 'depreciate';
-    document.getElementById('depctl').style.display = dep ? 'inline-flex' : 'none';
-    // 頁名在翻頁選單上就有了，右邊不用再寫一次
+    // 三十年那一頁底下才有「重跑三十年」
+    document.getElementById('agectl').style.display = S.phase.id === 'after30' ? 'inline-flex' : 'none';
     document.getElementById('hint').textContent =
       S.phase.id === 'lobby' ? '玩家掃碼進場後按「下一頁」開始' : '';
 
@@ -360,6 +375,14 @@
       try { QR.render(qr, joinUrl(), qrScale(7), '#161A18', '#ffffff'); } catch (err) {}
     }
 
+    // 進到時光機那一頁才跑年份，其他頁把它關掉
+    if (S.phase.id === 'timemachine') {
+      if (lastPhase !== 'timemachine') runWarp();
+      else { var y = document.getElementById('yr'); if (y) y.textContent = new Date().getFullYear() + YEARS; }
+    } else {
+      clearInterval(warpTimer);
+    }
+    lastPhase = S.phase.id;
   }
 
   // ── 啟動 ─────────────────────────────────────────────────────────────
@@ -377,6 +400,7 @@
     b.onclick = function () {
       var cmd = b.dataset.cmd;
       if (cmd === 'reset' && !confirm('把這個房間整個重置？所有人的分數和接關資料都會清掉。')) return;
+      if (cmd === 'resetAging' && !confirm('重跑三十年？所有人的幸福指數會還原到進時光機之前。')) return;
       post(cmd);
     };
   });
@@ -401,10 +425,6 @@
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
     if (e.key === 'n' || e.key === 'N') { e.preventDefault(); toggleNotes(); return; }
     if (e.key === 'Escape') { toggleNotes(false); return; }
-    // 折舊那一頁，空白鍵是「揭曉下一項」——一手就能控整場
-    if (S && S.phase.id === 'depreciate' && (e.key === ' ' || e.key === 'Enter')) {
-      e.preventDefault(); post('nextItem'); return;
-    }
     if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); post('next'); }
     if (e.key === 'ArrowLeft') { e.preventDefault(); post('prev'); }
   });

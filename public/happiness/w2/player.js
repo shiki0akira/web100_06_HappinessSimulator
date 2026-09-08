@@ -12,6 +12,7 @@
   };
 
   var WEEK = 2;
+  var YEARS = 30;
   var ROOM = Room.readCode();
   // 測試用：同一台電腦要開多個玩家，就在網址後面加 &seat=2、&seat=3……
   var SEAT = new URLSearchParams(location.search).get('seat') || '';
@@ -41,7 +42,7 @@
   function join(name) { if (src) src.join(name); }
 
   // 送出之前只活在這支手機上的暫存
-  var draft = { newcomer: false, keep: [], editing: false };
+  var draft = { newcomer: false, bag: [], editing: false };
 
   // ── 畫面 ─────────────────────────────────────────────────────────────
   var wait = function (msg, sub) {
@@ -49,14 +50,20 @@
       esc(msg) + '</p>' + (sub ? '<p style="font-size:17px">' + esc(sub) + '</p>' : '') + '</div>';
   };
 
-  // 他保住的那三樣。揭曉還沒開到的那幾樣不給數字 —— 手機上先看到答案就沒戲了。
-  function myBoard(items, big) {
+  // 他的袋子。三十年還沒過就不給數字 —— 手機上先看到答案就沒戲了。
+  function bagBoard(items, big) {
     if (!items.length) return '';
     return '<div class="mine' + (big ? ' big' : '') + '">' + items.map(function (it) {
-      return '<div class="mrow' + (it.revealed ? ' open' : '') + '">' +
-        '<img src="/happiness/shared/art/asset-' + it.id + '.svg" alt="">' +
-        '<span class="nm">' + esc(it.name) + '</span>' +
-        '<span class="v">' + (it.revealed ? '剩 ' + it.left + '%' : '？') + '</span>' +
+      var art = it.gift
+        ? '<span class="gicon">' + (S.giftOpen ? '✦' : esc(S.gift.mask)) + '</span>'
+        : '<img src="/happiness/shared/art/asset-' + it.id + '.svg" alt="">';
+      // 還沒拆的那一份不寫名字，也不寫數字 —— 它就是今晚的伏筆
+      var name = (it.gift && !S.giftOpen) ? '買三送一的那一樣' : it.name;
+      var val = it.aged ? '剩 ' + it.left + '%' : (it.gift ? '尚未拆封' : '');
+      return '<div class="mrow' + (it.aged ? ' open' : '') + (it.gift ? ' gift' : '') + '">' +
+        art +
+        '<span class="nm">' + esc(name) + '</span>' +
+        '<span class="v">' + esc(val) + '</span>' +
       '</div>';
     }).join('') + '</div>';
   }
@@ -99,127 +106,87 @@
         '<p class="privacy">選好次數就送出了。忘記帶卡片完全沒關係，按上面那個按鈕就好 —— 今天的遊戲不吃上一關的資料。</p>';
     },
 
-    keep_intro: function (me) {
-      return '<h2>人生只能保住三樣</h2>' +
-        '<ul style="color:var(--ink-2);font-size:18px;padding-left:20px">' +
-          '<li>大螢幕上那些，三十年後你只保得住 <b>' + S.keepCount + ' 樣</b></li>' +
-          '<li>不用錢、不用搶，<b>每個人都拿得到自己要的那三樣</b></li>' +
-          '<li>選好之前都可以改</li>' +
-        '</ul>' + wait('等主持人開始');
-    },
-
-    keep: function (me) {
-      // 送出過了、而且不在改的狀態 → 只給他看自己選的
-      if (me.keepDone && !draft.editing) {
-        return '<h2>你保住的三樣</h2>' +
-          myBoard(me.survive, true) +
+    // 幸福人生商店：挑三樣，買三送一。
+    shop: function (me) {
+      if (me.bagDone && !draft.editing) {
+        return '<h2>你的袋子</h2>' +
+          bagBoard(me.bag, true) +
           '<button class="btn ghost fullbtn" id="redo">改一下</button>' +
           '<p class="privacy">翻頁之後就不能改了。</p>';
       }
-      var left = S.keepCount - draft.keep.length;
-      return '<h2>選出你要保住的三樣</h2>' +
-        '<p>三十年後，只有這三樣還在你手上。</p>' +
+      var left = S.pick - draft.bag.length;
+      return '<h2>' + esc(S.shop.name) + '</h2>' +
+        '<p>' + esc(S.shop.rule) + '</p>' +
+        '<div class="deal">🎁 ' + esc(S.shop.deal) + '　<small>挑滿三樣，第四樣送你</small></div>' +
         '<div class="lotgrid">' + S.assets.map(function (a) {
-          var on = draft.keep.indexOf(a.id) >= 0;
+          var on = draft.bag.indexOf(a.id) >= 0;
           var off = !on && left <= 0;
-          return '<div class="lotchk' + (on ? ' on' : '') + (off ? ' off' : '') + '" data-keep="' + a.id + '">' +
+          return '<div class="lotchk' + (on ? ' on' : '') + (off ? ' off' : '') + '" data-pick="' + a.id + '">' +
             '<span class="box"></span>' +
             '<img class="chkart" src="/happiness/shared/art/asset-' + a.id + '.svg" alt="">' +
             '<span>' + esc(a.name) + '</span></div>';
         }).join('') +
-          '<div class="lotchk locked" id="lockedtile"><span class="box">' + esc(S.locked.name) + '</span>' +
-            '<span>' + esc(S.locked.label) + '</span></div>' +
+          '<div class="lotchk gift' + (left <= 0 ? ' on' : '') + '" id="gifttile"><span class="box">' + esc(S.gift.mask) + '</span>' +
+            '<span>' + (left <= 0 ? '這一樣是送你的' : '買三送一的那一樣') +
+            '<span class="sub">' + (left <= 0 ? '最後才會知道是什麼' : '挑滿三樣就進你的袋子') + '</span></span></div>' +
         '</div>' +
-        '<p class="privacy" id="lockmsg"></p>' +
-        '<button class="btn primary fullbtn" id="savekeep"' + (left === 0 ? '' : ' disabled') + '>' +
-          (left > 0 ? '還要選 ' + left + ' 樣' : '就這三樣') + '</button>';
+        '<button class="btn primary fullbtn" id="savebag"' + (left === 0 ? '' : ' disabled') + '>' +
+          (left > 0 ? '還要挑 ' + left + ' 樣' : '就這三樣') + '</button>';
     },
 
-    keep_result: function (me) {
-      return '<h2>你保住的三樣</h2>' + myBoard(me.survive, true) + wait('看大螢幕');
+    shop_result: function (me) {
+      return '<h2>你的袋子</h2>' + bagBoard(me.bag, true) + wait('看大螢幕');
     },
 
-    q20: function (me) {
-      if (me.q20 !== null) return wait('已送出：' + S.q20.options[me.q20], '看大螢幕');
-      return '<h2>' + esc(S.q20.question) + '</h2>' +
-        myBoard(me.survive, false) +
-        '<p style="margin-top:18px">憑直覺，沒有正確答案。</p>' +
-        '<div class="lotgrid">' + S.q20.options.map(function (o, i) {
-          return '<button class="btn fullbtn" style="margin-top:0" data-q="' + i + '">' + esc(o) + '</button>';
+    poll: function (me) {
+      if (me.poll !== null) return wait('已投票：' + S.poll.options[me.poll], '看大螢幕');
+      return '<div class="claim">' + esc(S.poll.claim) + '</div>' +
+        '<p style="margin-top:16px">' + esc(S.poll.ask) + '</p>' +
+        '<div class="lotgrid">' + S.poll.options.map(function (o, i) {
+          return '<button class="btn fullbtn" style="margin-top:0" data-p="' + i + '">' + esc(o) + '</button>';
         }).join('') + '</div>';
     },
-    q20_result: function () { return wait('看大螢幕'); },
-    ff_intro: function (me) {
-      return '<h2>時間快轉三十年</h2>' +
-        '<p>你剛剛保住的那三樣，現在要驗貨。</p>' +
-        myBoard(me.survive, true) +
-        wait('等主持人開第一項');
-    },
+    poll_result: function () { return wait('看大螢幕', '聽主持人分享'); },
 
-    depreciate: function (me) {
-      var r = S.reveal;
-      if (r.idx < 0) return wait('看大螢幕', '等主持人開第一項');
-      var it = r.item;
-      var mine = me.keep.indexOf(it.id) >= 0;
-      return '<div class="depcard card-face">' +
-          '<div class="idx">' + (r.idx + 1) + ' / ' + r.total + '</div>' +
-          '<div class="nm">' + esc(it.name) + '</div>' +
-          '<div class="rate">−' + Math.round(it.rate * 100) + '%</div>' +
-          '<div class="why">' + esc(it.why) + '</div>' +
-        '</div>' +
-        (mine
-          ? '<div class="hit">你 −' + me.lastLoss + ' 分</div>'
-          : '<div class="safe">這一項你沒有保</div>') +
-        myBoard(me.survive, false) +
-        '<p class="mono" style="text-align:center;margin-top:18px;color:var(--ink-3)">' +
-          '開場 ' + me.outerStart + ' → 現在 ' + me.outer + '</p>';
-    },
-
-    survive: function (me) {
-      return '<h2>三十年後，你手上剩下</h2>' +
-        myBoard(me.survive, true) +
-        '<div class="slider" style="margin-top:22px"><div class="val">' + (me.outer == null ? '—' : me.outer) + '</div></div>' +
-        '<p class="mono" style="text-align:center;color:var(--ink-3)">' +
-          '開場 ' + me.outerStart + ' → 現在 ' + me.outer + '（−' + me.totalLoss + '）</p>' +
-        wait('看大螢幕');
-    },
-
-    verse_half: function () {
+    verse_first: function () {
       return '<div class="verse-p"><span class="ref">' + esc(S.verse.ref) + ' · 上半句</span>' +
         '<blockquote style="color:var(--vol)">「' + esc(S.verse.first) + '」</blockquote></div>' +
         wait('聽主持人說');
     },
 
-    mystery: function (me) {
-      return '<div class="qmark">？</div>' +
-        '<div class="eternal"><div class="nm">' + esc(S.mystery.name) + '</div>' +
-          '<div class="rate">−0%</div></div>' +
-        '<p style="text-align:center;margin-top:18px">' + esc(S.mystery.why) + '</p>' +
-        '<p style="text-align:center;color:var(--ink-3);font-size:17px">剛剛那張表上，你選不到這一樣。</p>' +
-        wait('看大螢幕');
+    timemachine: function (me) {
+      return '<h2>人生時光機</h2>' +
+        '<div class="yr" id="yr">' + new Date().getFullYear() + '</div>' +
+        '<p style="text-align:center">抓好，我們要往前三十年。</p>' +
+        bagBoard(me.bag, false);
     },
 
-    free: function (me) {
-      return '<h2>今天，它不用錢</h2>' +
-        '<div class="verse-p"><span class="ref">' + esc(S.verse.ref) + ' · 下半句</span>' +
-          '<blockquote style="color:var(--root-c)">「' + esc(S.verse.second) + '」</blockquote></div>' +
-        '<button class="btn ' + (me.want ? 'primary' : '') + ' wantbtn" id="want">' +
-          (me.want ? '✓ 我要' : '我 要') + '</button>' +
-        '<p class="privacy">' + (me.want
+    after30: function (me) {
+      return '<h2>三十年後</h2>' +
+        '<p>你袋子裡的東西，現在長這樣。</p>' +
+        bagBoard(me.bag, true) +
+        (me.loss > 0 ? '<div class="hit">你 −' + me.loss + ' 分</div>' : '') +
+        '<p class="mono" style="text-align:center;margin-top:14px;color:var(--ink-3)">' +
+          '開場 ' + me.outerStart + ' → 現在 ' + me.outer + '</p>';
+    },
+
+    verse_second: function () {
+      return '<div class="verse-p"><span class="ref">' + esc(S.verse.ref) + ' · 下半句</span>' +
+        '<blockquote style="color:var(--root-c)">「' + esc(S.verse.second) + '」</blockquote></div>' +
+        wait('聽主持人說');
+    },
+
+    gift: function (me) {
+      return '<h2>買三送一的那一樣</h2>' +
+        '<div class="eternal"><div class="nm">' + esc(S.gift.name) + '</div>' +
+          '<div class="rate">折舊率 0%</div></div>' +
+        '<p style="text-align:center;margin-top:14px">' + esc(S.gift.line) + '</p>' +
+        '<button class="btn ' + (me.opened ? 'primary' : '') + ' wantbtn" id="open">' +
+          (me.opened ? '✓ 已打開' : '我 打 開 它') + '</button>' +
+        '<p class="privacy">' + (me.opened
           ? '記下來了。再按一次可以收回，沒有人會問你。'
           : '不按也完全沒關係。今天沒準備好，後面還有五關。') + '</p>';
     },
-
-    naming: function (me) {
-      return '<h2>它有名字了</h2>' +
-        '<div class="eternal" style="margin-top:26px"><div class="nm" style="font-size:44px">幸福根基</div>' +
-          '<div class="rate">' + me.inner + '</div></div>' +
-        '<p style="margin-top:22px">上一關大家都在掉分的時候，有一條線是往上的。<b>就是它。</b></p>' +
-        '<p>這條線不會被任何事件扣掉。它從你來的第一天開始長。</p>' +
-        wait('看大螢幕');
-    },
-
-    message: function () { return wait('聽主持人分享'); },
 
     verse: function (me) {
       return '<div class="verse-p"><span class="ref">' + esc(S.verse.ref) + '</span>' +
@@ -230,10 +197,22 @@
           : '<button class="btn primary fullbtn" id="verse">領受</button>');
     },
 
+    teach: function () { return wait('聽主持人說'); },
+
+    naming: function (me) {
+      return '<h2>它有名字了</h2>' +
+        '<div class="eternal" style="margin-top:22px"><div class="nm" style="font-size:44px">幸福根基</div>' +
+          '<div class="rate">' + me.inner + '</div></div>' +
+        '<p style="margin-top:20px">上一關大家都在掉分的時候，有一條線是往上的。<b>就是它。</b></p>' +
+        '<p>這條線不會被任何事件扣掉。它從你來的第一天開始長。</p>';
+    },
+
+    testimony: function () { return wait('聽主持人分享'); },
+
     prayer: function (me) {
       var mine = readBurden();
       return '<h2>祝福禱告</h2>' +
-        '<p>今天有哪一項的折舊，讓你心裡動了一下？寫下來，等一下一起禱告。</p>' +
+        '<p>今天有哪一樣的折舊，讓你心裡動了一下？寫下來，等一下一起禱告。</p>' +
         '<textarea id="bd" maxlength="120" placeholder="一句話就好">' + esc(mine) + '</textarea>' +
         '<button class="btn primary fullbtn" id="savebd">' + (mine ? '更新' : '寫好了') + '</button>' +
         (me.hasBurden || mine
@@ -262,10 +241,6 @@
   };
 
   // ── 綁定事件 ─────────────────────────────────────────────────────────
-  function sendReconnect(visits, value) {
-    act('reconnect', { value: value, visits: visits, newcomer: draft.newcomer });
-  }
-
   function bind(me) {
     // 接關
     var sl = document.getElementById('sl');
@@ -282,54 +257,49 @@
         var oc = document.getElementById('oc');
         var value = sl ? Number(sl.value) : Number(oc && oc.value);
         if (!sl && !(value >= 0 && value <= 100)) { if (oc) oc.focus(); return; }
-        sendReconnect(visits, value);
+        act('reconnect', { value: value, visits: visits, newcomer: draft.newcomer });
       };
     });
 
-    // 保住三樣
-    document.querySelectorAll('[data-keep]').forEach(function (d) {
+    // 商店：挑三樣
+    document.querySelectorAll('[data-pick]').forEach(function (d) {
       d.onclick = function () {
-        var id = Number(d.dataset.keep);
-        var i = draft.keep.indexOf(id);
-        if (i >= 0) draft.keep.splice(i, 1);
-        else if (draft.keep.length >= S.keepCount) return;   // 三樣就是三樣
-        else draft.keep.push(id);
+        var id = Number(d.dataset.pick);
+        var i = draft.bag.indexOf(id);
+        if (i >= 0) draft.bag.splice(i, 1);
+        else if (draft.bag.length >= S.pick) return;   // 三樣就是三樣
+        else draft.bag.push(id);
         sig = '';
         render();
       };
     });
-    var lockedTile = document.getElementById('lockedtile');
-    if (lockedTile) lockedTile.onclick = function () {
-      var m = document.getElementById('lockmsg');
-      if (m) m.textContent = S.locked.hint;
-    };
-    var sk = document.getElementById('savekeep');
-    if (sk) sk.onclick = function () {
-      if (draft.keep.length !== S.keepCount) return;
+    var sb = document.getElementById('savebag');
+    if (sb) sb.onclick = function () {
+      if (draft.bag.length !== S.pick) return;
       draft.editing = false;
-      act('keep', { ids: draft.keep });
+      act('bag', { ids: draft.bag });
     };
     var redo = document.getElementById('redo');
     if (redo) redo.onclick = function () {
       // 已經送出過了，把伺服器那份拉回來當草稿，重開選單
-      draft.keep = me.keep.slice();
+      draft.bag = me.bagIds.slice();
       draft.editing = true;
       sig = '';
       render();
     };
 
-    document.querySelectorAll('[data-q]').forEach(function (b) {
-      b.onclick = function () { act('q20', { value: Number(b.dataset.q) }); };
+    document.querySelectorAll('[data-p]').forEach(function (b) {
+      b.onclick = function () { act('poll', { value: Number(b.dataset.p) }); };
     });
 
-    var w = document.getElementById('want');
-    if (w) w.onclick = function () { act('want'); };
+    var op = document.getElementById('open');
+    if (op) op.onclick = function () { act('open'); };
 
     var v = document.getElementById('verse');
     if (v) v.onclick = function () { act('verse'); };
 
-    var sb = document.getElementById('savebd');
-    if (sb) sb.onclick = function () {
+    var save = document.getElementById('savebd');
+    if (save) save.onclick = function () {
       var text = document.getElementById('bd').value;
       writeBurden(text);
       // 只送「有寫」這件事上去。那句話留在這支手機裡，一個字都不會離開。
@@ -357,9 +327,9 @@
           outer: me.outer, outerPrev: me.outerStart,
           inner: me.inner, innerLabel: '幸福根基',
           verseRef: S.verse.ref, verseText: S.verse.text, burden: readBurden(),
-          listLabel: 'I KEPT',
-          bought: me.survive.map(function (it) {
-            return it.name + (it.revealed ? ' 剩' + it.left + '%' : '');
+          listLabel: 'MY BAG',
+          bought: me.bag.map(function (it) {
+            return it.name + (it.aged ? ' 剩' + it.left + '%' : '');
           }),
         });
         cardURL = cv.toDataURL('image/png');
@@ -369,6 +339,20 @@
       };
       if (document.fonts && document.fonts.ready) document.fonts.ready.then(make); else make();
     }
+  }
+
+  // 人生時光機：手機上的年份跟著大螢幕一起跑
+  var warpTimer = null;
+  function runWarp() {
+    var el = document.getElementById('yr');
+    if (!el) return;
+    var from = new Date().getFullYear(), to = from + YEARS, t0 = Date.now(), MS = 3200;
+    clearInterval(warpTimer);
+    warpTimer = setInterval(function () {
+      var k = Math.min(1, (Date.now() - t0) / MS);
+      el.textContent = Math.round(from + (to - from) * (1 - Math.pow(1 - k, 3)));
+      if (k >= 1) clearInterval(warpTimer);
+    }, 60);
   }
 
   // ── 主渲染 ───────────────────────────────────────────────────────────
@@ -406,15 +390,16 @@
     document.getElementById('innerbar').style.width = me.inner + '%';
 
     var next = [
-      S.phase.id, S.reveal.idx, S.named, S.mysteryOpen, S.keepOpen,
-      me.outer, me.inner, me.visits, me.keepDone, me.keep.join(','),
-      me.q20, me.want, me.receivedVerse, me.cardDone, me.hasBurden,
-      draft.newcomer, draft.editing, draft.keep.join(','),
+      S.phase.id, S.aged, S.named, S.giftOpen, S.shopOpen,
+      me.outer, me.inner, me.visits, me.bagDone, me.bagIds.join(','),
+      me.poll, me.opened, me.receivedVerse, me.cardDone, me.hasBurden,
+      draft.newcomer, draft.editing, draft.bag.join(','),
     ].join('|');
     if (next !== sig) {
       sig = next;
       screen.innerHTML = (views[S.phase.id] || function () { return wait('看大螢幕'); })(me);
       bind(me);
+      if (S.phase.id === 'timemachine') runWarp(); else clearInterval(warpTimer);
     }
   }
 

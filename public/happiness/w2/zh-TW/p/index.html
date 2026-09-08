@@ -41,7 +41,10 @@
   .visits { display: flex; gap: 10px; margin-top: 16px; }
   .visits button { flex: 1; padding: 16px 0; font-size: 19px; }
 
-  /* 選出要保住的三樣 */
+  /* 幸福人生商店 */
+  .deal { margin-top: 14px; padding: 10px 14px; border: 3px dashed var(--gold); color: var(--gold);
+    font-size: 19px; font-weight: 900; letter-spacing: .06em; }
+  .deal small { font-family: var(--sans); font-size: 15px; font-weight: 500; letter-spacing: 0; color: var(--ink-3); }
   .lotgrid { display: grid; gap: 9px; margin-top: 16px; }
   .lotchk { display: flex; align-items: center; gap: 12px; padding: 11px 14px;
     border: 3px solid var(--edge); background: var(--surface); font-size: 18px; font-weight: 700;
@@ -52,46 +55,46 @@
   /* 圖示墊一塊深色底：有幾張圖本來就是淺色的，白底的淺色主題會整張消失 */
   .lotchk .chkart { width: 32px; height: 32px; flex: none; image-rendering: pixelated;
     background: #12211E; padding: 3px; }
-  /* 選滿三樣之後，其他的暗下來 —— 不禁用，按了還是可以先取消一樣 */
+  /* 挑滿三樣之後，其他的暗下來 —— 不禁用，按了還是可以先取消一樣 */
   .lotchk.off { opacity: .42; }
-  /* 那一格看得到、按得到，但選不走 */
-  .lotchk.locked { border-style: dashed; border-color: var(--gold); color: var(--gold); }
-  .lotchk.locked .box { border: 0; font-family: var(--pixel); font-size: 22px; text-align: center; line-height: 24px; }
+  .lotchk .sub { display: block; margin-top: 2px; font-size: 14px; font-weight: 500; color: var(--ink-3); }
+  /* 買三送一的那一格：挑滿三樣它就亮起來，但要到最後才知道是什麼 */
+  .lotchk.gift { border-style: dashed; border-color: var(--gold); color: var(--gold); cursor: default; }
+  .lotchk.gift .box { border: 0; font-family: var(--pixel); font-size: 22px; text-align: center; line-height: 24px; }
+  .lotchk.gift.on { background: #3A2E12; }
 
-  /* 他保住的三樣：接下來每一頁的小看板 */
+  /* 他的袋子：接下來每一頁的小看板 */
   .mine { display: grid; gap: 8px; margin-top: 16px; }
   .mrow { display: flex; align-items: center; gap: 12px; padding: 9px 12px;
     border: 3px solid var(--edge-soft); background: var(--surface); }
   .mrow img { width: 30px; height: 30px; flex: none; image-rendering: pixelated; opacity: .55;
     background: #12211E; padding: 3px; }
+  .mrow .gicon { width: 36px; flex: none; text-align: center; font-family: var(--pixel); font-size: 20px; color: var(--gold); }
   .mrow .nm { font-size: 17px; font-weight: 700; color: var(--ink-2); }
   .mrow .v { margin-left: auto; font-family: var(--pixel); font-size: 15px; color: var(--ink-3); }
   .mrow.open { border-color: var(--vol); }
   .mrow.open img { opacity: 1; }
   .mrow.open .nm { color: var(--ink); }
   .mrow.open .v { color: var(--vol); }
+  .mrow.gift { border-color: var(--gold); }
+  .mrow.gift .nm, .mrow.gift .v { color: var(--gold); }
   .mine.big .mrow { padding: 13px 14px; }
   .mine.big .mrow img { width: 40px; height: 40px; }
   .mine.big .mrow .nm { font-size: 20px; color: var(--ink); }
 
-  /* 折舊逐項揭曉 */
-  .depcard { text-align: center; padding: 24px 16px; }
-  .depcard .idx { font-family: var(--pixel); font-size: 13px; color: var(--ink-3); }
-  .depcard .nm { font-size: 31px; font-weight: 900; margin-top: 12px; line-height: 1.35; letter-spacing: .04em; }
-  .depcard .rate { font-family: var(--pixel); font-size: 44px; color: var(--vol); margin-top: 14px; }
-  .depcard .rate.zero { color: var(--root-c); }
-  .depcard .why { font-size: 18px; color: var(--ink-2); margin-top: 16px; line-height: 1.8; }
-  .hit { margin-top: 18px; padding: 14px; border: 3px dashed var(--vol); color: var(--vol);
+  .hit { margin-top: 16px; padding: 14px; border: 3px dashed var(--vol); color: var(--vol);
     font-family: var(--pixel); font-size: 22px; text-align: center; }
-  .safe { margin-top: 18px; padding: 14px; border: 3px dashed var(--edge-soft); color: var(--ink-3);
-    font-size: 16px; text-align: center; }
 
-  .qmark { font-family: var(--pixel); font-size: 110px; color: var(--gold); text-align: center;
-    line-height: 1; margin: 26px 0; }
+  /* 世界越來越進步，但人卻越來越痛苦 */
+  .claim { font-size: 26px; font-weight: 900; line-height: 1.6; }
+
+  /* 人生時光機 */
+  .yr { font-family: var(--pixel); font-size: 56px; color: var(--gold); text-align: center; margin: 24px 0 8px; }
+
   .eternal { text-align: center; }
   .eternal .nm { font-size: 54px; font-weight: 900; color: var(--root-c); letter-spacing: .08em; }
   .eternal .rate { font-family: var(--pixel); font-size: 30px; color: var(--root-c); margin-top: 10px; }
-  .wantbtn { width: 100%; margin-top: 22px; padding: 26px; font-size: 30px; font-weight: 900; letter-spacing: .2em; }
+  .wantbtn { width: 100%; margin-top: 22px; padding: 26px; font-size: 28px; font-weight: 900; letter-spacing: .2em; }
 
   .verse-p { text-align: center; padding: 10px 0; }
   .verse-p .ref { font-family: var(--pixel); font-size: 13px; color: var(--gold); }
@@ -121,7 +124,7 @@
       <div class="lbl"><span>幸福指數</span><b id="outerv">—</b></div>
       <span class="bar"><i id="outerbar" style="width:0%;background:var(--vol)"></i></span>
     </div>
-    <!-- 這一關的中段，這條線的標籤會從「？？？」變成「幸福根基」 -->
+    <!-- 這一關的後段，這條線的標籤會從「？？？」變成「幸福根基」 -->
     <div class="gauge">
       <div class="lbl"><span id="innerlbl">？？？</span><b id="innerv">0</b></div>
       <span class="bar"><i id="innerbar" style="width:0%;background:var(--root-c)"></i></span>
