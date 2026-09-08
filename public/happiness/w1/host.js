@@ -72,7 +72,7 @@
           // 上面是幸福指數，下面那條第一關還沒有名字。它有數字、它會動，
           // 但畫面上只有三個問號 —— 有人問就說「下一關」。
           gauge('幸福指數', (hideScore || p.outer == null) ? '—' : p.outer, outer, 'var(--vol)') +
-          gauge('？？？', p.inner || 0, p.inner || 0, 'var(--root-c)') +
+          gauge('？？？', p.inner ? p.inner : '—', p.inner || 0, 'var(--root-c)') +
           (meta.length ? '<div class="meta">' + meta.join('') + '</div>' : '') +
         '</div>';
     }).join('');

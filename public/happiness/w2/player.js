@@ -42,7 +42,7 @@
   function join(name) { if (src) src.join(name); }
 
   // 送出之前只活在這支手機上的暫存
-  var draft = { newcomer: false, bag: [], editing: false };
+  var draft = { bag: [], editing: false };
 
   // ── 畫面 ─────────────────────────────────────────────────────────────
   var wait = function (msg, sub) {
@@ -76,34 +76,20 @@
         '<button class="btn ghost fullbtn" id="rename">改名字</button>';
     },
 
-    // 接關。幸福指數用打的（卡片上的數字），第幾次來用點的。
+    // 接關。兩題都自己填：卡片上的幸福指數、這是第幾次來。
     reconnect: function (me) {
       if (me.outer !== null) {
         return wait('已接上：' + me.outer + ' 分', '這是你第 ' + me.visits + ' 次來');
       }
-      if (draft.newcomer) {
-        return '<h2>沒關係，直接評估現在的自己</h2>' +
-          '<p>0 到 100，憑直覺。上一關沒來、忘記帶卡片、第一次來——都走這條路，一樣算數。</p>' +
-          '<div class="slider"><div class="val" id="sv">50</div>' +
-          '<input type="range" min="0" max="100" value="50" id="sl">' +
-          '<div class="ends"><span>0</span><span>100</span></div></div>' +
-          '<p style="margin-top:20px">這是你第幾次來？</p>' +
-          '<div class="visits">' +
-            '<button class="btn primary" data-v="1">第一次</button>' +
-            '<button class="btn" data-v="2">第二次</button>' +
-          '</div>' +
-          '<p class="privacy">選好次數就送出了。</p>';
-      }
       return '<h2>打開上一次的卡片</h2>' +
-        '<p>輸入卡片上的<b>幸福指數</b>。</p>' +
-        '<input id="oc" type="tel" inputmode="numeric" maxlength="3" placeholder="58" class="numin">' +
-        '<p style="margin-top:20px">這是你第幾次來？</p>' +
-        '<div class="visits">' +
-          '<button class="btn" data-v="1">第一次</button>' +
-          '<button class="btn primary" data-v="2">第二次</button>' +
-        '</div>' +
-        '<button class="btn ghost fullbtn" id="nocard">我第一次來 / 忘記帶卡片</button>' +
-        '<p class="privacy">選好次數就送出了。忘記帶卡片完全沒關係，按上面那個按鈕就好 —— 今天的遊戲不吃上一關的資料。</p>';
+        '<p>輸入卡片上的<b>幸福指數</b>。<br>' +
+        '<span class="sub">第一次來的話自由填 —— 按你現在的感覺給自己一個分數就好。忘記帶卡片、上次沒來也一樣。</span></p>' +
+        '<input id="oc" type="tel" inputmode="numeric" maxlength="3" placeholder="0 – 100" class="numin">' +
+        '<p style="margin-top:22px">這是你第幾次來？<br>' +
+        '<span class="sub">第一次來就填 1。</span></p>' +
+        '<input id="vc" type="tel" inputmode="numeric" maxlength="1" placeholder="1" class="numin">' +
+        '<button class="btn primary fullbtn" id="sendrec">送出</button>' +
+        '<p class="privacy">今天的遊戲不吃上一關的資料，第一次來也玩得到全部。</p>';
     },
 
     // 幸福人生商店：挑三樣，買三送一。
@@ -131,7 +117,7 @@
             '<span class="sub">' + (left <= 0 ? '最後才會知道是什麼' : '挑滿三樣就進你的袋子') + '</span></span></div>' +
         '</div>' +
         '<button class="btn primary fullbtn" id="savebag"' + (left === 0 ? '' : ' disabled') + '>' +
-          (left > 0 ? '還要挑 ' + left + ' 樣' : '就這三樣') + '</button>';
+          (left > 0 ? '還要挑 ' + left + ' 樣' : '選好了') + '</button>';
     },
 
     shop_result: function (me) {
@@ -241,24 +227,20 @@
 
   // ── 綁定事件 ─────────────────────────────────────────────────────────
   function bind(me) {
-    // 接關
-    var sl = document.getElementById('sl');
-    if (sl) {
-      var sv = document.getElementById('sv');
-      sl.oninput = function () { sv.textContent = sl.value; };
-    }
-    var nocard = document.getElementById('nocard');
-    if (nocard) nocard.onclick = function () { draft.newcomer = true; sig = ''; render(); };
-
-    document.querySelectorAll('[data-v]').forEach(function (b) {
-      b.onclick = function () {
-        var visits = Number(b.dataset.v);
-        var oc = document.getElementById('oc');
-        var value = sl ? Number(sl.value) : Number(oc && oc.value);
-        if (!sl && !(value >= 0 && value <= 100)) { if (oc) oc.focus(); return; }
-        act('reconnect', { value: value, visits: visits, newcomer: draft.newcomer });
+    // 接關：兩格都填完才送得出去
+    var send = document.getElementById('sendrec');
+    if (send) {
+      var oc = document.getElementById('oc'), vc = document.getElementById('vc');
+      var go = function () {
+        var value = Number(oc.value);
+        if (!(oc.value !== '' && value >= 0 && value <= 100)) { oc.focus(); return; }
+        var visits = Math.max(1, Math.min(8, Math.floor(Number(vc.value) || 1)));
+        act('reconnect', { value: value, visits: visits, newcomer: visits <= 1 });
       };
-    });
+      send.onclick = go;
+      vc.onkeydown = function (e) { if (e.key === 'Enter') go(); };
+      oc.onkeydown = function (e) { if (e.key === 'Enter') vc.focus(); };
+    }
 
     // 商店：挑三樣
     document.querySelectorAll('[data-pick]').forEach(function (d) {
@@ -385,14 +367,14 @@
     document.getElementById('outerv').textContent = me.outer == null ? '—' : me.outer;
     document.getElementById('outerbar').style.width = (me.outer == null ? 0 : me.outer) + '%';
     document.getElementById('innerlbl').textContent = S.named ? '幸福根基' : '？？？';
-    document.getElementById('innerv').textContent = me.inner;
+    document.getElementById('innerv').textContent = me.inner ? me.inner : '—';
     document.getElementById('innerbar').style.width = me.inner + '%';
 
     var next = [
       S.phase.id, S.shelf.flipped, S.named, S.giftOpen, S.shopOpen,
       me.outer, me.inner, me.visits, me.bagDone, me.bagIds.join(','),
       me.poll, me.opened, me.receivedVerse, me.cardDone, me.hasBurden,
-      draft.newcomer, draft.editing, draft.bag.join(','),
+      draft.editing, draft.bag.join(','),
     ].join('|');
     if (next !== sig) {
       sig = next;

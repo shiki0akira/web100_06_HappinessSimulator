@@ -72,7 +72,7 @@
           '</div>' +
           // 上面是幸福指數（三十年後會掉），下面是幸福根基（今晚才有名字）
           gauge('幸福指數', p.outer == null ? '—' : p.outer, outer, 'var(--vol)') +
-          gauge(S.named ? '幸福根基' : '？？？', p.inner || 0, p.inner || 0, 'var(--root-c)') +
+          gauge(S.named ? '幸福根基' : '？？？', p.inner ? p.inner : '—', p.inner || 0, 'var(--root-c)') +
           meta +
         '</div>';
     }).join('');
@@ -216,10 +216,10 @@
     reconnect: function () {
       var s = S.stats;
       return '<h2>打開上一次的卡片</h2>' +
-        '<p class="lede">輸入卡片上的<b>幸福指數</b>，然後選這是你第幾次來。</p>' +
+        '<p class="lede">輸入卡片上的<b>幸福指數</b>，然後填這是你第幾次來。</p>' +
         answering(s.reconnected, '已接上') +
         (s.newcomers ? '<p class="mono" style="margin-top:8px;color:var(--root-c)">其中 ' + s.newcomers + ' 位第一次來或忘記帶卡片</p>' : '') +
-        '<div class="note">第一次來、忘記帶卡片、上次沒來——手機上有一個按鈕，按現在的感覺填就好。<b>兩種都算數，今天的遊戲不吃上一關的東西。</b></div>';
+        '<div class="note"><b>第一次來的人，幸福指數自由填。</b>　忘記帶卡片、上次沒來也一樣 —— 按你現在的感覺給自己一個分數就好，次數填 1。今天的遊戲不吃上一關的東西。</div>';
     },
 
     shop: function () {

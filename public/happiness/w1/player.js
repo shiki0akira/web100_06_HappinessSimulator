@@ -316,7 +316,7 @@
     pts.textContent = me.points + ' 點';
     document.getElementById('outerv').textContent = me.outer == null ? '—' : me.outer;
     document.getElementById('outerbar').style.width = (me.outer == null ? 0 : me.outer) + '%';
-    document.getElementById('innerv').textContent = me.inner;
+    document.getElementById('innerv').textContent = me.inner ? me.inner : '—';
     document.getElementById('innerbar').style.width = me.inner + '%';
 
     var next = [

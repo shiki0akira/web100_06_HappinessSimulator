@@ -9,7 +9,7 @@ export const LOTS = [
   { id: 5, name: '有成就感的工作' },
   { id: 6, name: '家庭婚姻美滿' },
   { id: 7, name: '每天睡眠都很好' },
-  { id: 8, name: '每天都有好吃的' },
+  { id: 8, name: '出眾的外貌' },
   { id: 9, name: '每天多三小時' },
   { id: 10, name: '成為名人' },
 ];
