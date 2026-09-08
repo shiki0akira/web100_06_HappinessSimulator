@@ -56,6 +56,9 @@ body { padding: 0; }
   padding: 10px 16px;
   background: var(--bar-bg); border-top: 4px solid var(--bar-edge);
 }
+/* display:flex 會蓋掉瀏覽器對 [hidden] 的 display:none，所以要自己關一次 ——
+   不然這排鈕會出現在每一頁 */
+.auc[hidden] { display: none; }
 .auc button {
   flex: 1 1 auto; border: 3px solid var(--bar-edge); background: #1D2A2C; color: var(--bar-ink);
   box-shadow: 3px 3px 0 #000; font-weight: 700; padding: 13px 12px; font-size: 15px;
