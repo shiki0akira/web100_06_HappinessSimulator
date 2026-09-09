@@ -69,15 +69,24 @@ window.StageParts = (function () {
     nextWeek: function (opts) {
       opts = opts || {};
       var lines = opts.lines || [];
-      var num = function (v, color) {
-        return '<div class="who" style="font-size:calc(56px * var(--u))' + (color ? ';color:' + color : '') + '">' +
-          (v == null ? '—' : v) + '</div>';
+      // 一個平均 ＋ 底下一行「開場的那個數字 → 差多少」。
+      // 那個起點就是他們今晚一進來自己打的，所以這一行是真的在跟上一次比。
+      var stat = function (label, v, from, color) {
+        var d = (v == null || from == null) ? null : v - from;
+        return '<div class="col3"><h3>' + esc(label) + '</h3>' +
+          '<div class="who" style="font-size:calc(56px * var(--u));color:' + color + '">' +
+            (v == null ? '—' : v) + '</div>' +
+          (d == null ? '' :
+            '<p class="delta">' + esc(opts.fromLabel || '開場') + ' ' + from +
+              '<b style="color:' + (d < 0 ? 'var(--vol)' : 'var(--root-c)') + '">' +
+              (d > 0 ? '+' : d === 0 ? '±' : '') + d + '</b></p>') +
+        '</div>';
       };
       return '<h2>下週預告</h2>' +
         '<span class="kicker" style="margin-top:10px">今晚全場平均</span>' +
         '<div class="cols3" style="grid-template-columns:1fr 1fr;margin-top:0">' +
-          '<div class="col3"><h3>幸福指數</h3>' + num(opts.avg, 'var(--vol)') + '</div>' +
-          '<div class="col3"><h3>' + esc(opts.innerLabel || '幸福根基') + '</h3>' + num(opts.inner, 'var(--root-c)') + '</div>' +
+          stat('幸福指數', opts.avg, opts.avgFrom, 'var(--vol)') +
+          stat(opts.innerLabel || '幸福根基', opts.inner, opts.innerFrom, 'var(--root-c)') +
         '</div>' +
         '<div class="col3 nextbox" style="border-color:var(--gold)">' +
           '<h3 class="next">下一關 · ' + esc(opts.week || '') + '</h3>' +

@@ -359,8 +359,11 @@
     end: function () {
       return StageParts.nextWeek({
         avg: S.stats.outerAvg,
+        avgFrom: S.stats.startAvg,
         inner: S.stats.innerAvg || null,
+        innerFrom: S.stats.innerStartAvg,
         innerLabel: S.named ? '幸福根基' : '？？？',
+        fromLabel: '上週',
         week: '萬世巨星',
         lines: [
           '經文說「我來了」。那個「我」是誰——下一關。',

@@ -78,6 +78,7 @@ export function addPlayer(s, name) {
     outer: null,          // 幸福指數（接關輸入）
     outerStart: null,     // 折舊之前的值，卡片上要印「上週 XX」
     inner: 0,             // 幸福根基
+    innerStart: 0,        // 接關時打進來的那個數字（上週卡片上的），收尾要比
     visits: 0,            // 這是他第幾次來（含今天）
     newcomer: false,      // 第一次來，或忘記帶卡片
     bag: [],              // 他在商店挑的三樣（asset id）
@@ -200,6 +201,7 @@ export function applyAction(s, pid, msg) {
     case 'reconnect': {
       p.outer = clamp(msg.value);
       p.outerStart = p.outer;
+      // 兩條線的起點都留著 —— 下週預告那一頁要拿它們比
       if (msg.mode === 'visits') {
         // 忘記帶卡片：用「這是你第幾次來」估一個。每一關固定 +15 的那個舊算法，
         // 估出來只會偏低 —— 那沒關係，這條線不是比賽。
@@ -211,6 +213,7 @@ export function applyAction(s, pid, msg) {
         p.inner = Math.max(0, Math.min(INNER_CAP, Math.floor(Number(msg.inner) || 0)));
         p.visits = p.inner > 0 ? 2 : 1;
       }
+      p.innerStart = p.inner;
       p.newcomer = p.inner === 0;
       break;
     }
@@ -343,6 +346,7 @@ export function hostView(s, roomCode) {
       outerAvg: outers.length ? Math.round(outers.reduce((a, b) => a + b, 0) / outers.length) : null,
       startAvg: starts.length ? Math.round(starts.reduce((a, b) => a + b, 0) / starts.length) : null,
       innerAvg: ps.length ? Math.round(ps.reduce((a, b) => a + (b.inner || 0), 0) / ps.length) : 0,
+      innerStartAvg: sc.length ? Math.round(sc.reduce((a, b) => a + (b.innerStart || 0), 0) / sc.length) : null,
       hardestHit: (() => {
         const withDrop = sc.map((p) => ({ name: p.name, drop: p.outerStart - p.outer }))
           .sort((a, b) => b.drop - a.drop);
