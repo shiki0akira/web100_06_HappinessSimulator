@@ -234,7 +234,7 @@
         '<p class="lede">輸入卡片上的<b>幸福指數</b>，然後填這是你第幾次來。</p>' +
         answering(s.reconnected, '已接上') +
         (s.newcomers ? '<p class="mono" style="margin-top:8px;color:var(--root-c)">其中 ' + s.newcomers + ' 位第一次來或忘記帶卡片</p>' : '') +
-        '<div class="note"><b>第一次來的人，幸福指數自由填。</b>　忘記帶卡片、上次沒來也一樣 —— 按你現在的感覺給自己一個分數就好，次數填 1。今天的遊戲不吃上一關的東西。</div>';
+        '<div class="note"><b>第一次來的人，幸福指數自由填。</b>　忘記帶卡片、上次沒來也一樣 —— 按你現在的感覺給自己一個分數就好，次數填 1。</div>';
     },
 
     shop: function () {
