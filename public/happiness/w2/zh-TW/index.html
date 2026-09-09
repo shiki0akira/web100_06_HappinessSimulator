@@ -201,6 +201,14 @@
   @keyframes chestbob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
   .bless { text-align: center; font-size: min(calc(24px * var(--u)), 3.2vh); font-weight: 700;
     color: var(--root-c); margin: min(calc(10px * var(--u)), 1.4vh) auto 0; }
+
+  /* 正名那一頁：每個人的第二條線 */
+  .innerlist { display: flex; flex-wrap: wrap; gap: calc(10px * var(--u)); margin-top: calc(10px * var(--u)); }
+  .innerlist span { display: flex; align-items: baseline; gap: 10px;
+    padding: calc(7px * var(--u)) calc(14px * var(--u));
+    border: 3px solid var(--root-c); background: var(--root-soft); box-shadow: 3px 3px 0 var(--hard); }
+  .innerlist em { font-style: normal; font-size: calc(17px * var(--u)); font-weight: 700; color: var(--ink); }
+  .innerlist b { font-family: var(--pixel); font-size: calc(20px * var(--u)); color: var(--root-c); }
   .eternal { text-align: center; margin: min(calc(14px * var(--u)), 1.8vh) 0; }
   .eternal .chest { display: block; margin: 0 auto min(calc(10px * var(--u)), 1.4vh);
     width: min(calc(80px * var(--u)), 9vh); image-rendering: pixelated; }

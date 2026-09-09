@@ -16,6 +16,10 @@ export const INNER_PRAYER = 5;
 // 拆開那一份的時候，全場的幸福指數補回來。掉了一整晚，這裡一次拉上來。
 // **給所有人，不是給按了「我打開它」的人** —— 一綁上按鈕就變成用分數換恩典。
 export const GIFT_PLUS = 20;
+// 同一秒，第二條線也 +5。
+// 這是為了今天第一次來的人：他的第二條線本來要等到領受經文才會動，
+// 拆禮物這一刻他也看得到自己的線動了 —— 而且那一份本來就是白給的。
+export const GIFT_INNER = 5;
 
 export const PHASES = [
   { id: 'lobby',        tag: '入場',     title: '掃碼進場' },
@@ -30,7 +34,7 @@ export const PHASES = [
   { id: 'after30_sum',  tag: '結算頁',   title: '三十年後，你掉了多少' },
   { id: 'verse_second', tag: '經文',     title: '我來了，是要叫羊得生命' },
   { id: 'gift',         tag: '高潮',     title: '買三送一的那一樣' },
-  { id: 'naming',       tag: '機制事件', title: '那條線有了名字' },
+  { id: 'naming',       tag: '機制事件', title: '第二個指數是！' },
   { id: 'verse',        tag: '經文',     title: '領受經文' },
   { id: 'teach',        tag: '信息',     title: '盜賊和「我」分別是什麼' },
   { id: 'prayer',       tag: '互動點 3', title: '祝福禱告' },
@@ -119,6 +123,7 @@ export function openGift(s) {
   if (s.giftOpen) return false;
   s.giftOpen = true;
   alive(s).forEach((p) => {
+    grow(p, GIFT_INNER);
     if (p.outer === null) return;
     p.outer = clamp(p.outer + GIFT_PLUS);
     p.gift = GIFT_PLUS;
@@ -196,10 +201,18 @@ export function applyAction(s, pid, msg) {
     case 'reconnect': {
       p.outer = clamp(msg.value);
       p.outerStart = p.outer;
-      p.newcomer = !!msg.newcomer;
-      p.visits = Math.max(1, Math.min(8, Math.floor(Number(msg.visits) || 1)));
-      // 今天的 +15 要靠等一下的領受和禱告賺，所以起點只算到上一次為止
-      p.inner = Math.min(INNER_CAP, INNER_PER_WEEK * (p.visits - 1));
+      if (msg.mode === 'visits') {
+        // 忘記帶卡片：用「這是你第幾次來」估一個。每一關固定 +15 的那個舊算法，
+        // 估出來只會偏低 —— 那沒關係，這條線不是比賽。
+        p.visits = Math.max(1, Math.min(8, Math.floor(Number(msg.visits) || 1)));
+        p.inner = Math.min(INNER_CAP, INNER_PER_WEEK * (p.visits - 1));
+      } else {
+        // 有卡片：第二條線直接照卡片上的數字打。第二關開始它不再是「次數 × 15」，
+        // 因為拆禮物那一刻還會多 +5。
+        p.inner = Math.max(0, Math.min(INNER_CAP, Math.floor(Number(msg.inner) || 0)));
+        p.visits = p.inner > 0 ? 2 : 1;
+      }
+      p.newcomer = p.inner === 0;
       break;
     }
     // 商店：挑三樣。翻頁之後就不收了。
@@ -311,6 +324,7 @@ export function hostView(s, roomCode) {
     shelf: shelf(s),
     giftOpen: s.giftOpen,
     giftPlus: GIFT_PLUS,
+    giftInner: GIFT_INNER,
     named: s.named,
     shopOpen: shopOpen(s),
     players: ps.map((p) => ({
@@ -365,6 +379,7 @@ export function playerView(s, pid, roomCode) {
     shelf: shelf(s),
     giftOpen: s.giftOpen,
     giftPlus: GIFT_PLUS,
+    giftInner: GIFT_INNER,
     named: s.named,
     shopOpen: shopOpen(s),
     playerCount: alive(s).length,

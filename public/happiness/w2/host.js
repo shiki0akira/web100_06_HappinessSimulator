@@ -203,6 +203,14 @@
       '」</blockquote></div>';
   }
 
+  // 正名那一頁：把每個人的第二條線攤開。這一關它從頭到尾只往上。
+  function innerList() {
+    if (!S.players.length) return '';
+    return '<div class="innerlist">' + S.players.map(function (p) {
+      return '<span><em>' + esc(p.name) + '</em><b>' + (p.inner ? p.inner : '—') + '</b></span>';
+    }).join('') + '</div>';
+  }
+
   function avgLine() {
     var s = S.stats;
     if (s.outerAvg == null) return '';
@@ -295,22 +303,17 @@
         return '<h2 class="giftitle">' + esc(S.gift.title) + '</h2>' +
           '<div class="chestbox"><img class="chest shut" id="chest" src="/happiness/shared/art/asset-gift.svg" alt=""></div>';
       }
-      var w = S.stats.opened;
-      return '<div class="giftline">' + esc(S.gift.line) + '</div>' +
+      return '<h2 class="giftitle">' + esc(S.gift.title) + '</h2>' +
         '<div class="eternal"><img class="chest" src="/happiness/shared/art/asset-gift-open.svg" alt="">' +
           '<div class="nm">' + esc(S.gift.name) + '</div>' +
           '<div class="rate">折舊率 0%</div></div>' +
-        '<p class="bless">' + esc(S.gift.bless) + '</p>' +
-        '<div class="wantlist">' + (w.length
-          ? w.map(function (n) { return '<span>' + esc(n) + '</span>'; }).join('')
-          : '<span class="muted" style="background:none;border-color:var(--edge-soft);color:var(--ink-3);box-shadow:none">還沒有人打開</span>') + '</div>';
+        '<p class="bless">' + esc(S.gift.bless) + '</p>';
     },
 
     naming: function () {
-      return '<h2>那條線有了名字</h2>' +
-        '<div class="eternal" style="text-align:left;margin:calc(14px * var(--u)) 0"><div class="nm" style="font-size:min(calc(72px * var(--u)),9vh)">幸福根基</div></div>' +
-        '<p class="lede" style="font-size:calc(22px * var(--u))">上一次大家都在掉分的時候，有一條線是往上的。<b>就是它。</b></p>' +
-        '<div class="note"><b>這條線不會被任何事件扣掉。</b>　而且它不是比賽——它從你來的第一天開始長。</div>';
+      return '<h2>第二個指數是！</h2>' +
+        '<div class="eternal" style="text-align:left;margin:calc(10px * var(--u)) 0"><div class="nm" style="font-size:min(calc(72px * var(--u)),9vh)">幸福根基</div></div>' +
+        innerList();
     },
 
     // 七關共用的那幾頁，內容在 shared/stage-parts.js
