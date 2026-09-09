@@ -290,17 +290,20 @@
     },
 
     gift: function () {
+      // 先只有一個蓋著的寶箱。主持人點它（或按空白鍵）才打開。
+      if (!S.giftOpen) {
+        return '<h2 class="giftitle">' + esc(S.gift.title) + '</h2>' +
+          '<div class="chestbox"><img class="chest shut" id="chest" src="/happiness/shared/art/asset-gift.svg" alt=""></div>';
+      }
       var w = S.stats.opened;
       return '<div class="giftline">' + esc(S.gift.line) + '</div>' +
         '<div class="eternal"><img class="chest" src="/happiness/shared/art/asset-gift-open.svg" alt="">' +
           '<div class="nm">' + esc(S.gift.name) + '</div>' +
           '<div class="rate">折舊率 0%</div></div>' +
-        '<p class="lede" style="text-align:center;margin:0 auto">' + esc(S.gift.why) + '　' + esc(S.gift.from) + '</p>' +
+        '<p class="bless">' + esc(S.gift.bless) + '</p>' +
         '<div class="wantlist">' + (w.length
           ? w.map(function (n) { return '<span>' + esc(n) + '</span>'; }).join('')
-          : '<span class="muted" style="background:none;border-color:var(--edge-soft);color:var(--ink-3);box-shadow:none">還沒有人打開</span>') + '</div>' +
-        '<div class="note" style="border-left-color:var(--root-c);text-align:left">' +
-          '<b>全場幸福指數 +' + S.giftPlus + '</b>　這一份不用你做什麼，它本來就在你的袋子裡。</div>';
+          : '<span class="muted" style="background:none;border-color:var(--edge-soft);color:var(--ink-3);box-shadow:none">還沒有人打開</span>') + '</div>';
     },
 
     naming: function () {
@@ -402,6 +405,8 @@
     stage.querySelectorAll('[data-flip]').forEach(function (t) {
       t.onclick = function () { post('flip', { id: Number(t.dataset.flip) }); };
     });
+    var chest = document.getElementById('chest');
+    if (chest) chest.onclick = function () { post('openGift'); };
 
     // 每次回到入場頁都要重畫：stage.innerHTML 一被改寫，canvas 就是全新的空白元素
     var qr = document.getElementById('qr');
@@ -462,6 +467,10 @@
     if (S && S.phase.id === 'after30' && (e.key === ' ' || e.key === 'Enter')) {
       e.preventDefault();
       if (S.shelf.flipped < S.shelf.total) { post('flipNext'); return; }
+    }
+    // 寶箱那一頁，空白鍵是「打開它」
+    if (S && S.phase.id === 'gift' && !S.giftOpen && (e.key === ' ' || e.key === 'Enter')) {
+      e.preventDefault(); post('openGift'); return;
     }
     if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); post('next'); }
     if (e.key === 'ArrowLeft') { e.preventDefault(); post('prev'); }

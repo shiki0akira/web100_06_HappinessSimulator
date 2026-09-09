@@ -176,11 +176,16 @@
     verse_second: function () { return verseHalf(1) + wait('聽主持人說'); },
 
     gift: function (me) {
-      return '<h2>買三送一的那一樣</h2>' +
+      if (!S.giftOpen) {
+        return '<h2>' + esc(S.gift.title) + '</h2>' +
+          '<div class="eternal"><img class="chest" src="/happiness/shared/art/asset-gift.svg" alt=""></div>' +
+          wait('看大螢幕', '主持人要打開它了');
+      }
+      return '<h2>' + esc(S.gift.title) + '</h2>' +
         '<div class="eternal"><img class="chest" src="/happiness/shared/art/asset-gift-open.svg" alt="">' +
           '<div class="nm">' + esc(S.gift.name) + '</div>' +
           '<div class="rate">折舊率 0%</div></div>' +
-        '<p style="text-align:center;margin-top:14px">' + esc(S.gift.line) + '</p>' +
+        '<p style="text-align:center;margin-top:14px">' + esc(S.gift.bless) + '</p>' +
         (me.gift ? '<div class="hit up">幸福指數 +' + me.gift + '</div>' : '') +
         '<button class="btn ' + (me.opened ? 'primary' : '') + ' wantbtn" id="open">' +
           (me.opened ? '✓ 已打開' : '我 打 開 它') + '</button>' +

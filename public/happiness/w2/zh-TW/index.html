@@ -192,6 +192,15 @@
   /* 買三送一那一樣 */
   .giftline { font-size: min(calc(28px * var(--u)), 3.6vh); font-weight: 900; line-height: 1.5;
     text-align: center; max-width: 34em; margin: 0 auto; }
+  /* 還沒打開的那一頁：一個標題，一個蓋著的寶箱 */
+  .giftitle { text-align: center; }
+  .chestbox { flex: 1; display: flex; align-items: center; justify-content: center; }
+  .chest.shut { width: min(calc(240px * var(--u)), 34vh); cursor: pointer;
+    animation: chestbob 2.4s ease-in-out infinite; }
+  .chest.shut:hover { filter: brightness(1.15); }
+  @keyframes chestbob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+  .bless { text-align: center; font-size: min(calc(24px * var(--u)), 3.2vh); font-weight: 700;
+    color: var(--root-c); margin: min(calc(10px * var(--u)), 1.4vh) auto 0; }
   .eternal { text-align: center; margin: min(calc(14px * var(--u)), 1.8vh) 0; }
   .eternal .chest { display: block; margin: 0 auto min(calc(10px * var(--u)), 1.4vh);
     width: min(calc(80px * var(--u)), 9vh); image-rendering: pixelated; }

@@ -13,9 +13,9 @@ export const INNER_CAP = 95;
 export const INNER_PER_WEEK = 15;
 export const INNER_VERSE = 10;
 export const INNER_PRAYER = 5;
-// 拆開那一份的時候，全場的幸福指數補回來一點。
+// 拆開那一份的時候，全場的幸福指數補回來。掉了一整晚，這裡一次拉上來。
 // **給所有人，不是給按了「我打開它」的人** —— 一綁上按鈕就變成用分數換恩典。
-export const GIFT_PLUS = 10;
+export const GIFT_PLUS = 20;
 
 export const PHASES = [
   { id: 'lobby',        tag: '入場',     title: '掃碼進場' },
@@ -114,6 +114,18 @@ export function flipCard(s, id) {
   return true;
 }
 
+// 打開那個寶箱。全場的幸福指數在這一秒補回來 —— 只算一次。
+export function openGift(s) {
+  if (s.giftOpen) return false;
+  s.giftOpen = true;
+  alive(s).forEach((p) => {
+    if (p.outer === null) return;
+    p.outer = clamp(p.outer + GIFT_PLUS);
+    p.gift = GIFT_PLUS;
+  });
+  return true;
+}
+
 // 備忘錄上的「翻下一張」：照三十年後的排序，由重到輕。
 export function flipNext(s) {
   const next = SHELF_ORDER.find((id) => flippedIds(s).indexOf(id) < 0);
@@ -168,16 +180,8 @@ function shelf(s) {
 export function enterPhase(s, idx) {
   s.phaseIdx = Math.max(0, Math.min(PHASES.length - 1, idx));
   const id = PHASES[s.phaseIdx].id;
-  // 走到哪一頁，機制就跟著發生 —— 主持人不用多按一次
-  if (id === 'gift' && !s.giftOpen) {
-    // 只算一次：翻回去再翻回來不會重複加
-    alive(s).forEach((p) => {
-      if (p.outer === null) return;
-      p.outer = clamp(p.outer + GIFT_PLUS);
-      p.gift = GIFT_PLUS;
-    });
-  }
-  if (id === 'gift') s.giftOpen = true;
+  // 走到哪一頁，機制就跟著發生 —— 主持人不用多按一次。
+  // 只有寶箱例外：它要主持人親手點開（openGift），先停在蓋著的狀態才有戲。
   if (id === 'naming') s.named = true;
   return null;
 }
@@ -245,6 +249,8 @@ export function applyHost(s, msg) {
     case 'flipAll':
       while (flipNext(s)) { /* 趕時間的時候用 */ }
       return null;
+    // 點開寶箱：生命、折舊率、那句祝福，還有全場的幸福指數 +20
+    case 'openGift': openGift(s); return null;
     case 'adjust': {
       const p = s.players[msg.pid];
       if (p && p.outer !== null) {
