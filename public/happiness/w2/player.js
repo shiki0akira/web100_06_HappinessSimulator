@@ -197,12 +197,11 @@
           : '不按也完全沒關係。今天沒準備好，後面還有五關。') + '</p>';
     },
 
+    // 手機上不放字 —— 那三句話是主持人講的
     naming: function (me) {
       return '<h2>它有名字了</h2>' +
         '<div class="eternal" style="margin-top:22px"><div class="nm" style="font-size:44px">幸福根基</div>' +
-          '<div class="rate">' + me.inner + '</div></div>' +
-        '<p style="margin-top:20px">上一關大家都在掉分的時候，有一條線是往上的。<b>就是它。</b></p>' +
-        '<p>這條線不會被任何事件扣掉。它從你來的第一天開始長。</p>';
+          '<div class="rate">' + (me.inner ? me.inner : '—') + '</div></div>';
     },
 
     verse: function (me) {
