@@ -342,6 +342,8 @@
     end: function () {
       return StageParts.nextWeek({
         avg: S.stats.outerAvg,
+        inner: S.stats.innerAvg || null,
+        innerLabel: '？？？',
         week: '真相大白',
         lines: [
           '時間會往後推三十年。到那時候，你手上的東西還剩多少？',

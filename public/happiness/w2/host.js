@@ -360,6 +360,8 @@
     end: function () {
       return StageParts.nextWeek({
         avg: S.stats.outerAvg,
+        inner: S.stats.innerAvg || null,
+        innerLabel: S.named ? '幸福根基' : '？？？',
         week: '萬世巨星',
         lines: [
           '經文說「我來了」。那個「我」是誰——下一關。',

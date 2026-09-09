@@ -64,20 +64,26 @@ window.StageParts = (function () {
           (opts.extra ? '、' + esc(opts.extra) : '') + '。寫了心情的人也會印在上面。</div>';
     },
 
-    // 下週預告。只留一個全場平均，其他都是講下一關的。
+    // 下週預告。上面一排是今晚兩條線的全場平均，下面一整排是講下一關的。
+    // 兩個平均並排就是這一關的縮影：一條被推來推去，一條只往上。
     nextWeek: function (opts) {
       opts = opts || {};
       var lines = opts.lines || [];
+      var num = function (v, color) {
+        return '<div class="who" style="font-size:calc(56px * var(--u))' + (color ? ';color:' + color : '') + '">' +
+          (v == null ? '—' : v) + '</div>';
+      };
       return '<h2>下週預告</h2>' +
-        '<div class="cols3" style="grid-template-columns:auto 2fr">' +
-          '<div class="col3"><h3>今晚全場平均</h3>' +
-            '<div class="who" style="font-size:calc(56px * var(--u))">' + (opts.avg == null ? '—' : opts.avg) + '</div></div>' +
-          '<div class="col3" style="border-color:var(--gold)">' +
-            '<h3 class="next">下一關 · ' + esc(opts.week || '') + '</h3>' +
-            lines.map(function (l) {
-              return '<p style="margin:8px 0 0;font-size:calc(18px * var(--u));color:var(--ink-2)">' + esc(l) + '</p>';
-            }).join('') +
-          '</div>' +
+        '<span class="kicker" style="margin-top:10px">今晚全場平均</span>' +
+        '<div class="cols3" style="grid-template-columns:1fr 1fr;margin-top:0">' +
+          '<div class="col3"><h3>幸福指數</h3>' + num(opts.avg, 'var(--vol)') + '</div>' +
+          '<div class="col3"><h3>' + esc(opts.innerLabel || '幸福根基') + '</h3>' + num(opts.inner, 'var(--root-c)') + '</div>' +
+        '</div>' +
+        '<div class="col3 nextbox" style="border-color:var(--gold)">' +
+          '<h3 class="next">下一關 · ' + esc(opts.week || '') + '</h3>' +
+          lines.map(function (l) {
+            return '<p style="margin:8px 0 0;font-size:calc(18px * var(--u));color:var(--ink-2)">' + esc(l) + '</p>';
+          }).join('') +
         '</div>';
     },
   };
