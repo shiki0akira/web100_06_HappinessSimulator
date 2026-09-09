@@ -60,6 +60,16 @@
       }
     }
 
+    // 第二關的寶箱：主持人拿著手機也能打開它。
+    var giftc = el('giftctl');
+    if (giftc) {
+      giftc.hidden = S.phase.id !== 'gift';
+      if (!giftc.hidden) {
+        el('opengift').textContent = S.giftOpen ? '已經打開了' : '打開寶箱';
+        el('opengift').disabled = !!S.giftOpen;
+      }
+    }
+
     var next = [S.phaseIdx, live].join('|');
     if (next === sig) return;
     sig = next;
@@ -108,6 +118,7 @@
     on('flipall', function () {
       if (confirm('剩下的全部翻開？')) post('flipAll');
     });
+    on('opengift', function () { post('openGift'); });
   }
 
   if (!ROOM) {

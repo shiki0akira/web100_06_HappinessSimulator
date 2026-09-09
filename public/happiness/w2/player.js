@@ -189,12 +189,7 @@
           '<div class="nm">' + esc(S.gift.name) + '</div>' +
           '<div class="rate">折舊率 0%</div></div>' +
         '<p style="text-align:center;margin-top:14px">' + esc(S.gift.bless) + '</p>' +
-        (me.gift ? '<div class="hit up">幸福指數 +' + me.gift + '　幸福根基 +' + S.giftInner + '</div>' : '') +
-        '<button class="btn ' + (me.opened ? 'primary' : '') + ' wantbtn" id="open">' +
-          (me.opened ? '✓ 已打開' : '我 打 開 它') + '</button>' +
-        '<p class="privacy">' + (me.opened
-          ? '記下來了。再按一次可以收回，沒有人會問你。'
-          : '不按也完全沒關係。今天沒準備好，後面還有五關。') + '</p>';
+        (me.gift ? '<div class="hit up">幸福指數 +' + me.gift + '　幸福根基 +' + S.giftInner + '</div>' : '');
     },
 
     // 手機上不放字 —— 那三句話是主持人講的
@@ -300,9 +295,6 @@
       b.onclick = function () { act('poll', { value: Number(b.dataset.p) }); };
     });
 
-    var op = document.getElementById('open');
-    if (op) op.onclick = function () { act('open'); };
-
     var v = document.getElementById('verse');
     if (v) v.onclick = function () { act('verse'); };
 
@@ -400,7 +392,7 @@
     var next = [
       S.phase.id, S.shelf.flipped, S.named, S.giftOpen, S.shopOpen,
       me.outer, me.inner, me.visits, me.bagDone, me.bagIds.join(','),
-      me.poll, me.opened, me.receivedVerse, me.cardDone, me.hasBurden,
+      me.poll, me.receivedVerse, me.cardDone, me.hasBurden,
       draft.editing, draft.byVisits, draft.bag.join(','),
     ].join('|');
     if (next !== sig) {

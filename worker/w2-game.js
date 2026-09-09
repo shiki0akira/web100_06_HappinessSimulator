@@ -14,7 +14,7 @@ export const INNER_PER_WEEK = 15;
 export const INNER_VERSE = 10;
 export const INNER_PRAYER = 5;
 // 拆開那一份的時候，全場的幸福指數補回來。掉了一整晚，這裡一次拉上來。
-// **給所有人，不是給按了「我打開它」的人** —— 一綁上按鈕就變成用分數換恩典。
+// **給所有人**。這一份不用他做任何動作 —— 綁上任何按鈕就變成用分數換恩典。
 export const GIFT_PLUS = 20;
 // 同一秒，第二條線也 +5。
 // 這是為了今天第一次來的人：他的第二條線本來要等到領受經文才會動，
@@ -84,7 +84,6 @@ export function addPlayer(s, name) {
     bagDone: false,
     poll: null,
     loss: 0,              // 三十年一共掉了幾分，重跑時要還原
-    opened: false,        // 按了「我打開它」
     gift: 0,              // 拆開那一份的時候補回來的幸福指數
     hasBurden: false,     // 那句話留在玩家自己的手機上
     prayed: false,
@@ -229,10 +228,6 @@ export function applyAction(s, pid, msg) {
     case 'poll':
       p.poll = Math.max(0, Math.min(POLL.options.length - 1, Math.floor(Number(msg.value))));
       break;
-    // 不勉強、不扣分、不催。按了就按了，再按一次可以收回。
-    case 'open':
-      if (s.giftOpen) p.opened = !p.opened;
-      break;
     case 'verse':
       if (!p.receivedVerse) { p.receivedVerse = true; grow(p, INNER_VERSE); }
       break;
@@ -332,7 +327,7 @@ export function hostView(s, roomCode) {
       outer: p.outer, outerStart: p.outerStart, inner: p.inner || 0,
       visits: p.visits, newcomer: p.newcomer,
       bag: bagOf(s, p), bagDone: !!p.bagDone, loss: p.loss || 0,
-      poll: typeof p.poll === 'number' ? p.poll : null, opened: !!p.opened,
+      poll: typeof p.poll === 'number' ? p.poll : null,
       hasBurden: !!p.hasBurden,
       receivedVerse: !!p.receivedVerse, cardDone: !!p.cardDone, adjust: p.adjust || 0,
     })),
@@ -353,7 +348,6 @@ export function hostView(s, roomCode) {
           .sort((a, b) => b.drop - a.drop);
         return withDrop.length && withDrop[0].drop > 0 ? withDrop[0] : null;
       })(),
-      opened: ps.filter((p) => p.opened).map((p) => p.name),
       versesReceived: ps.filter((p) => p.receivedVerse).length,
       cardsDone: ps.filter((p) => p.cardDone).length,
       burdens: ps.filter((p) => p.hasBurden).length,
@@ -397,7 +391,7 @@ export function playerView(s, pid, roomCode) {
       inner: p.inner || 0, innerCap: INNER_CAP,
       visits: p.visits, newcomer: p.newcomer,
       bag: bagOf(s, p), bagIds: bagIds(p), bagDone: !!p.bagDone, loss: p.loss || 0,
-      poll: typeof p.poll === 'number' ? p.poll : null, opened: !!p.opened,
+      poll: typeof p.poll === 'number' ? p.poll : null,
       gift: p.gift || 0,
       hasBurden: !!p.hasBurden,
       receivedVerse: !!p.receivedVerse, cardDone: !!p.cardDone,

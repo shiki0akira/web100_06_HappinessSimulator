@@ -55,7 +55,6 @@
       var chips = [];
       if (p.newcomer) chips.push('<span class="chip">新朋友</span>');
       if (choosing) chips.push('<span class="chip' + (p.bagDone ? ' on' : '') + '">' + (p.bagDone ? '挑好了' : '還沒挑') + '</span>');
-      if (p.opened) chips.push('<span class="chip want">已打開</span>');
       if (p.hasBurden) chips.push('<span class="chip">已填寫</span>');
       if (p.receivedVerse) chips.push('<span class="chip on">已領受</span>');
       // 第三行：他挑的那三樣。主持人接話全靠這一行 ——「你挑了工作」。
