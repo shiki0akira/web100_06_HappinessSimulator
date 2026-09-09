@@ -202,13 +202,12 @@
   .bless { text-align: center; font-size: min(calc(24px * var(--u)), 3.2vh); font-weight: 700;
     color: var(--root-c); margin: min(calc(10px * var(--u)), 1.4vh) auto 0; }
 
-  /* 正名那一頁：每個人的第二條線 */
-  .innerlist { display: flex; flex-wrap: wrap; gap: calc(10px * var(--u)); margin-top: calc(10px * var(--u)); }
-  .innerlist span { display: flex; align-items: baseline; gap: 10px;
-    padding: calc(7px * var(--u)) calc(14px * var(--u));
-    border: 3px solid var(--root-c); background: var(--root-soft); box-shadow: 3px 3px 0 var(--hard); }
-  .innerlist em { font-style: normal; font-size: calc(17px * var(--u)); font-weight: 700; color: var(--ink); }
-  .innerlist b { font-family: var(--pixel); font-size: calc(20px * var(--u)); color: var(--root-c); }
+  /* 正名那一頁：每個人的第二條線，長條圖。這一關它只會往上，所以用青色。 */
+  .opts.inner .track i { background: var(--root-c); }
+  .opts.inner .n { color: var(--root-c); font-size: calc(17px * var(--u)); }
+  .opts.inner.dense { gap: min(calc(6px * var(--u)), .9vh); }
+  .opts.inner.dense .track { height: min(calc(18px * var(--u)), 2.6vh); }
+  .opts.inner.dense .lbl { font-size: calc(16px * var(--u)); }
   .eternal { text-align: center; margin: min(calc(14px * var(--u)), 1.8vh) 0; }
   .eternal .chest { display: block; margin: 0 auto min(calc(10px * var(--u)), 1.4vh);
     width: min(calc(80px * var(--u)), 9vh); image-rendering: pixelated; }

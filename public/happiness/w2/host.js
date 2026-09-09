@@ -203,11 +203,17 @@
       '」</blockquote></div>';
   }
 
-  // 正名那一頁：把每個人的第二條線攤開。這一關它從頭到尾只往上。
+  // 正名那一頁：把每個人的第二條線攤開成長條圖。這一關它從頭到尾只往上。
   function innerList() {
     if (!S.players.length) return '';
-    return '<div class="innerlist">' + S.players.map(function (p) {
-      return '<span><em>' + esc(p.name) + '</em><b>' + (p.inner ? p.inner : '—') + '</b></span>';
+    // 人多的時候壓緊一點：十二個人也要在同一個畫面裡看得完
+    return '<div class="opts inner' + (S.players.length > 6 ? ' dense' : '') + '">' + S.players.map(function (p) {
+      var v = p.inner || 0;
+      return '<div class="opt">' +
+        '<span class="lbl">' + esc(p.name) + '</span>' +
+        '<span class="track"><i style="width:' + Math.min(100, v) + '%"></i></span>' +
+        '<span class="n">' + (v ? v : '—') + '</span>' +
+      '</div>';
     }).join('') + '</div>';
   }
 
