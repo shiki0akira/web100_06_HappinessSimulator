@@ -1,10 +1,11 @@
 import { DurableObject } from 'cloudflare:workers';
 import * as W1 from './w1-game.js';
 import * as W2 from './w2-game.js';
+import * as W3 from './w3-game.js';
 
 // 七關共用同一個 class，用 week 決定套哪一關的規則。
 // 加一關就是在這裡多一行。
-const GAMES = { 1: W1, 2: W2 };
+const GAMES = { 1: W1, 2: W2, 3: W3 };
 
 const CLEANUP_MS = 6 * 60 * 60 * 1000;   // 最後一個人離線六小時後，房間自己清空
 

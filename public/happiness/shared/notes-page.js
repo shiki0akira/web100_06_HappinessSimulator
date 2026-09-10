@@ -41,8 +41,8 @@
     // 不會想為了按「立即開標」跑回電腦前面。
     var auc = el('auction');
     var isAuction = S.phase.id === 'auction' && S.auction;
-    auc.hidden = !isAuction;
-    if (isAuction) {
+    if (auc) auc.hidden = !isAuction;
+    if (auc && isAuction) {
       el('waitbtn').textContent = '每項之間等我：' + (S.auction.waitForHost ? '開' : '關');
       el('nextlot').textContent = S.auction.status === 'bidding' ? '立即開標' : '下一項 →';
     }
@@ -57,6 +57,47 @@
         el('flipnext').textContent = doneAll ? '都翻完了' : '翻下一張（' + S.shelf.flipped + '/' + S.shelf.total + '）';
         el('flipnext').disabled = doneAll;
         el('flipall').disabled = doneAll;
+      }
+    }
+
+    // 第三關的猜句子：一題一題揭答案，主持人拿著手機也控得動。
+    var quizc = el('quizctl');
+    if (quizc) {
+      quizc.hidden = S.phase.id !== 'quiz' || !S.quiz;
+      if (!quizc.hidden) {
+        el('quizreveal').textContent = S.quiz.revealed ? '已揭答案' : '揭答案（' + (S.quiz.idx + 1) + '/' + S.quiz.total + '）';
+        el('quizreveal').disabled = !!S.quiz.revealed;
+        el('quizstep').disabled = !S.quiz.revealed || S.quiz.idx >= S.quiz.total - 1;
+      }
+    }
+
+    // 第三關的揭曉頁：分兩段點出來。
+    var revc = el('revealctl');
+    if (revc) {
+      revc.hidden = S.phase.id !== 'reveal';
+      if (!revc.hidden) {
+        el('revealstep').textContent = S.revealStep >= 1 ? '兩段都出來了' : '你早就在用他了';
+        el('revealstep').disabled = S.revealStep >= 1;
+      }
+    }
+
+    // 第三關的三條梯子：大家選完再按「開始爬」。
+    var climbc = el('climbctl');
+    if (climbc) {
+      climbc.hidden = S.phase.id !== 'roads';
+      if (!climbc.hidden) {
+        el('climbbtn').textContent = S.climbed ? '爬完了' : '開始爬（' + S.stats.roadsPicked + '/' + S.stats.count + ' 已選路）';
+        el('climbbtn').disabled = !!S.climbed;
+      }
+    }
+
+    // 第三關的救恩之路：一段一段點出來，不要一次全亮。
+    var wayc = el('wayctl');
+    if (wayc) {
+      wayc.hidden = S.phase.id !== 'way';
+      if (!wayc.hidden) {
+        el('waystep').textContent = S.wayStep >= 2 ? '三段都出來了' : '下一段（' + ((S.wayStep || 0) + 1) + '/3）';
+        el('waystep').disabled = S.wayStep >= 2;
       }
     }
 
@@ -104,16 +145,23 @@
       onState: function (d) { S = d; render(); },
       onDrop: function () { el('live').textContent = '連線中斷，重連中…'; },
     });
-    el('prev').onclick = function () { post('prev'); };
-    el('next').onclick = function () { post('next'); };
-    el('prevlot').onclick = function () { post('prevLot'); };
-    el('nextlot').onclick = function () { post('nextLot'); };
-    el('extend').onclick = function () { post('extend'); };
-    el('waitbtn').onclick = function () { post('toggleWait'); };
-    el('restart').onclick = function () {
-      if (confirm('整場拍賣重跑？所有人的點數和標到的東西都會還原。')) post('restartAuction');
-    };
+    // 每一關的控制鈕不一樣（拍賣／翻牌／寶箱／猜句子／爬梯子），
+    // 所以一律用 on() 綁 —— 這一關沒有的那顆按鈕就是不存在，不能直接 el(id).onclick。
     var on = function (id, fn) { var b = el(id); if (b) b.onclick = fn; };
+    on('prev', function () { post('prev'); });
+    on('next', function () { post('next'); });
+    on('prevlot', function () { post('prevLot'); });
+    on('nextlot', function () { post('nextLot'); });
+    on('extend', function () { post('extend'); });
+    on('waitbtn', function () { post('toggleWait'); });
+    on('restart', function () {
+      if (confirm('整場拍賣重跑？所有人的點數和標到的東西都會還原。')) post('restartAuction');
+    });
+    on('quizreveal', function () { post('quizReveal'); });
+    on('quizstep', function () { post('quizStep'); });
+    on('climbbtn', function () { post('climb'); });
+    on('revealstep', function () { post('revealStep'); });
+    on('waystep', function () { post('wayStep'); });
     on('flipnext', function () { post('flipNext'); });
     on('flipall', function () {
       if (confirm('剩下的全部翻開？')) post('flipAll');

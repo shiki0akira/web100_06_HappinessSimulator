@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="/happiness/shared/logo.svg">
+<title>幸福模擬器 · 第三關 萬世巨星 · 主畫面</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Press+Start+2P&display=swap">
+<link rel="stylesheet" href="/happiness/shared/pixel.css">
+<script src="/happiness/shared/theme.js"></script>
+<style>
+  /* 主畫面會用 HDMI 接 43–75 吋電視，觀看距離 2–4 公尺。
+     字級隨畫面寬度整體放大，--u 是縮放係數。 */
+  :root { --u: 1; }
+  @media (min-width: 1500px) { :root { --u: 1.22; } }
+  @media (min-width: 1900px) { :root { --u: 1.5; } }
+  @media (min-width: 2560px) { :root { --u: 2; } }
+
+  body { overflow: hidden; }
+  .app { display: grid; grid-template-rows: auto 1fr auto auto; height: 100vh; }
+
+  .top {
+    display: flex; align-items: center; gap: 16px;
+    padding: 12px 24px; border-bottom: 4px solid var(--edge); background: var(--surface);
+  }
+  .top h1 { font-size: calc(19px * var(--u)); font-weight: 900; }
+  .top h1 a { color: inherit; text-decoration: none; border-bottom: 3px solid transparent; }
+  .top h1 a:hover, .top h1 a:focus-visible { color: var(--root-c); border-bottom-color: var(--root-c); }
+  .top .spacer { flex: 1; }
+  .top .count { font-family: var(--pixel); font-size: calc(15px * var(--u)); color: var(--ink-2); }
+  .notesbtn { font-family: var(--sans); font-size: calc(13px * var(--u)); font-weight: 700;
+    padding: calc(7px * var(--u)) calc(12px * var(--u));
+    border: 3px solid var(--gold); background: transparent; color: var(--gold); }
+  .notesbtn:hover { background: var(--gold); color: var(--surface); }
+  .top .themebtn { font-size: calc(13px * var(--u)); padding: calc(7px * var(--u)) calc(10px * var(--u)); }
+
+  .body { display: grid; grid-template-columns: calc(272px * var(--u)) 1fr; min-height: 0; }
+
+  .side { border-right: 4px solid var(--edge); background: var(--surface); overflow-y: auto; padding: calc(10px * var(--u)); }
+  .side h4 { font-family: var(--pixel); font-size: calc(15px * var(--u)); letter-spacing: .06em; color: var(--ink-3); margin: 0 0 calc(8px * var(--u)); text-transform: uppercase; }
+  .prow { padding: calc(5px * var(--u)) 0; border-bottom: 2px dashed var(--edge-soft); }
+  .prow .nm { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; line-height: 1.25;
+    font-size: calc(14px * var(--u)); font-weight: 700; }
+  /* 爬完那一下的漲跌一起印出來：先 +N 再 −M，看得到那個波動 */
+  .prow .nm .drop { font-family: var(--pixel); font-size: calc(13px * var(--u)); color: var(--vol); }
+  .prow .nm .up { font-family: var(--pixel); font-size: calc(13px * var(--u)); color: var(--root-c); }
+  .prow .g { display: flex; align-items: center; gap: 8px; margin-top: calc(3px * var(--u)); line-height: 1.15;
+    font-family: var(--pixel); font-size: calc(13px * var(--u)); color: var(--ink-3); }
+  .prow .g .lbl { flex: none; width: 4.4em; }
+  .prow .g .bar { flex: 1; min-width: 0; height: calc(10px * var(--u)); }
+  .prow .g b { flex: none; width: 2.6em; text-align: right; font-size: calc(14px * var(--u)); }
+  .prow .meta { margin-top: calc(3px * var(--u)); line-height: 1.2;
+    font-size: calc(13px * var(--u)); color: var(--ink-3); font-family: var(--pixel); }
+  .prow .meta.keep { font-family: var(--sans); font-weight: 700; color: var(--ink-2);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chip { font-family: var(--sans); font-size: calc(13px * var(--u)); font-weight: 700; padding: 1px 6px; border: 2px solid var(--edge-soft); background: var(--surface-2); color: var(--ink-2); }
+  .chip.on { border-color: var(--root-c); background: var(--root-soft); color: var(--root-c); }
+
+  /* 每一頁都要在一個畫面裡看完 —— overflow 只是保險，不是排版手段 */
+  .stage { padding: calc(22px * var(--u)) calc(40px * var(--u)); overflow-y: auto; display: flex; flex-direction: column; }
+  .stage h2 { font-size: min(calc(40px * var(--u)), 5.6vh); font-weight: 900; letter-spacing: .02em; }
+  .stage .kicker, .col3 .kicker { font-size: calc(20px * var(--u)); color: var(--ink-2); margin-bottom: 10px; }
+  .stage .lede { font-size: calc(17px * var(--u)); color: var(--ink-2); max-width: 62ch; margin: 10px 0 0; }
+  .big { font-size: min(calc(76px * var(--u)), 10vh); font-family: var(--pixel); line-height: 1.1; }
+  .mono { font-family: var(--pixel); }
+  .muted { color: var(--ink-3); }
+
+  .receive { display: flex; align-items: center; gap: calc(24px * var(--u)); margin-top: calc(22px * var(--u)); }
+  .receive .stageart { margin: 0; }
+  .receive .stageart img { width: min(calc(200px * var(--u)), 22vh); }
+  .counter { margin-top: calc(18px * var(--u)); }
+  .receive .counter { margin-top: 0; }
+
+  .qrbox { display: flex; gap: 34px; align-items: center; margin-top: 22px; flex-wrap: wrap; }
+  .qrbox > div { flex: 1 1 280px; min-width: 0; }
+  .qrbox canvas { border: 4px solid var(--edge); background: #fff; padding: 6px;
+    image-rendering: pixelated; box-shadow: 8px 8px 0 var(--hard); position: relative; z-index: 95; }
+  .roomcode { font-family: var(--pixel); font-size: calc(64px * var(--u)); color: var(--gold); letter-spacing: .14em; margin-top: 8px; }
+  .url { font-family: var(--pixel); font-size: calc(24px * var(--u)); line-height: 1.8; color: var(--root-c); word-break: break-all; }
+  .names { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+  .names span { padding: 6px 12px; background: var(--surface); border: 3px solid var(--edge); box-shadow: 3px 3px 0 var(--hard); font-size: calc(15px * var(--u)); font-weight: 700; }
+
+  /* ── 猜句子 ───────────────────────────────────────────────────────── */
+  .qhead { display: flex; align-items: baseline; gap: calc(20px * var(--u)); margin-top: calc(10px * var(--u)); }
+  .qhead .qn { font-family: var(--pixel); font-size: calc(22px * var(--u)); color: var(--gold); }
+  .qhead .qn small { color: var(--ink-3); font-size: calc(15px * var(--u)); }
+  .qhead .qsrc { font-size: calc(17px * var(--u)); font-weight: 700; color: var(--root-c); }
+  /* 那句話本身就是這一頁的主角，字要夠大 */
+  .quote { font-size: min(calc(42px * var(--u)), 6.2vh); font-weight: 900; line-height: 1.6;
+    max-width: 21em; margin: min(calc(14px * var(--u)), 2vh) 0; }
+  /* 揭答案之後：對的那一行亮起來，其他兩行淡下去。**沒有紅色** */
+  .opts.quiz .opt .lbl { width: calc(230px * var(--u)); }
+  .opts.quiz .opt.right .lbl { color: var(--root-c); }
+  .opts.quiz .opt.right .track { border-color: var(--root-c); }
+  .opts.quiz .opt.right .track i { background: var(--root-c); }
+  .opts.quiz .opt.pale { opacity: .5; }
+  .opts.quiz .opt.pale .track i { background: var(--ink-3); }
+
+  /* 揭曉那一頁：八題排開，他說的那四句亮起來 */
+  .quotelist { margin-top: min(calc(12px * var(--u)), 1.8vh); border-top: 3px solid var(--edge-soft); }
+  .qrow { display: flex; align-items: baseline; gap: calc(16px * var(--u));
+    padding: min(calc(7px * var(--u)), 1vh) 0; border-bottom: 2px dashed var(--edge-soft); opacity: .55; }
+  .qrow .t { flex: 1; font-size: min(calc(18px * var(--u)), 2.6vh); font-weight: 700; min-width: 0; }
+  .qrow .by { flex: none; width: calc(150px * var(--u)); text-align: right;
+    font-size: min(calc(16px * var(--u)), 2.3vh); color: var(--ink-3); }
+  .qrow.jesus { opacity: 1; }
+  .qrow.jesus .t { color: var(--root-c); }
+  .qrow.jesus .by { color: var(--root-c); font-weight: 900; }
+  .quotelist.dense .qrow { padding: min(calc(5px * var(--u)), .8vh) 0; }
+
+  /* 你早就在用他了 */
+  .traces { display: grid; grid-template-columns: repeat(4, 1fr); gap: calc(12px * var(--u));
+    margin-top: min(calc(16px * var(--u)), 2.2vh); }
+  .trace { background: var(--surface); border: 4px solid var(--edge); box-shadow: 5px 5px 0 var(--hard);
+    padding: min(calc(12px * var(--u)), 1.6vh) calc(12px * var(--u)); }
+  .trace b { display: block; font-size: min(calc(19px * var(--u)), 2.7vh); line-height: 1.4; }
+  .trace span { display: block; margin-top: 4px; font-size: min(calc(15px * var(--u)), 2.1vh); color: var(--gold); }
+  .traceline { margin-top: min(calc(14px * var(--u)), 2vh); font-size: min(calc(26px * var(--u)), 3.6vh);
+    font-weight: 900; color: var(--ink); }
+
+  /* ── 罪 ──────────────────────────────────────────────────────────── */
+  .misskey { font-size: min(calc(34px * var(--u)), 4.8vh); font-weight: 900; line-height: 1.6;
+    max-width: 26em; margin: min(calc(12px * var(--u)), 1.8vh) 0; color: var(--gold); }
+  .opts.sin .opt .lbl { width: calc(280px * var(--u)); }
+  .opts.sin.dense { gap: min(calc(6px * var(--u)), .9vh); }
+  .opts.sin.dense .track { height: min(calc(18px * var(--u)), 2.6vh); }
+  .opts.sin.dense .lbl { font-size: calc(17px * var(--u)); }
+
+  /* 死後還有審判。整頁就這五個字，不要再多。 */
+  .judge { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .judge h2 { font-size: min(calc(96px * var(--u)), 13vh); letter-spacing: .12em; }
+  .judge p { margin-top: calc(20px * var(--u)); font-size: min(calc(26px * var(--u)), 3.4vh); color: var(--ink-2); }
+
+  /* ── 人生模擬器：三條梯子 ─────────────────────────────────────────── */
+  .climb { flex: 1; display: flex; flex-direction: column; min-height: 0;
+    margin-top: min(calc(10px * var(--u)), 1.4vh); }
+  /* 上面那一格。爬的時候是空的、不標字 —— 跟第一關的 ??? 是同一招。 */
+  .goal { align-self: center; width: min(calc(300px * var(--u)), 34vw);
+    height: min(calc(64px * var(--u)), 8vh); flex: none;
+    border: 4px dashed var(--gold); display: flex; align-items: center; justify-content: center;
+    background: var(--surface); box-shadow: 6px 6px 0 var(--hard); }
+  .goal .q { font-family: var(--pixel); font-size: min(calc(34px * var(--u)), 4.4vh); color: var(--gold); }
+  .goal b { font-size: min(calc(34px * var(--u)), 4.4vh); color: var(--root-c); letter-spacing: .1em; }
+  .goal.on { border-style: solid; border-color: var(--root-c); }
+  .goal.ready { cursor: pointer; }
+  .goal.ready:hover { transform: translate(-2px, -2px); box-shadow: 8px 8px 0 var(--hard); }
+  /* 梯子和上面那一格之間的那一段空白，就是「不夠」 */
+  .gapline { flex: none; height: min(calc(56px * var(--u)), 7.5vh);
+    display: flex; align-items: center; justify-content: center;
+    font-size: min(calc(40px * var(--u)), 5.4vh); font-weight: 900; color: var(--vol);
+    letter-spacing: .2em;
+    background-image: repeating-linear-gradient(var(--edge-soft) 0 6px, transparent 6px 14px);
+    background-size: 4px 100%; background-position: center; background-repeat: no-repeat; }
+  .ladders { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: calc(14px * var(--u)); min-height: 0; }
+  .ladder { display: flex; flex-direction: column; min-height: 0; }
+  .rungs { flex: 1; display: flex; flex-direction: column; justify-content: flex-end;
+    gap: min(calc(6px * var(--u)), .9vh); min-height: 0; }
+  .rung { display: flex; align-items: center; gap: calc(10px * var(--u));
+    border: 3px solid var(--edge-soft); background: var(--surface-2);
+    padding: min(calc(7px * var(--u)), 1vh) calc(10px * var(--u));
+    opacity: .3; transition: opacity .18s, border-color .18s, transform .18s; }
+  .rung .s { flex: none; font-family: var(--pixel); font-size: calc(13px * var(--u)); color: var(--ink-3); }
+  .rung .t { font-size: min(calc(16px * var(--u)), 2.3vh); font-weight: 700; line-height: 1.35; }
+  .rung.lit { opacity: 1; border-color: var(--root-c); background: var(--surface); box-shadow: 4px 4px 0 var(--hard); }
+  /* 最後一階踩空 */
+  .rung.slip { border-color: var(--vol); border-style: dashed; opacity: .6; transform: translateY(6px); box-shadow: none; }
+  .rung.slip .t { color: var(--vol); }
+  .sign { flex: none; margin-top: calc(10px * var(--u)); border-left: 10px solid var(--gold);
+    background: var(--surface); border-top: 3px solid var(--edge); border-right: 3px solid var(--edge);
+    border-bottom: 3px solid var(--edge); padding: min(calc(8px * var(--u)), 1.2vh) calc(12px * var(--u)); }
+  .sign b { display: block; font-size: min(calc(21px * var(--u)), 3vh); line-height: 1.3; }
+  .sign span { display: block; margin-top: 3px; font-size: min(calc(13px * var(--u)), 1.9vh); color: var(--ink-3); }
+  .who { flex: none; display: flex; flex-wrap: wrap; gap: 6px; margin-top: calc(8px * var(--u)); }
+  .who span { padding: 2px 8px; border: 2px solid var(--edge-soft); background: var(--surface);
+    font-size: calc(14px * var(--u)); font-weight: 700; }
+  .who .none { border: 0; background: none; color: var(--ink-3); font-weight: 500; }
+  .afterhd { display: flex; align-items: baseline; gap: calc(28px * var(--u)); flex-wrap: wrap; }
+  .afterhd .stat { font-family: var(--pixel); font-size: min(calc(34px * var(--u)), 4.4vh); line-height: 1; }
+  .afterhd .stat > span { font-family: var(--sans); font-weight: 700; font-size: calc(14px * var(--u));
+    color: var(--ink-3); margin-right: 8px; }
+  .afterhd .stat.drop { color: var(--vol); }
+  .afterhd .stat.up { color: var(--root-c); }
+  .afterhd .flipcount { font-family: var(--pixel); font-size: calc(14px * var(--u)); color: var(--ink-3); }
+
+  /* 救恩之路：一道階梯從上面降下來，接到地面 */
+  .stair { flex: 1; display: flex; align-items: center; justify-content: center; }
+  .stair span { display: inline-block; padding: calc(14px * var(--u)) calc(30px * var(--u));
+    border: 4px solid var(--root-c); background: var(--root-soft); color: var(--root-c);
+    font-size: min(calc(34px * var(--u)), 4.4vh); font-weight: 900; letter-spacing: .12em;
+    box-shadow: 6px 6px 0 var(--hard);
+    animation: descend .9s ease-out; }
+  @keyframes descend { from { transform: translateY(-40px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .cols3.way .col3 h3 { color: var(--root-c); font-size: calc(26px * var(--u)); }
+  .cols3.way .col3 p { margin: 8px 0 0; font-size: min(calc(17px * var(--u)), 2.4vh);
+    line-height: 1.8; color: var(--ink-2); }
+
+  /* 耶穌代替我們償還罪債 */
+  .cross { text-align: center; font-size: min(calc(120px * var(--u)), 16vh); color: var(--vol); line-height: 1.1;
+    margin: min(calc(10px * var(--u)), 1.4vh) 0; }
+  .paidline { text-align: center; font-size: min(calc(28px * var(--u)), 3.8vh); font-weight: 900;
+    max-width: 26em; margin: 0 auto; }
+  .plus { text-align: center; margin-top: min(calc(16px * var(--u)), 2.2vh);
+    font-family: var(--pixel); font-size: min(calc(38px * var(--u)), 5vh); color: var(--root-c); }
+
+  /* 信而受洗。這一頁不做任何回應動作 —— 收尾句是「今天你不用做任何決定」。 */
+  .baplist { margin-top: min(calc(16px * var(--u)), 2.2vh); }
+  .baplist p { margin: 0 0 min(calc(12px * var(--u)), 1.6vh);
+    font-size: min(calc(26px * var(--u)), 3.6vh); font-weight: 700; line-height: 1.7; }
+  .close { margin-top: auto; padding-top: min(calc(14px * var(--u)), 2vh);
+    font-size: min(calc(40px * var(--u)), 5.4vh); font-weight: 900; color: var(--root-c); letter-spacing: .06em; }
+
+  /* 排行／投票長條 */
+  .opts { display: grid; gap: min(calc(9px * var(--u)), 1.4vh); margin-top: min(calc(14px * var(--u)), 2vh); max-width: 74ch; }
+  .opt { display: flex; align-items: center; gap: 12px; }
+  .opt .lbl { width: calc(150px * var(--u)); font-size: calc(19px * var(--u)); font-weight: 700; }
+  .opt .track { flex: 1; height: min(calc(26px * var(--u)), 4vh); border: 3px solid var(--edge); background: var(--surface-2); }
+  .opt .track i { display: block; height: 100%; background: var(--vol); transition: width .3s;
+    -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 8px, transparent 8px 10px);
+    mask-image: repeating-linear-gradient(90deg, #000 0 8px, transparent 8px 10px); }
+  .opt .n { font-family: var(--pixel); font-size: calc(15px * var(--u)); color: var(--ink-2); width: calc(52px * var(--u)); text-align: right; }
+
+  .cols3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 18px; }
+  .col3 { background: var(--surface); border: 4px solid var(--edge); box-shadow: 6px 6px 0 var(--hard); padding: min(18px, 2.4vh) 18px; }
+  .col3 h3 { display: flex; align-items: baseline; gap: 10px; font-size: calc(22px * var(--u)); margin-bottom: 8px; }
+  .col3 h3.next { font-size: calc(26px * var(--u)); }
+  .col3 .who { font-size: calc(28px * var(--u)); font-weight: 900; display: block; margin: 0; }
+  .col3 .delta { margin: calc(6px * var(--u)) 0 0; font-family: var(--pixel);
+    font-size: calc(15px * var(--u)); color: var(--ink-3); }
+  .col3 .delta b { margin-left: 10px; font-size: calc(17px * var(--u)); }
+  .nextbox { margin-top: calc(16px * var(--u)); }
+
+  /* 經文。用 em 限行長：ch 在中文字體上量的是數字寬度，會把整段擠成一條 */
+  .verse { margin-top: calc(10px * var(--u)); }
+  .verse blockquote { font-size: min(calc(44px * var(--u)), 4.8vh); font-weight: 900; line-height: 1.6;
+    margin: 18px 0 0; max-width: 20em; }
+  .verse .ref { font-family: var(--pixel); color: var(--gold); font-size: calc(20px * var(--u)); }
+  .verse blockquote .ref { display: block; margin-top: calc(14px * var(--u)); }
+  /* 救恩之路那一頁：還沒點到的後半句先淡著 */
+  .verse.half blockquote .on { color: var(--root-c); }
+  .verse.half blockquote .off { color: var(--ink-3); opacity: .45; }
+
+  .note { background: var(--surface); border: 3px solid var(--edge); border-left-width: 10px; border-left-color: var(--gold);
+    padding: 14px 16px; margin-top: calc(16px * var(--u)); max-width: 70ch; font-size: calc(14px * var(--u)); color: var(--ink-2); box-shadow: 5px 5px 0 var(--hard); }
+  .note b { color: var(--ink); }
+
+  /* HUD 控制列：固定深底淺字，不隨主題翻轉 */
+  .controls { display: flex; gap: 10px; align-items: center; padding: 12px 20px;
+    background: var(--bar-bg); border-top: 4px solid var(--bar-edge); flex-wrap: wrap; }
+  .controls .btn { padding: 9px 14px; font-size: calc(13px * var(--u)); background: #1D2A2C; border: 3px solid var(--bar-edge);
+    color: var(--bar-ink); box-shadow: 3px 3px 0 #000; }
+  .controls .btn:active { transform: translate(3px, 3px); box-shadow: none; }
+  .controls .btn.primary { background: var(--root-c); border-color: #9CF0D6; color: var(--on-primary); }
+  .controls select { background: #1D2A2C; color: var(--bar-ink); border: 3px solid var(--bar-edge);
+    padding: 9px 10px; font-family: var(--sans); font-weight: 700; font-size: calc(13px * var(--u)); }
+  .controls .sp { flex: 1; }
+  .controls .hint { color: #8FA8A1; font-size: calc(13px * var(--u)); font-family: var(--pixel); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <h1><a href="/happiness/zh-TW/" id="home" title="回系列頁">幸福模擬器</a> · 第三關 <b>萬世巨星</b></h1>
+    <span class="tag" id="ptag">入場</span>
+    <span class="spacer"></span>
+    <button class="notesbtn" id="notesbtn" title="用手機掃，備忘錄會跟著大螢幕走">📱 主持人備忘錄</button>
+    <button class="themebtn" data-theme-toggle></button>
+    <span class="count" id="pcount">0 人在場</span>
+  </div>
+
+  <div class="body">
+    <aside class="side">
+      <h4>玩家狀態</h4>
+      <div id="plist"></div>
+    </aside>
+    <main class="stage" id="stage"></main>
+  </div>
+
+  <div class="controls">
+    <button class="btn" data-cmd="prev">← 上一頁</button>
+    <button class="btn primary" data-cmd="next">下一頁 →</button>
+    <select id="jump"></select>
+    <span class="sp"></span>
+    <span class="hint" id="hint"></span>
+    <button class="btn" data-cmd="reset" id="resetbtn">全部重置</button>
+  </div>
+</div>
+
+<!-- 主持人備忘錄的 QR：按 N 叫出來，平常收著 -->
+<div class="notesqr" id="notesqr">
+  <canvas id="notesqrc"></canvas>
+  <div class="t">
+    <h3>主持人備忘錄</h3>
+    <p>用你自己的手機掃。這一頁會跟著大螢幕走，每一頁該念什麼、該做什麼、不要做什麼都在上面，也可以直接翻頁。</p>
+    <div class="u" id="notesurl"></div>
+    <div class="esc">再按一次 N 或 Esc 收起來</div>
+  </div>
+</div>
+
+<script src="/happiness/shared/qr.js"></script>
+<script src="/happiness/shared/room-client.js"></script>
+<script src="/happiness/shared/stage-parts.js"></script>
+<script src="/happiness/w3/host.js"></script>
+</body>
+</html>

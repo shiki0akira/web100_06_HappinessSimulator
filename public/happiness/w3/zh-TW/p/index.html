@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="icon" type="image/svg+xml" href="/happiness/shared/logo.svg">
+<title>幸福模擬器 · 萬世巨星</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Press+Start+2P&display=swap">
+<link rel="stylesheet" href="/happiness/shared/pixel.css">
+<script src="/happiness/shared/theme.js"></script>
+<style>
+  body { padding: 0 0 28px; }
+  .wrap { max-width: 520px; margin: 0 auto; padding: 0 16px; }
+
+  .status { position: sticky; top: 0; z-index: 5; background: var(--surface); border-bottom: 4px solid var(--edge); padding: 10px 16px 12px; }
+  .status .row1 { display: flex; align-items: center; gap: 8px; font-size: 15px; color: var(--ink-3); }
+  .status .row1 b { color: var(--ink); font-size: 20px; font-weight: 900; }
+  .gauge { margin-top: 9px; }
+  .gauge .lbl { display: flex; justify-content: space-between; font-family: var(--pixel); font-size: 13px; color: var(--ink-3); margin-bottom: 4px; }
+  .gauge .lbl b { font-size: 13px; color: var(--vol); }
+  .gauge + .gauge { margin-top: 7px; }
+  .gauge + .gauge .lbl b { color: var(--root-c); }
+
+  .screen { padding-top: 22px; }
+  .screen h2 { font-size: 28px; font-weight: 900; letter-spacing: .03em; }
+  .screen p { color: var(--ink-2); font-size: 18px; }
+  .wait { text-align: center; padding: 44px 0; color: var(--ink-3); }
+  .wait .dot { font-family: var(--pixel); font-size: 27px; letter-spacing: .3em; color: var(--root-c); }
+
+  .fullbtn { width: 100%; margin-top: 20px; padding: 18px; font-size: 21px; }
+  .numin { width: 100%; padding: 16px; font-size: 40px; font-weight: 700; text-align: center;
+    letter-spacing: .1em; font-family: var(--pixel); }
+
+  /* 接關那兩格 */
+  .screen p .sub { font-size: 16px; color: var(--ink-3); line-height: 1.7; font-weight: 500; }
+  .fieldlbl { margin: 22px 0 8px; font-size: 19px; font-weight: 900; color: var(--ink); }
+  .fieldlbl .sub { display: block; font-size: 15px; font-weight: 500; color: var(--ink-3); }
+
+  /* 猜句子 */
+  .qn { font-family: var(--pixel); font-size: 14px; color: var(--gold); }
+  .quote { font-size: 25px; font-weight: 900; line-height: 1.7; margin: 12px 0 4px; }
+  .ansbox { margin-top: 16px; padding: 14px; border: 3px solid var(--edge-soft); background: var(--surface); }
+  .ansbox .lbl { font-family: var(--pixel); font-size: 13px; color: var(--ink-3); }
+  .ansbox b { display: block; margin-top: 6px; font-size: 26px; font-weight: 900; }
+  .ansbox .src { display: block; margin-top: 6px; font-size: 15px; color: var(--ink-3); }
+  /* 答對是青的。答錯**沒有紅色** —— 這一頁的功能是好玩，不是考倒他們。 */
+  .ansbox.right { border-color: var(--root-c); background: var(--root-soft); }
+  .ansbox.right b { color: var(--root-c); }
+  .myans { margin-top: 12px; font-size: 17px; color: var(--ink-3); }
+  .myans b { font-family: var(--pixel); color: var(--root-c); }
+
+  .lotgrid { display: grid; gap: 9px; margin-top: 16px; }
+  .lotchk { display: flex; align-items: center; gap: 12px; padding: 11px 14px;
+    border: 3px solid var(--edge); background: var(--surface); font-size: 18px; font-weight: 700;
+    box-shadow: 3px 3px 0 var(--hard); cursor: pointer; }
+  .lotchk.on { border-color: var(--vol); background: #3A1E14; color: var(--vol); }
+  .lotchk .box { width: 24px; height: 24px; border: 3px solid currentColor; flex: none; }
+  .lotchk.on .box { background: var(--vol); }
+  .lotchk .sub { display: block; margin-top: 3px; font-size: 14px; font-weight: 500; color: var(--ink-3); }
+  .lotchk.road { border-color: var(--gold); }
+  .lotchk.road b { font-size: 20px; }
+
+  /* 選好的那一條路 */
+  .picked { margin-top: 16px; padding: 20px; border: 3px solid var(--gold); color: var(--gold);
+    font-size: 24px; font-weight: 900; text-align: center; }
+
+  /* 爬梯子：一階一階亮起來 */
+  .steps { display: flex; flex-direction: column-reverse; gap: 8px; margin-top: 18px; }
+  .st { padding: 13px 14px; border: 3px solid var(--edge-soft); background: var(--surface-2);
+    font-size: 18px; font-weight: 700; opacity: .3; transition: opacity .2s, border-color .2s; }
+  .st.lit { opacity: 1; border-color: var(--root-c); background: var(--surface); }
+  .short { margin-top: 16px; text-align: center; font-size: 34px; font-weight: 900;
+    letter-spacing: .2em; color: var(--vol); opacity: 0; transition: opacity .4s; }
+  .short.on { opacity: 1; }
+
+  .misskey { font-size: 24px; font-weight: 900; line-height: 1.7; color: var(--gold); margin-top: 10px; }
+
+  .quotelist { margin-top: 14px; }
+  .qrow { padding: 10px 0; border-bottom: 2px dashed var(--edge-soft);
+    font-size: 18px; font-weight: 700; color: var(--root-c); line-height: 1.6; }
+
+  .cross { text-align: center; font-size: 84px; color: var(--vol); line-height: 1.2; margin: 10px 0; }
+  .close { margin-top: 24px; padding: 16px; border: 3px solid var(--root-c); background: var(--root-soft);
+    color: var(--root-c); font-size: 22px; font-weight: 900; text-align: center; }
+
+  .hit { margin-top: 16px; padding: 14px; border: 3px dashed var(--vol); color: var(--vol);
+    font-family: var(--pixel); font-size: 20px; text-align: center; }
+  .hit.up { border-color: var(--root-c); color: var(--root-c); }
+
+  .verse-p { text-align: center; padding: 10px 0; }
+  .verse-p .ref { font-family: var(--pixel); font-size: 13px; color: var(--gold); }
+  .verse-p blockquote { font-size: 26px; font-weight: 700; line-height: 1.95; margin: 16px 0 0; letter-spacing: .02em; }
+  .verse-p.half blockquote .on { color: var(--root-c); }
+  .verse-p.half blockquote .off { color: var(--ink-3); opacity: .45; }
+
+  textarea { width: 100%; min-height: 108px; padding: 14px; font-size: 21px; font-weight: 500; resize: vertical; }
+
+  /* 領受／禱告之後那個「長出來了」的畫面 */
+  .grew { display: flex; align-items: center; gap: 14px; margin-top: 22px;
+    border: 3px solid var(--root-c); background: var(--root-soft); padding: 12px 14px; }
+  .grew img { width: 96px; height: auto; image-rendering: pixelated; flex: none; }
+  .grew p { margin: 0; font-size: 18px; line-height: 1.7; }
+  .grew b { font-family: var(--pixel); font-size: 20px; }
+  .privacy { margin-top: 12px; font-size: 16px; color: var(--ink-3); line-height: 1.8; }
+
+  .weekcard { width: 100%; border: 4px solid var(--edge); box-shadow: 6px 6px 0 var(--hard); display: block;
+    margin-top: 16px; position: relative; z-index: 95; }
+  .ok { color: var(--root-c); font-weight: 700; }
+  .mono { font-family: var(--pixel); }
+</style>
+</head>
+<body>
+  <div class="status" id="status" hidden>
+    <div class="row1"><b id="myname">—</b><span id="mystate"></span></div>
+    <div class="gauge">
+      <div class="lbl"><span>幸福指數</span><b id="outerv">—</b></div>
+      <span class="bar"><i id="outerbar" style="width:0%;background:var(--vol)"></i></span>
+    </div>
+    <div class="gauge">
+      <div class="lbl"><span>幸福根基</span><b id="innerv">0</b></div>
+      <span class="bar"><i id="innerbar" style="width:0%;background:var(--root-c)"></i></span>
+    </div>
+  </div>
+
+  <div class="wrap"><div class="screen" id="screen"></div></div>
+
+  <button class="themebtn floating" data-theme-toggle></button>
+
+<script src="/happiness/shared/card.js"></script>
+<script src="/happiness/shared/room-client.js"></script>
+<script src="/happiness/w3/player.js"></script>
+</body>
+</html>
