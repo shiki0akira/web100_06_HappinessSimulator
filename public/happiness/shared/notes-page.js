@@ -75,16 +75,6 @@
       }
     }
 
-    // 第三關的揭曉頁：分兩段點出來。
-    var revc = el('revealctl');
-    if (revc) {
-      revc.hidden = S.phase.id !== 'reveal';
-      if (!revc.hidden) {
-        el('revealstep').textContent = S.revealStep >= 1 ? '他已經出來了' : '介紹這一位';
-        el('revealstep').disabled = S.revealStep >= 1;
-      }
-    }
-
     // 第三關的三條梯子：大家選完再按「開始爬」。
     var climbc = el('climbctl');
     if (climbc) {
@@ -164,7 +154,6 @@
     on('quizstep', function () { post('quizStep'); });
     on('quizprev', function () { post('quizPrev'); });
     on('climbbtn', function () { post('climb'); });
-    on('revealstep', function () { post('revealStep'); });
     on('waystep', function () { post('wayStep'); });
     on('flipnext', function () { post('flipNext'); });
     on('flipall', function () {

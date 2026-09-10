@@ -25,6 +25,7 @@ export const PHASES = [
   { id: 'lobby',     tag: '入場',     title: '掃碼進場' },
   { id: 'reconnect', tag: '接關',     title: '輸入幸福指數' },
   { id: 'quiz',      tag: '互動點 1', title: '這句話是誰說的' },
+  { id: 'answers',   tag: '解答',     title: '八題的答案' },
   { id: 'reveal',    tag: '揭曉',     title: '萬世巨星' },
   { id: 'sins',      tag: '互動點 2', title: '這些算不算罪' },
   { id: 'sin_teach', tag: '信息',     title: '罪不是一張壞事清單' },
@@ -51,7 +52,6 @@ export function createState() {
     order: [],
     quizIdx: 0,          // 現在開到第幾題
     quizOpen: [],        // 哪幾題已經揭答案了
-    revealStep: 0,       // 揭曉那一頁點到第幾段（0–1）
     climbed: false,      // 三條梯子爬過了沒
     paid: false,         // 第 10 頁的 +15 發過了沒
     wayStep: 0,          // 救恩之路那一頁點到第幾段（0–2）
@@ -256,8 +256,6 @@ export function applyHost(s, msg) {
     case 'quizPrev': quizPrev(s); return null;
     case 'quizReveal': revealQuiz(s); return null;
     case 'quizGoto': quizGoto(s, msg.idx); return null;
-    // 揭曉那一頁分兩段：先八題排開，再「你早就在用他了」
-    case 'revealStep': s.revealStep = Math.min(1, (s.revealStep || 0) + 1); return null;
     // 三條梯子一起往上爬。爬完停在同一個高度 —— 不夠。
     case 'climb': climb(s); return null;
     // 救恩之路那一頁分三段點出來，不要一次全亮
@@ -348,7 +346,6 @@ function common(s) {
     goal: GOAL,
     verse: VERSE,
     way: WAY,
-    revealStep: s.revealStep || 0,
     wayStep: s.wayStep || 0,
     paidInfo: PAID,
     paidPlus: PAID_PLUS,

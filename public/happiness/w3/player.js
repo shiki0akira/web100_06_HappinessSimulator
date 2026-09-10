@@ -104,6 +104,13 @@
         (picked ? '<p class="privacy">選好了，主持人揭答案之前都可以改。</p>' : '');
     },
 
+    // 解答頁：只跟他講他自己的成績，別人的不關他的事。
+    answers: function (me) {
+      return '<h2>八題的答案</h2>' +
+        '<div class="score">你答對 <b>' + me.correct + '</b> 題</div>' +
+        wait('看大螢幕');
+    },
+
     reveal: function () {
       return '<h2>萬世巨星</h2>' +
         '<p>' + esc(S.reveal.lead) + '</p>' +

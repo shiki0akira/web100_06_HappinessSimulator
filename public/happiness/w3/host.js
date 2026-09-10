@@ -248,15 +248,17 @@
       return quizHead() + quizCard();
     },
 
-    // 分兩段。**一次全放會爆版**（720p 的高度放不下八句話 ＋ 四個痕跡），
-    // 而且分兩段本來就比較好講：先看八題，再看他留在你生活裡的東西。
+    // 猜句子的解答頁：八題排開，他說的那四句亮著。
+    // **這一頁和下一頁是兩個獨立的頁**，不是一頁分兩段 ——
+    // 藏在按鈕後面的東西，現場一定會被跳過。
+    answers: function () {
+      return '<h2>這句話是誰說的</h2>' +
+        '<p class="lede">' + esc(S.reveal.lead) + '</p>' +
+        boardList(false);
+    },
+
+    // 左邊是聚光燈下的他，右邊是他說過的那四句，底下是他留在生活裡的東西。
     reveal: function () {
-      if (S.revealStep < 1) {
-        return '<h2>' + esc(S.reveal.title) + '</h2>' +
-          '<p class="lede">' + esc(S.reveal.lead) + '</p>' +
-          boardList(false);
-      }
-      // 第二段：左邊是聚光燈下的他，右邊是他說過的那四句，底下是他留在生活裡的東西。
       return '<h2>' + esc(S.reveal.title) + '</h2>' +
         '<div class="starwrap">' +
           '<div class="starart"><img src="/happiness/shared/art/superstar.svg" alt=""></div>' +
@@ -413,7 +415,6 @@
       if (el) el.style.display = on ? (id === 'quizctl' ? 'inline-flex' : 'inline-block') : 'none';
     };
     show('quizctl', S.phase.id === 'quiz');
-    show('tracebtn', S.phase.id === 'reveal');
     show('climbbar', S.phase.id === 'roads');
     show('waybar', S.phase.id === 'way');
     if (S.phase.id === 'quiz') {
@@ -425,10 +426,6 @@
         ? '揭曉答案（' + (S.quiz.idx + 1) + '/' + S.quiz.total + '）'
         : (last ? '最後一題' : '下一題 →（' + (S.quiz.idx + 2) + '/' + S.quiz.total + '）');
       step.disabled = S.quiz.revealed && last;
-    }
-    if (S.phase.id === 'reveal') {
-      document.getElementById('tracebtn').disabled = S.revealStep >= 1;
-      document.getElementById('tracebtn').textContent = S.revealStep >= 1 ? '他已經出來了' : '介紹這一位';
     }
     if (S.phase.id === 'roads') {
       document.getElementById('climbbar').disabled = !!S.climbed;
