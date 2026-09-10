@@ -118,11 +118,18 @@ export function revealQuiz(s) {
   return true;
 }
 
-// 空白鍵一顆按到底：還沒揭就揭答案，揭過了就換下一題。
-export function quizStep(s) {
-  if (openList(s).indexOf(s.quizIdx) < 0) return revealQuiz(s);
-  if (s.quizIdx < QUIZ.length - 1) { s.quizIdx += 1; return true; }
-  return false;
+// 換下一題。**不會順手揭答案** —— 揭答案是「揭答案」那一顆的事。
+export function quizNext(s) {
+  if (s.quizIdx >= QUIZ.length - 1) return false;
+  s.quizIdx += 1;
+  return true;
+}
+
+// 回上一題。揭過的還是揭過的 —— 分數不會因為回頭再算一次。
+export function quizPrev(s) {
+  if (s.quizIdx <= 0) return false;
+  s.quizIdx -= 1;
+  return true;
 }
 
 export function quizGoto(s, i) {
@@ -244,7 +251,8 @@ export function applyHost(s, msg) {
     case 'next': return enterPhase(s, s.phaseIdx + 1);
     case 'prev': return enterPhase(s, s.phaseIdx - 1);
     case 'goto': return enterPhase(s, Number(msg.idx));
-    case 'quizStep': quizStep(s); return null;
+    case 'quizNext': quizNext(s); return null;
+    case 'quizPrev': quizPrev(s); return null;
     case 'quizReveal': revealQuiz(s); return null;
     case 'quizGoto': quizGoto(s, msg.idx); return null;
     // 揭曉那一頁分兩段：先八題排開，再「你早就在用他了」

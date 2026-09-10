@@ -82,7 +82,7 @@
     return '<div class="big" style="margin-top:16px">' + n +
         ' <span class="muted" style="font-size:calc(34px * var(--u))">/ ' + S.stats.count + ' ' + (unit || '人已作答') + '</span></div>' +
       (all ? '<div class="note" style="border-left-color:var(--root-c);color:var(--ink)">' +
-        '<b>大家都好了</b>　按空白鍵。</div>' : '');
+        '<b>大家都好了</b></div>' : '');
   }
 
   // ── 猜句子 ───────────────────────────────────────────────────────────
@@ -120,14 +120,25 @@
     }).join('') + '</div>';
   }
 
+  // 四格都是陳述句。**這一頁不放主持人的台詞** ——
+  // 「其實你早已認識他了」那句話是他要講的，印在牆上就變成一份工作手冊。
   function traceGrid() {
+    var year = new Date().getFullYear();
     return '<div class="traces">' + S.traces.map(function (t) {
-      return '<div class="trace"><b>' + esc(t.k) + '</b><span>' + esc(t.v) + '</span></div>';
-    }).join('') + '</div>' +
-      '<p class="traceline">' + esc(S.reveal.traceLine) + '</p>';
+      return '<div class="trace"><b>' + esc(String(t.k).replace('{year}', year)) + '</b>' +
+        '<span>' + esc(t.v) + '</span></div>';
+    }).join('') + '</div>';
   }
 
   // ── 罪 ───────────────────────────────────────────────────────────────
+  // 作答中：八個選項要攤在大螢幕上，不然主持人和全場都不知道在勾什麼。
+  // **這時候不給人數** —— 先看到別人勾了什麼會互相定錨，比例留到下一頁。
+  function sinBoard() {
+    return '<div class="sinboard">' + S.sins.map(function (o) {
+      return '<div class="sintile">' + esc(o) + '</div>';
+    }).join('') + '</div>';
+  }
+
   function sinBars() {
     var c = S.stats.sinCounts;
     var max = Math.max.apply(null, c.concat([1]));
@@ -229,8 +240,12 @@
           '<p class="lede">' + esc(S.reveal.lead) + '</p>' +
           boardList(false);
       }
+      // 第二段：左邊是聚光燈下的他，右邊是他說過的那四句，底下是他留在生活裡的東西。
       return '<h2>' + esc(S.reveal.title) + '</h2>' +
-        boardList(true) +
+        '<div class="starwrap">' +
+          '<div class="starart"><img src="/happiness/shared/art/superstar.svg" alt=""></div>' +
+          '<div class="starcol">' + boardList(true) + '</div>' +
+        '</div>' +
         traceGrid();
     },
 
@@ -238,6 +253,7 @@
       return '<span class="kicker">' + esc(S.sinAsk.kicker) + '</span>' +
         '<h2>' + esc(S.sinAsk.title) + '</h2>' +
         '<p class="lede">' + esc(S.sinAsk.lead) + '</p>' +
+        sinBoard() +
         answering(S.stats.sinsDone, '人已作答');
     },
 
@@ -372,12 +388,37 @@
     jump.value = String(S.phaseIdx);
 
     document.getElementById('hint').textContent =
-      S.phase.id === 'lobby' ? '玩家掃碼進場後按「下一頁」開始'
-      : S.phase.id === 'quiz' ? '空白鍵：揭答案 / 下一題'
-      : S.phase.id === 'reveal' ? (S.revealStep < 1 ? '空白鍵：你早就在用他了' : '')
-      : S.phase.id === 'roads' ? (S.climbed ? '' : '空白鍵：開始爬')
-      : S.phase.id === 'way' ? '空白鍵：一段一段點出來'
-      : '';
+      S.phase.id === 'lobby' ? '玩家掃碼進場後按「下一頁」開始' : '';
+
+    // 每一頁該出現哪幾顆控制鈕。**現場不要靠鍵盤** ——
+    // 主持人手上還有麥克風和一份講稿，記不住哪一頁的空白鍵是什麼意思。
+    var show = function (id, on) {
+      var el = document.getElementById(id);
+      if (el) el.style.display = on ? (id === 'quizctl' ? 'inline-flex' : 'inline-block') : 'none';
+    };
+    show('quizctl', S.phase.id === 'quiz');
+    show('tracebtn', S.phase.id === 'reveal');
+    show('climbbar', S.phase.id === 'roads');
+    show('waybar', S.phase.id === 'way');
+    if (S.phase.id === 'quiz') {
+      document.getElementById('qprev').disabled = S.quiz.idx <= 0;
+      document.getElementById('qreveal').disabled = !!S.quiz.revealed;
+      document.getElementById('qreveal').textContent = S.quiz.revealed ? '已揭答案' : '揭答案';
+      document.getElementById('qnext').disabled = S.quiz.idx >= S.quiz.total - 1;
+      document.getElementById('qnext').textContent = '下一題 →（' + (S.quiz.idx + 1) + '/' + S.quiz.total + '）';
+    }
+    if (S.phase.id === 'reveal') {
+      document.getElementById('tracebtn').disabled = S.revealStep >= 1;
+      document.getElementById('tracebtn').textContent = S.revealStep >= 1 ? '他已經出來了' : '介紹這一位';
+    }
+    if (S.phase.id === 'roads') {
+      document.getElementById('climbbar').disabled = !!S.climbed;
+      document.getElementById('climbbar').textContent = S.climbed ? '爬完了' : '開始爬';
+    }
+    if (S.phase.id === 'way') {
+      document.getElementById('waybar').disabled = S.wayStep >= 2;
+      document.getElementById('waybar').textContent = S.wayStep >= 2 ? '三段都出來了' : '下一段（' + ((S.wayStep || 0) + 1) + '/3）';
+    }
 
     renderPlayers();
 
@@ -428,24 +469,8 @@
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
     if (e.key === 'n' || e.key === 'N') { e.preventDefault(); toggleNotes(); return; }
     if (e.key === 'Escape') { toggleNotes(false); return; }
-    var space = e.key === ' ' || e.key === 'Enter';
-    // 猜句子：空白鍵一顆按到底 —— 還沒揭就揭答案，揭過了就換下一題
-    if (S && S.phase.id === 'quiz' && space) {
-      e.preventDefault();
-      if (!(S.quiz.revealed && S.quiz.idx >= S.quiz.total - 1)) { post('quizStep'); return; }
-    }
-    // 揭曉：第二段是「你早就在用他了」
-    if (S && S.phase.id === 'reveal' && S.revealStep < 1 && space) {
-      e.preventDefault(); post('revealStep'); return;
-    }
-    // 三條路：空白鍵是「開始爬」
-    if (S && S.phase.id === 'roads' && !S.climbed && space) {
-      e.preventDefault(); post('climb'); return;
-    }
-    // 救恩之路：一段一段點出來，三段點完才換頁
-    if (S && S.phase.id === 'way' && S.wayStep < 2 && space) {
-      e.preventDefault(); post('wayStep'); return;
-    }
+    // 這一關的每一個動作都有自己的按鈕（控制列和備忘錄上各一份）——
+    // 鍵盤只留翻頁，跟第一關一樣。
     if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); post('next'); }
     if (e.key === 'ArrowLeft') { e.preventDefault(); post('prev'); }
   });

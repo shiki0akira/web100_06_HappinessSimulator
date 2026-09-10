@@ -110,7 +110,17 @@
   .qrow.jesus .by { color: var(--root-c); font-weight: 900; }
   .quotelist.dense .qrow { padding: min(calc(5px * var(--u)), .8vh) 0; }
 
-  /* 你早就在用他了 */
+  /* 揭曉第二段：左邊聚光燈下的他，右邊他說過的那四句 */
+  .starwrap { display: grid; grid-template-columns: auto 1fr;
+    gap: calc(24px * var(--u)); align-items: center;
+    margin-top: min(calc(10px * var(--u)), 1.4vh); }
+  /* 他要夠大 —— 這一頁是「我想介紹這一位」，他就是主角，不是插圖 */
+  .starart img { display: block; width: min(calc(230px * var(--u)), 40vh); height: auto;
+    image-rendering: pixelated; }
+  .starcol { min-width: 0; }
+  .starcol .quotelist { margin-top: 0; }
+
+  /* 他留在生活裡的東西。四格都是陳述句 —— 這一排不是題目。 */
   .traces { display: grid; grid-template-columns: repeat(4, 1fr); gap: calc(12px * var(--u));
     margin-top: min(calc(16px * var(--u)), 2.2vh); }
   .trace { background: var(--surface); border: 4px solid var(--edge); box-shadow: 5px 5px 0 var(--hard);
@@ -123,6 +133,12 @@
   /* ── 罪 ──────────────────────────────────────────────────────────── */
   .misskey { font-size: min(calc(34px * var(--u)), 4.8vh); font-weight: 900; line-height: 1.6;
     max-width: 26em; margin: min(calc(12px * var(--u)), 1.8vh) 0; color: var(--gold); }
+  /* 作答中：八個選項攤在大螢幕上。四欄兩列，每格一樣大。 */
+  .sinboard { display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: min(calc(10px * var(--u)), 1.5vh); margin-top: min(calc(16px * var(--u)), 2.2vh); }
+  .sintile { background: var(--surface); border: 4px solid var(--edge); box-shadow: 5px 5px 0 var(--hard);
+    padding: min(calc(14px * var(--u)), 2vh) calc(12px * var(--u));
+    font-size: min(calc(21px * var(--u)), 3vh); font-weight: 700; line-height: 1.4; }
   .opts.sin .opt .lbl { width: calc(280px * var(--u)); }
   .opts.sin.dense { gap: min(calc(6px * var(--u)), .9vh); }
   .opts.sin.dense .track { height: min(calc(18px * var(--u)), 2.6vh); }
@@ -282,6 +298,15 @@
     <button class="btn" data-cmd="prev">← 上一頁</button>
     <button class="btn primary" data-cmd="next">下一頁 →</button>
     <select id="jump"></select>
+    <!-- 猜句子那一頁才出現。照第一關拍賣控制列的做法 —— 現場不要靠鍵盤。 -->
+    <span id="quizctl" style="display:none;gap:8px;">
+      <button class="btn" data-cmd="quizPrev" id="qprev">← 上一題</button>
+      <button class="btn" data-cmd="quizReveal" id="qreveal">揭答案</button>
+      <button class="btn" data-cmd="quizNext" id="qnext">下一題 →</button>
+    </span>
+    <button class="btn" data-cmd="revealStep" id="tracebtn" style="display:none">介紹這一位</button>
+    <button class="btn" data-cmd="climb" id="climbbar" style="display:none">開始爬</button>
+    <button class="btn" data-cmd="wayStep" id="waybar" style="display:none">下一段</button>
     <span class="sp"></span>
     <span class="hint" id="hint"></span>
     <button class="btn" data-cmd="reset" id="resetbtn">全部重置</button>

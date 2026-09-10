@@ -22,6 +22,7 @@ const PAL = {
   // 灰白／暗
   W: '#B9C7C1', w: '#8A9C96', D: '#3A4A45',
   g: '#C99B1C', k: '#F3DCC0',   // 燈罩的暗面／膚色
+  n: '#4A3220',                 // 深棕：頭髮和鬍子（第三關的那一位）
 };
 
 // 同一列同色併成一個 rect，檔案才不會長出幾百個節點
@@ -526,4 +527,86 @@ function animatedSvg(w, h, css, body, label) {
   fs.mkdirSync('public/happiness/shared/art', { recursive: true });
   fs.writeFileSync('public/happiness/shared/art/testimony.svg', svg);
   console.log('見證分享重畫了（一張溫馨的場景）');
+}
+
+// ── 第三關：萬世巨星 ────────────────────────────────────────────────────
+// 揭曉那一頁左邊那一張。一個站著的人，頭頂一盞聚光燈一閃一閃 ——
+// 「我想向大家介紹這一位」那句話要有一個對象站在那裡，光才有意義。
+{
+  const OUT_SHARED = 'public/happiness/shared/art';
+  fs.mkdirSync(OUT_SHARED, { recursive: true });
+
+  // 18 × 24。臉不要畫表情細節 —— 放大到電視上，兩點眼睛比五官好看。
+  const HIM = [
+    '..................',
+    '......nnnnnn......',
+    '.....nnnnnnnn.....',
+    '....nnkkkkkknn....',
+    '....nkkkkkkkkn....',
+    '....nkkkkkkkkn....',
+    '....nkDkkkkDkn....',
+    '....nkkkkkkkkn....',
+    '....nkkkkkkkkn....',
+    '....nnkkkkkknn....',
+    '.....nnnnnnnn.....',
+    '.......kkkk.......',
+    '...WWWWWWWWWWWW...',
+    '..WWWWWWWWWWWWWW..',
+    '.kWWWWWWWWWWWWWWk.',
+    'kkWWWWWWWWWWWWWWkk',
+    '.kCCCCCCCCCCCCCCk.',
+    '..CCCCCCCCCCCCCC..',
+    '..WWWWWWWWWWWWWW..',
+    '..WWWWWWWWWWWWWW..',
+    '..WWWWWWWWWWWWWW..',
+    '..WWWWWWWWWWWWWW..',
+    '..WWWWWWWWWWWWWW..',
+    '...wwwwwwwwwwww...',
+  ];
+
+  const W = 40, H = 48;
+  let body = '';
+
+  // 聚光燈的燈罩
+  body += `<rect x="17" y="0" width="6" height="2" fill="${PAL.D}"/>`;
+  body += `<rect x="16" y="2" width="8" height="1" fill="${PAL.o}"/>`;
+  body += `<rect x="17" y="3" width="6" height="1" fill="${PAL.G}"/>`;
+
+  // 光束：從燈口一路開到地上，越下面越寬也越淡。
+  // **一定要開到地板** —— 只開到他頭上，那就不是光，是一頂帽子。
+  // 整片半透明方塊在深色底上會變成灰盒子，所以用一條一條的橫格疊出來。
+  let beam = '';
+  for (let y = 4; y <= 45; y++) {
+    const k = (y - 4) / 41;
+    const w = 4 + k * 30;
+    const x = 20 - w / 2;
+    const op = (0.3 - k * 0.22).toFixed(3);
+    beam += `<rect x="${x.toFixed(1)}" y="${y}" width="${w.toFixed(1)}" height="1" fill="${PAL.G}" opacity="${op}"/>`;
+  }
+  body += `<g class="beam">${beam}</g>`;
+
+  // 他站在光裡。**畫在光束上面** —— 光是穿過他，不是蓋住他。
+  body += sprite(HIM, 11, 20);
+
+  // 地板 ＋ 光落在地上的一圈
+  body += `<rect x="8" y="45" width="24" height="1" fill="${PAL.G}" opacity=".28"/>`;
+  body += `<rect x="4" y="46" width="32" height="1" fill="${PAL.w}" opacity=".45"/>`;
+
+  // 兩側的星星，跟著光一起眨
+  const star = (x, y, d) =>
+    `<g class="tw" style="animation-delay:${d}s">` +
+    `<rect x="${x}" y="${y}" width="1" height="1" fill="${PAL.G}"/>` +
+    `<rect x="${x - 1}" y="${y + 1}" width="3" height="1" fill="${PAL.G}"/>` +
+    `<rect x="${x}" y="${y + 2}" width="1" height="1" fill="${PAL.G}"/></g>`;
+  body += star(4, 10, 0) + star(35, 14, 0.7) + star(3, 30, 1.4) + star(36, 34, 2.1);
+
+  // 一閃一閃：硬切，不做淡入淡出 —— 這一套視覺沒有漸層。
+  const css =
+    '.beam{animation:sp 1.8s steps(1) infinite}' +
+    '@keyframes sp{0%,49%{opacity:.55}50%,99%{opacity:1}100%{opacity:.55}}' +
+    '.tw{animation:tk 2.4s steps(1) infinite}' +
+    '@keyframes tk{0%,45%{opacity:.15}50%,95%{opacity:1}100%{opacity:.15}}';
+
+  fs.writeFileSync(OUT_SHARED + '/superstar.svg', animatedSvg(W, H, css, body, '萬世巨星'));
+  console.log('第三關：superstar.svg（聚光燈下的他）');
 }

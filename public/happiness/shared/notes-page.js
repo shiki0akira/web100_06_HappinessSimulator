@@ -65,9 +65,11 @@
     if (quizc) {
       quizc.hidden = S.phase.id !== 'quiz' || !S.quiz;
       if (!quizc.hidden) {
-        el('quizreveal').textContent = S.quiz.revealed ? '已揭答案' : '揭答案（' + (S.quiz.idx + 1) + '/' + S.quiz.total + '）';
+        el('quizprev').disabled = S.quiz.idx <= 0;
+        el('quizreveal').textContent = S.quiz.revealed ? '已揭答案' : '揭答案';
         el('quizreveal').disabled = !!S.quiz.revealed;
-        el('quizstep').disabled = !S.quiz.revealed || S.quiz.idx >= S.quiz.total - 1;
+        el('quizstep').textContent = '下一題 →（' + (S.quiz.idx + 1) + '/' + S.quiz.total + '）';
+        el('quizstep').disabled = S.quiz.idx >= S.quiz.total - 1;
       }
     }
 
@@ -76,7 +78,7 @@
     if (revc) {
       revc.hidden = S.phase.id !== 'reveal';
       if (!revc.hidden) {
-        el('revealstep').textContent = S.revealStep >= 1 ? '兩段都出來了' : '你早就在用他了';
+        el('revealstep').textContent = S.revealStep >= 1 ? '他已經出來了' : '介紹這一位';
         el('revealstep').disabled = S.revealStep >= 1;
       }
     }
@@ -158,7 +160,8 @@
       if (confirm('整場拍賣重跑？所有人的點數和標到的東西都會還原。')) post('restartAuction');
     });
     on('quizreveal', function () { post('quizReveal'); });
-    on('quizstep', function () { post('quizStep'); });
+    on('quizstep', function () { post('quizNext'); });
+    on('quizprev', function () { post('quizPrev'); });
     on('climbbtn', function () { post('climb'); });
     on('revealstep', function () { post('revealStep'); });
     on('waystep', function () { post('wayStep'); });
