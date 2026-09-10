@@ -83,10 +83,16 @@
   .names span { padding: 6px 12px; background: var(--surface); border: 3px solid var(--edge); box-shadow: 3px 3px 0 var(--hard); font-size: calc(15px * var(--u)); font-weight: 700; }
 
   /* ── 猜句子 ───────────────────────────────────────────────────────── */
-  .qhead { display: flex; align-items: baseline; gap: calc(20px * var(--u)); margin-top: calc(10px * var(--u)); }
-  .qhead .qn { font-family: var(--pixel); font-size: calc(22px * var(--u)); color: var(--gold); }
-  .qhead .qn small { color: var(--ink-3); font-size: calc(15px * var(--u)); }
-  .qhead .qsrc { font-size: calc(17px * var(--u)); font-weight: 700; color: var(--root-c); }
+  /* 題號和出處跟標題同一行 */
+  .qtop { display: flex; align-items: baseline; gap: calc(20px * var(--u)); flex-wrap: wrap; }
+  .qtop .qn { font-family: var(--pixel); font-size: calc(22px * var(--u)); color: var(--gold); }
+  .qtop .qn small { color: var(--ink-3); font-size: calc(15px * var(--u)); }
+  .qtop .qsrc { font-size: calc(19px * var(--u)); font-weight: 700; color: var(--root-c); }
+  /* 「幾人已作答」是給主持人等人的一行小字，不是這一頁的主角 */
+  .qcount { margin-top: calc(6px * var(--u)); font-family: var(--pixel);
+    font-size: calc(15px * var(--u)); color: var(--ink-3); }
+  .qcount.all { color: var(--root-c); }
+  .qcount b { font-family: var(--sans); font-size: calc(15px * var(--u)); }
   /* 那句話本身就是這一頁的主角，字要夠大 */
   .quote { font-size: min(calc(42px * var(--u)), 6.2vh); font-weight: 900; line-height: 1.6;
     max-width: 21em; margin: min(calc(14px * var(--u)), 2vh) 0; }
@@ -301,8 +307,7 @@
     <!-- 猜句子那一頁才出現。照第一關拍賣控制列的做法 —— 現場不要靠鍵盤。 -->
     <span id="quizctl" style="display:none;gap:8px;">
       <button class="btn" data-cmd="quizPrev" id="qprev">← 上一題</button>
-      <button class="btn" data-cmd="quizReveal" id="qreveal">揭答案</button>
-      <button class="btn" data-cmd="quizNext" id="qnext">下一題 →</button>
+      <button class="btn primary" data-cmd="quizStep" id="qstep">揭曉答案</button>
     </span>
     <button class="btn" data-cmd="revealStep" id="tracebtn" style="display:none">介紹這一位</button>
     <button class="btn" data-cmd="climb" id="climbbar" style="display:none">開始爬</button>

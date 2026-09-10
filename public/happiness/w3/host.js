@@ -88,12 +88,29 @@
   // ── 猜句子 ───────────────────────────────────────────────────────────
   // 一題一題開，開完馬上揭答案。**答錯不要有紅色、不要有音效** ——
   // 這一頁的功能是好玩，不是考倒他們。
+  // 標題那一行：這句話是誰說的　Q5 / 8　（揭完才多一個出處）
+  // 「幾人已作答」貼在標題底下，一行小字 —— 那個數字是給主持人等人的，
+  // 不是這一頁的主角。主角是那句話。
+  function quizHead() {
+    var q = S.quiz;
+    var all = S.stats.count > 0 && S.stats.answered >= S.stats.count;
+    return '<div class="qtop">' +
+        '<h2>這句話是誰說的</h2>' +
+        '<span class="qn">Q' + (q.idx + 1) + ' <small>/ ' + q.total + '</small></span>' +
+        (q.revealed ? '<span class="qsrc">' + esc(q.src) + '</span>' : '') +
+      '</div>' +
+      (q.revealed ? '' :
+        '<div class="qcount' + (all ? ' all' : '') + '">' +
+          S.stats.answered + ' / ' + S.stats.count + ' 人已作答' +
+          (all ? '　<b>大家都好了</b>' : '') +
+        '</div>');
+  }
+
+  // **揭完不多印一行說明** —— 補充是你講的，印在牆上就變成一份工作手冊。
   function quizCard() {
     var q = S.quiz;
     var max = Math.max.apply(null, q.counts.concat([1]));
-    return '<div class="qhead"><span class="qn">Q' + (q.idx + 1) + ' <small>/ ' + q.total + '</small></span>' +
-        (q.revealed ? '<span class="qsrc">' + esc(q.src) + '</span>' : '') + '</div>' +
-      '<div class="quote">「' + esc(q.text) + '」</div>' +
+    return '<div class="quote">「' + esc(q.text) + '」</div>' +
       '<div class="opts quiz">' + q.options.map(function (o, i) {
         var cls = 'opt';
         if (q.revealed) cls += (i === q.answer ? ' right' : ' pale');
@@ -102,10 +119,7 @@
           '<span class="track"><i style="width:' + (q.revealed ? (q.counts[i] / max * 100) : 0) + '%"></i></span>' +
           '<span class="n">' + (q.revealed ? q.counts[i] + ' 人' : '') + '</span>' +
         '</div>';
-      }).join('') + '</div>' +
-      (q.revealed
-        ? (q.note ? '<div class="note" style="border-left-color:var(--gold)">' + esc(q.note) + '</div>' : '')
-        : answering(S.stats.answered, '人已作答'));
+      }).join('') + '</div>';
   }
 
   // 揭曉：八題排開，他說的那四句亮起來。
@@ -229,7 +243,7 @@
     },
 
     quiz: function () {
-      return '<h2>這句話是誰說的</h2>' + quizCard();
+      return quizHead() + quizCard();
     },
 
     // 分兩段。**一次全放會爆版**（720p 的高度放不下八句話 ＋ 四個痕跡），
@@ -401,11 +415,14 @@
     show('climbbar', S.phase.id === 'roads');
     show('waybar', S.phase.id === 'way');
     if (S.phase.id === 'quiz') {
+      // 一顆按鈕按到底：還沒揭就是「揭曉答案」，揭過了才變「下一題」。
       document.getElementById('qprev').disabled = S.quiz.idx <= 0;
-      document.getElementById('qreveal').disabled = !!S.quiz.revealed;
-      document.getElementById('qreveal').textContent = S.quiz.revealed ? '已揭答案' : '揭答案';
-      document.getElementById('qnext').disabled = S.quiz.idx >= S.quiz.total - 1;
-      document.getElementById('qnext').textContent = '下一題 →（' + (S.quiz.idx + 1) + '/' + S.quiz.total + '）';
+      var last = S.quiz.idx >= S.quiz.total - 1;
+      var step = document.getElementById('qstep');
+      step.textContent = !S.quiz.revealed
+        ? '揭曉答案（' + (S.quiz.idx + 1) + '/' + S.quiz.total + '）'
+        : (last ? '最後一題' : '下一題 →（' + (S.quiz.idx + 2) + '/' + S.quiz.total + '）');
+      step.disabled = S.quiz.revealed && last;
     }
     if (S.phase.id === 'reveal') {
       document.getElementById('tracebtn').disabled = S.revealStep >= 1;

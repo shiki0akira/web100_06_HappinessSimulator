@@ -30,7 +30,7 @@ window.WEEK_NOTES = {
   },
 
   quiz: {
-    lead: '八題，一題一題開。底下有「上一題／揭答案／下一題」。',
+    lead: '八題。底下那顆按鈕按到底：揭曉答案 → 下一題 → 揭曉答案……',
     count: function (s) {
       return s.answered + ' / ' + s.count + ' 已作答　（第 ' + s.quizDone + ' / ' + s.quizTotal + ' 題揭過）';
     },

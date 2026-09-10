@@ -118,11 +118,12 @@ export function revealQuiz(s) {
   return true;
 }
 
-// 換下一題。**不會順手揭答案** —— 揭答案是「揭答案」那一顆的事。
-export function quizNext(s) {
-  if (s.quizIdx >= QUIZ.length - 1) return false;
-  s.quizIdx += 1;
-  return true;
+// 一顆按鈕按到底：還沒揭就揭答案，揭過了才換下一題。
+// **不要拆成兩顆** —— 現場一定會有人只按「下一題」，那一題的分數就沒算到。
+export function quizStep(s) {
+  if (openList(s).indexOf(s.quizIdx) < 0) return revealQuiz(s);
+  if (s.quizIdx < QUIZ.length - 1) { s.quizIdx += 1; return true; }
+  return false;
 }
 
 // 回上一題。揭過的還是揭過的 —— 分數不會因為回頭再算一次。
@@ -251,7 +252,7 @@ export function applyHost(s, msg) {
     case 'next': return enterPhase(s, s.phaseIdx + 1);
     case 'prev': return enterPhase(s, s.phaseIdx - 1);
     case 'goto': return enterPhase(s, Number(msg.idx));
-    case 'quizNext': quizNext(s); return null;
+    case 'quizStep': quizStep(s); return null;
     case 'quizPrev': quizPrev(s); return null;
     case 'quizReveal': revealQuiz(s); return null;
     case 'quizGoto': quizGoto(s, msg.idx); return null;
@@ -299,7 +300,6 @@ function quizView(s) {
   if (revealed) {
     row.answer = q.answer;
     row.src = q.src || '';
-    row.note = q.note || '';
     row.jesus = !!q.jesus;
   }
   return row;
