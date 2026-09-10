@@ -49,8 +49,9 @@
 
     el.innerHTML = S.players.map(function (p) {
       var outer = p.outer == null ? 0 : p.outer;
+      // **不掛「新朋友」標籤。** 它就貼在名字旁邊，全場都看得到 ——
+      // 第一次來的人會覺得自己被標記了。要知道誰第一次來，看主持人備忘錄。
       var chips = [];
-      if (p.newcomer) chips.push('<span class="chip">新朋友</span>');
       // 猜句子那一頁只顯示「答了沒」，不顯示他選了什麼 ——
       // 先攤開會有人改成跟別人一樣。
       if (onQuiz) chips.push('<span class="chip' + (p.answered ? ' on' : '') + '">' + (p.answered ? '已作答' : '還沒答') + '</span>');
@@ -233,13 +234,14 @@
           : '<span class="muted">等人進來…</span>') + '</div>';
     },
 
+    // **大螢幕上不數第一次來的人，也不解釋他們拿到幾分。**
+    // 「其中 N 位第一次來」和「新朋友自動給 15」都是寫給主持人看的 ——
+    // 印在牆上就等於當著全場點名，第一次來的人會覺得自己被標記了。
+    // 那兩件事在主持人備忘錄裡。
     reconnect: function () {
-      var s = S.stats;
       return '<h2>打開上一次的卡片</h2>' +
         '<p class="lede">把卡片上的<b>幸福指數</b>和<b>幸福根基</b>打進去。</p>' +
-        answering(s.reconnected, '已接上') +
-        (s.newcomers ? '<p class="mono" style="margin-top:8px;color:var(--root-c)">其中 ' + s.newcomers + ' 位第一次來或忘記帶卡片</p>' : '') +
-        '<div class="note"><b>第一次來的人，幸福根基自動給 15。</b>　這條線不是比賽 —— 它從你來的第一天開始長。</div>';
+        answering(S.stats.reconnected, '已接上');
     },
 
     quiz: function () {

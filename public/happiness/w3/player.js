@@ -64,7 +64,7 @@
         return wait('已接上：' + me.outer + ' 分', '幸福根基 ' + (me.inner ? me.inner : '—'));
       }
       return '<h2>打開上一次的卡片</h2>' +
-        '<p><span class="sub">第一次來的話自由填 —— 按你現在的感覺給自己一個分數就好，第二格填 0，系統會幫你補上 15。</span></p>' +
+        '<p><span class="sub">第一次來的話自由填 —— 按你現在的感覺給自己一個分數就好，第二格填 0。</span></p>' +
         '<p class="fieldlbl">幸福指數</p>' +
         '<input id="oc" type="tel" inputmode="numeric" maxlength="3" placeholder="0 – 100" class="numin">' +
         (draft.byVisits
