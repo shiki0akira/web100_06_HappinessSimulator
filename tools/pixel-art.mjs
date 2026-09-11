@@ -642,3 +642,53 @@ function animatedSvg(w, h, css, body, label) {
   fs.writeFileSync(OUT_SHARED + '/superstar.svg', animatedSvg(W, H, css, body, '萬世巨星'));
   console.log('第三關：superstar.svg（十字架下、聚光燈裡的他）');
 }
+
+// ── 第三關：空的聚光燈 ──────────────────────────────────────────────────
+// 「我想先跟大家介紹一位萬世巨星」那一頁：燈亮著，十字架在後面，**光裡還沒有人**。
+// 玩完八題才翻到下一頁，他站進同一道光裡 —— 同一個構圖、同一個位置，只多了他。
+{
+  const OUT_SHARED = 'public/happiness/shared/art';
+  const W = 48, H = 58;
+  let body = '';
+
+  body += `<rect x="21" y="0" width="6" height="2" fill="${PAL.D}"/>`;
+  body += `<rect x="20" y="2" width="8" height="1" fill="${PAL.o}"/>`;
+  body += `<rect x="21" y="3" width="6" height="1" fill="${PAL.G}"/>`;
+
+  let beam = '';
+  for (let y = 4; y <= 54; y++) {
+    const k = (y - 4) / 50;
+    const w = 5 + k * 34;
+    const x = 24 - w / 2;
+    const op = (0.30 - k * 0.22).toFixed(3);
+    beam += `<rect x="${x.toFixed(1)}" y="${y}" width="${w.toFixed(1)}" height="1" fill="${PAL.G}" opacity="${op}"/>`;
+  }
+  body += `<g class="beam">${beam}</g>`;
+
+  const wood = PAL.n, edge = PAL.o;
+  body += `<rect x="22" y="6" width="4" height="42" fill="${wood}"/>`;
+  body += `<rect x="8" y="16" width="32" height="4" fill="${wood}"/>`;
+  body += `<rect x="22" y="6" width="4" height="1" fill="${edge}"/>`;
+  body += `<rect x="8" y="16" width="32" height="1" fill="${edge}"/>`;
+  body += `<rect x="22" y="20" width="1" height="28" fill="${edge}" opacity=".55"/>`;
+
+  // 地板 ＋ 光落在地上的一圈。**站的位置是空的。**
+  body += `<rect x="11" y="56" width="26" height="1" fill="${PAL.G}" opacity=".28"/>`;
+  body += `<rect x="4" y="57" width="40" height="1" fill="${PAL.w}" opacity=".45"/>`;
+
+  const star = (x, y, d) =>
+    `<g class="tw" style="animation-delay:${d}s">` +
+    `<rect x="${x}" y="${y}" width="1" height="1" fill="${PAL.G}"/>` +
+    `<rect x="${x - 1}" y="${y + 1}" width="3" height="1" fill="${PAL.G}"/>` +
+    `<rect x="${x}" y="${y + 2}" width="1" height="1" fill="${PAL.G}"/></g>`;
+  body += star(4, 10, 0) + star(43, 12, 0.7) + star(3, 38, 1.4) + star(44, 42, 2.1);
+
+  const css =
+    '.beam{animation:sp 1.8s steps(1) infinite}' +
+    '@keyframes sp{0%,49%{opacity:.55}50%,99%{opacity:1}100%{opacity:.55}}' +
+    '.tw{animation:tk 2.4s steps(1) infinite}' +
+    '@keyframes tk{0%,45%{opacity:.15}50%,95%{opacity:1}100%{opacity:.15}}';
+
+  fs.writeFileSync(OUT_SHARED + '/superstar-empty.svg', animatedSvg(W, H, css, body, '空的聚光燈'));
+  console.log('第三關：superstar-empty.svg（光裡還沒有人）');
+}

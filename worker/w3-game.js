@@ -3,13 +3,11 @@
 // 這一關完全不依賴前兩關 —— 上一次沒來的人不會少玩到任何東西。
 // 接過來的只有卡片上的兩條線。**第三關起第一次來的人，幸福根基直接給 15。**
 //
-// 一句話講完這一關：八句話猜猜看是誰說的（耶穌只佔四題），
-// 然後選一條路往上爬，三條梯子都構不到 —— 那時候第 8 題那句話再出現一次。
+// 一句話講完這一關：走三個岔路的人生模擬器（八個結局，分數刻意打亂），
+// 講罪＝射不中，介紹萬世巨星，玩八題猜句子，最後藉著他到父那裡去。
 import {
-  QUIZ, QUIZ_PLUS, TRACES, REVEAL,
-  SINS, SIN_ASK, SIN_TEACH, JUDGE,
-  LADDERS, ROADS, GOAL,
-  VERSE, WAY, PAID, PAID_PLUS, BAPTISM, WHOIS,
+  FORKS, ENDINGS, MAP, SIN, STAR, TRACES,
+  QUIZ, AFTERLIFE, LIFE, VERSE, CROSS, GRACE_INNER, WHOIS,
 } from './w3-data.js';
 
 // 幸福根基的規則七關都一樣。上限 95 不是 100 —— 你自己填不滿。
@@ -24,25 +22,25 @@ export const NEWCOMER_INNER = 15;
 export const PHASES = [
   { id: 'lobby',     tag: '入場',     title: '掃碼進場' },
   { id: 'reconnect', tag: '接關',     title: '輸入幸福指數' },
-  { id: 'quiz',      tag: '互動點 1', title: '這句話是誰說的' },
+  { id: 'map',       tag: '互動點 1', title: '人生模擬器 · 選一條路' },
+  { id: 'endings',   tag: '結算頁',   title: '你走到哪裡' },
+  { id: 'sin',       tag: '信息',     title: '為什麼我們做不出好的選擇' },
+  { id: 'star',      tag: '開場',     title: '萬世巨星' },
+  { id: 'quiz',      tag: '互動點 2', title: '這句話是誰說的' },
   { id: 'answers',   tag: '解答',     title: '八題的答案' },
-  { id: 'reveal',    tag: '揭曉',     title: '萬世巨星' },
-  { id: 'sins',      tag: '互動點 2', title: '這些算不算罪' },
-  { id: 'sin_teach', tag: '信息',     title: '罪不是一張壞事清單' },
-  { id: 'judge',     tag: '信息',     title: '死後還有審判' },
-  { id: 'roads',     tag: '互動點 3', title: '人生模擬器 · 三條路' },
-  { id: 'way',       tag: '高潮',     title: '救恩之路' },
-  { id: 'paid',      tag: '信息',     title: '耶穌代替我們償還罪債' },
+  { id: 'reveal',    tag: '揭曉',     title: '就是這一位' },
+  { id: 'afterlife', tag: '互動點 3', title: '天堂和地獄' },
+  { id: 'life',      tag: '信息',     title: '他來，是要叫我們得生命' },
   { id: 'verse',     tag: '經文',     title: '領受經文' },
-  { id: 'baptism',   tag: '信息',     title: '信而受洗，成為上帝的兒女' },
+  { id: 'cross',     tag: '高潮',     title: '藉著他到父那裡去' },
   { id: 'prayer',    tag: '互動點 4', title: '祝福禱告' },
   { id: 'card',      tag: '週卡',     title: '儲存模擬回憶' },
   { id: 'end',       tag: '預告',     title: '下週預告' },
 ];
 
 const phaseId = (s) => (PHASES[s.phaseIdx] || PHASES[0]).id;
-// 選梯子只有那一頁在開，而且爬完就不能改了 ——「這就是你選的路」靠它。
-const roadsOpen = (s) => phaseId(s) === 'roads' && !s.climbed;
+// 岔路只有那一頁在開，而且走過的岔路不能回頭改 —— 「你算不到結果」靠它。
+const mapOpen = (s) => phaseId(s) === 'map';
 
 export function createState() {
   return {
@@ -50,11 +48,12 @@ export function createState() {
     phaseIdx: 0,
     players: {},
     order: [],
-    quizIdx: 0,          // 現在開到第幾題
+    forkIdx: 0,          // 現在走到第幾個岔路（0–2）
+    walked: false,       // 八個結局結算過了沒
+    quizIdx: 0,          // 猜句子開到第幾題
     quizOpen: [],        // 哪幾題已經揭答案了
-    climbed: false,      // 三條梯子爬過了沒
-    paid: false,         // 第 10 頁的 +15 發過了沒
-    wayStep: 0,          // 救恩之路那一頁點到第幾段（0–2）
+    crossStep: 0,        // 藉著他到父那裡去：點到第幾段（0–2）
+    graced: false,       // 那 +5 發過了沒
     seq: 0,
   };
 }
@@ -64,10 +63,11 @@ const alive = (s) => s.order.map((id) => s.players[id]).filter(Boolean);
 const scored = (s) => alive(s).filter((p) => p.outer !== null);
 // 幸福根基只會漲。沒有任何事件扣得到它 —— 那是它唯一的意義。
 const grow = (p, n) => { p.inner = Math.min(INNER_CAP, (p.inner || 0) + n); };
-const ladderOf = (id) => LADDERS.find((l) => l.id === id) || null;
 // 防呆：舊版規則建立的房間還會在 DO 裡活六小時，別讓它們把房間打掛。
 const arr = (v) => (Array.isArray(v) ? v : []);
 const openList = (s) => (Array.isArray(s.quizOpen) ? s.quizOpen : (s.quizOpen = []));
+const pathOf = (p) => arr(p.path).join('');
+const endingOf = (key) => ENDINGS.find((e) => e.path === key) || null;
 
 export function addPlayer(s, name) {
   s.seq += 1;
@@ -82,13 +82,11 @@ export function addPlayer(s, name) {
     innerStart: 0,
     visits: 0,
     newcomer: false,
-    answers: [],          // 八題各選了哪一個（null = 還沒答）
-    correct: 0,           // 猜對幾題
-    road: null,           // 他選的那一條梯子
-    climbGain: 0,         // 爬上去加了幾分
-    climbFall: 0,         // 最後一階踩空掉了幾分
-    sins: [],             // 罪那一頁勾了哪幾個（不加分、不評分）
-    paid: 0,              // 第 10 頁全場加的那 15 分
+    path: [],             // 三個岔路各選了 A 還是 B
+    gain: 0,              // 結局加了幾分
+    answers: [],          // 八題各選了哪一個（不加分，只是他自己的記錄）
+    correct: 0,
+    vote: null,           // 天堂和地獄
     whois: [],            // 「我以前以為耶穌是」複選（只有本人看得到）
     hasBurden: false,     // 「現在我覺得他是」留在他自己的手機上
     prayed: false,
@@ -100,71 +98,75 @@ export function addPlayer(s, name) {
   return pid;
 }
 
+// ── 人生模擬器 ──────────────────────────────────────────────────────────
+// 三個岔路，主持人按「往前走」才推進。走過的不能回頭改。
+export function forkNext(s) {
+  if (s.forkIdx >= FORKS.length - 1) return false;
+  s.forkIdx += 1;
+  return true;
+}
+
+export function forkPrev(s) {
+  if (s.forkIdx <= 0) return false;
+  s.forkIdx -= 1;
+  return true;
+}
+
+// 走到結局那一頁才結算。**每一條都是加分，沒有人會掉** ——
+// 這一關接在被打到低點的第二關之後，全場往上是這一關的語氣。
+export function walk(s) {
+  if (s.walked) return false;
+  s.walked = true;
+  alive(s).forEach((p) => {
+    const e = endingOf(pathOf(p));
+    if (!e || p.outer === null) return;
+    p.gain = e.gain;
+    p.outer = clamp(p.outer + e.gain);
+  });
+  return true;
+}
+
 // ── 猜句子 ──────────────────────────────────────────────────────────────
-// 一題一題開，開完馬上揭答案 —— 八題全部答完才對答案會變成考試。
-// 揭答案的那一秒，猜對的人 +1。同一題揭兩次不會重複加分。
+// 一題一題開，開完馬上揭答案。**這一頁不加分** —— 幸福指數整晚只有地圖會動。
 export function revealQuiz(s) {
   const i = s.quizIdx;
   const q = QUIZ[i];
   if (!q || openList(s).indexOf(i) >= 0) return false;
   s.quizOpen.push(i);
   alive(s).forEach((p) => {
-    if (p.outer === null) return;
-    if (arr(p.answers)[i] === q.answer) {
-      p.outer = clamp(p.outer + QUIZ_PLUS);
-      p.correct = (p.correct || 0) + 1;
-    }
+    if (arr(p.answers)[i] === q.answer) p.correct = (p.correct || 0) + 1;
   });
   return true;
 }
 
 // 一顆按鈕按到底：還沒揭就揭答案，揭過了才換下一題。
-// **不要拆成兩顆** —— 現場一定會有人只按「下一題」，那一題的分數就沒算到。
+// **不要拆成兩顆** —— 現場一定會有人只按「下一題」，那一題就沒揭到。
 export function quizStep(s) {
   if (openList(s).indexOf(s.quizIdx) < 0) return revealQuiz(s);
   if (s.quizIdx < QUIZ.length - 1) { s.quizIdx += 1; return true; }
   return false;
 }
 
-// 回上一題。揭過的還是揭過的 —— 分數不會因為回頭再算一次。
 export function quizPrev(s) {
   if (s.quizIdx <= 0) return false;
   s.quizIdx -= 1;
   return true;
 }
 
-export function quizGoto(s, i) {
-  s.quizIdx = Math.max(0, Math.min(QUIZ.length - 1, Math.floor(Number(i) || 0)));
+// ── 藉著他到父那裡去 ───────────────────────────────────────────────────
+// 三段點出來。第三段點到的那一刻，全場幸福根基 +5。
+// **不綁任何按鈕、不綁走到哪個結局** —— 一綁上就變成用分數換恩典。
+export function crossStep(s) {
+  if (s.crossStep >= CROSS.steps.length - 1) return false;
+  s.crossStep += 1;
+  if (s.crossStep >= CROSS.steps.length - 1) grace(s);
   return true;
 }
 
-// ── 爬梯子 ──────────────────────────────────────────────────────────────
-// 爬四階往上，最後一階踩空掉下來。**淨值一定是正的** ——
-// 爬上去再掉下來，你還是比原來高一點：人自己努力是有價值的，只是到不了。
-// 這一關不准把任何人打到比進場低。
-export function climb(s) {
-  if (s.climbed) return false;
-  s.climbed = true;
-  alive(s).forEach((p) => {
-    const l = ladderOf(p.road);
-    if (!l || p.outer === null) return;
-    p.climbGain = l.climb;
-    p.climbFall = l.fall;
-    p.outer = clamp(p.outer + l.climb - l.fall);
-  });
-  return true;
-}
-
-// 第 10 頁：全場每一個人 +15。翻到那一頁就發，不綁任何按鈕 ——
-// 一綁上就變成用分數換恩典。只發一次。
-export function payDebt(s) {
-  if (s.paid) return false;
-  s.paid = true;
-  alive(s).forEach((p) => {
-    if (p.outer === null) return;
-    p.outer = clamp(p.outer + PAID_PLUS);
-    p.paid = PAID_PLUS;
-  });
+export function grace(s) {
+  if (s.graced) return false;
+  s.graced = true;
+  alive(s).forEach((p) => grow(p, GRACE_INNER));
   return true;
 }
 
@@ -172,9 +174,8 @@ export function payDebt(s) {
 export function enterPhase(s, idx) {
   s.phaseIdx = Math.max(0, Math.min(PHASES.length - 1, idx));
   const id = phaseId(s);
-  // 走到哪一頁，機制就跟著發生。爬梯子例外 —— 那要主持人親手按「開始爬」。
-  if (id === 'paid') payDebt(s);
-  if (id === 'way') s.wayStep = s.wayStep || 0;
+  // 走到結局那一頁就結算。爬不回頭 —— 翻走再翻回來不會重算。
+  if (id === 'endings') walk(s);
   return null;
 }
 
@@ -184,7 +185,6 @@ export function applyAction(s, pid, msg) {
   if (!p) return null;
   switch (msg.type) {
     // 接關：幸福指數照卡片上打，第二條線也照卡片上打。
-    // 忘記帶卡片的人才改用「這是你第幾次來」估。
     case 'reconnect': {
       p.outer = clamp(msg.value);
       p.outerStart = p.outer;
@@ -196,13 +196,23 @@ export function applyAction(s, pid, msg) {
         p.visits = p.inner > 0 ? 2 : 1;
       }
       // 第三關起：第一次來的人不掛 0，直接給 15。
-      // 「這條線不是比賽，它從你來的第一天開始長。」
       p.newcomer = p.inner === 0;
       if (p.newcomer) p.inner = NEWCOMER_INNER;
       p.innerStart = p.inner;
       break;
     }
-    // 猜句子：三選一。揭答案之前隨時可以改，揭了就定了。
+    // 岔路：A 或 B。主持人按「往前走」之前隨時可以改，走過的不能回頭。
+    case 'fork': {
+      if (!mapOpen(s) || s.walked) break;
+      const i = Math.max(0, Math.min(FORKS.length - 1, Math.floor(Number(msg.idx))));
+      if (i !== s.forkIdx) break;
+      const v = msg.value === 'B' ? 'B' : 'A';
+      const a = arr(p.path).slice();
+      a[i] = v;
+      p.path = a;
+      break;
+    }
+    // 猜句子：三選一。揭答案之前隨時可以改，揭了就定了。**不加分。**
     case 'quiz': {
       const i = Math.max(0, Math.min(QUIZ.length - 1, Math.floor(Number(msg.idx))));
       if (openList(s).indexOf(i) >= 0) break;
@@ -213,19 +223,10 @@ export function applyAction(s, pid, msg) {
       p.answers = a;
       break;
     }
-    // 罪那一頁：複選。**不加分、不扣分、不評分。**
-    case 'sins': {
-      const ids = arr(msg.ids).map(Number)
-        .filter((x, i, list) => x >= 0 && x < SINS.length && list.indexOf(x) === i);
-      p.sins = ids;
+    // 天堂和地獄。沒有標準答案，**不加分**。
+    case 'vote':
+      p.vote = Math.max(0, Math.min(AFTERLIFE.options.length - 1, Math.floor(Number(msg.value))));
       break;
-    }
-    // 選一條路。爬完就不能改了。
-    case 'road': {
-      if (!roadsOpen(s)) break;
-      p.road = ladderOf(msg.id) ? msg.id : null;
-      break;
-    }
     case 'verse':
       if (!p.receivedVerse) { p.receivedVerse = true; grow(p, INNER_VERSE); }
       break;
@@ -252,14 +253,11 @@ export function applyHost(s, msg) {
     case 'next': return enterPhase(s, s.phaseIdx + 1);
     case 'prev': return enterPhase(s, s.phaseIdx - 1);
     case 'goto': return enterPhase(s, Number(msg.idx));
+    case 'forkNext': forkNext(s); return null;
+    case 'forkPrev': forkPrev(s); return null;
     case 'quizStep': quizStep(s); return null;
     case 'quizPrev': quizPrev(s); return null;
-    case 'quizReveal': revealQuiz(s); return null;
-    case 'quizGoto': quizGoto(s, msg.idx); return null;
-    // 三條梯子一起往上爬。爬完停在同一個高度 —— 不夠。
-    case 'climb': climb(s); return null;
-    // 救恩之路那一頁分三段點出來，不要一次全亮
-    case 'wayStep': s.wayStep = Math.max(0, Math.min(2, (s.wayStep || 0) + 1)); return null;
+    case 'crossStep': crossStep(s); return null;
     case 'adjust': {
       const p = s.players[msg.pid];
       if (p && p.outer !== null) {
@@ -278,14 +276,49 @@ export function applyHost(s, msg) {
 }
 
 // ── 對外視圖 ────────────────────────────────────────────────────────────
-// 還沒揭答案的題目**不送出正確答案** —— 送出去就等於把答案印在手機上。
+// 還沒走完就**不送出結局的文字和分數** —— 送出去等於把答案印在手機上。
+function mapView(s) {
+  const ps = alive(s);
+  const i = s.forkIdx;
+  const f = FORKS[i];
+  return {
+    idx: i,
+    total: FORKS.length,
+    age: f.age,
+    a: f.a, b: f.b,
+    picked: ps.filter((p) => arr(p.path)[i]).length,
+    counts: {
+      A: ps.filter((p) => arr(p.path)[i] === 'A').length,
+      B: ps.filter((p) => arr(p.path)[i] === 'B').length,
+    },
+    // 走過的岔路攤開誰走了哪一邊 —— 那是地圖的形狀
+    trail: FORKS.map((ff, k) => (k < i || s.walked ? {
+      age: ff.age,
+      a: ps.filter((p) => arr(p.path)[k] === 'A').map((p) => p.name),
+      b: ps.filter((p) => arr(p.path)[k] === 'B').map((p) => p.name),
+    } : null)),
+  };
+}
+
+// 結局頁：八條全部攤開。**只看自己那一條是運氣，八條一起看才是「沒有規則」。**
+function endingsView(s) {
+  const ps = alive(s);
+  const shown = s.walked;
+  return ENDINGS.map((e) => ({
+    path: e.path,
+    // 短標籤：穩定 → 加班 → 投資
+    steps: e.path.split('').map((c, k) => (c === 'A' ? FORKS[k].a.short : FORKS[k].b.short)),
+    text: shown ? e.text : '',
+    gain: shown ? e.gain : null,
+    who: ps.filter((p) => pathOf(p) === e.path).map((p) => p.name),
+  }));
+}
+
 function quizView(s) {
   const open = openList(s);
   const i = s.quizIdx;
   const q = QUIZ[i];
   const revealed = open.indexOf(i) >= 0;
-  const counts = q.options.map((_, k) =>
-    alive(s).filter((p) => arr(p.answers)[i] === k).length);
   const row = {
     idx: i,
     total: QUIZ.length,
@@ -293,7 +326,7 @@ function quizView(s) {
     options: q.options,
     revealed,
     answered: alive(s).filter((p) => typeof arr(p.answers)[i] === 'number').length,
-    counts,
+    counts: q.options.map((_, k) => alive(s).filter((p) => arr(p.answers)[i] === k).length),
   };
   if (revealed) {
     row.answer = q.answer;
@@ -303,7 +336,6 @@ function quizView(s) {
   return row;
 }
 
-// 揭曉那一頁：八題全部攤開，哪幾句是他說的。
 function boardView(s) {
   const open = openList(s);
   return QUIZ.map((q, i) => ({
@@ -314,18 +346,10 @@ function boardView(s) {
   }));
 }
 
-function laddersView(s) {
-  const ps = alive(s);
-  return LADDERS.map((l) => ({
-    id: l.id, name: l.name, sub: l.sub, steps: l.steps,
-    climb: l.climb, fall: l.fall,
-    who: ps.filter((p) => p.road === l.id).map((p) => p.name),
-    n: ps.filter((p) => p.road === l.id).length,
-  }));
-}
-
-function sinCounts(s) {
-  return SINS.map((_, i) => alive(s).filter((p) => arr(p.sins).indexOf(i) >= 0).length);
+function voteCounts(s) {
+  const c = new Array(AFTERLIFE.options.length).fill(0);
+  alive(s).forEach((p) => { if (typeof p.vote === 'number') c[p.vote] += 1; });
+  return c;
 }
 
 function common(s) {
@@ -333,27 +357,25 @@ function common(s) {
     week: 3,
     phase: PHASES[s.phaseIdx],
     phaseIdx: s.phaseIdx,
+    forks: FORKS,
+    map: MAP,
+    mapNow: mapView(s),
+    endings: endingsView(s),
+    walked: !!s.walked,
+    sin: SIN,
+    star: STAR,
+    traces: TRACES,
     quiz: quizView(s),
     board: boardView(s),
-    traces: TRACES,
-    reveal: REVEAL,
-    sins: SINS,
-    sinAsk: SIN_ASK,
-    sinTeach: SIN_TEACH,
-    judge: JUDGE,
-    ladders: laddersView(s),
-    roads: ROADS,
-    goal: GOAL,
+    afterlife: AFTERLIFE,
+    life: LIFE,
     verse: VERSE,
-    way: WAY,
-    wayStep: s.wayStep || 0,
-    paidInfo: PAID,
-    paidPlus: PAID_PLUS,
-    baptism: BAPTISM,
+    cross: CROSS,
+    crossStep: s.crossStep || 0,
+    graced: !!s.graced,
+    graceInner: GRACE_INNER,
     whois: WHOIS,
-    climbed: !!s.climbed,
-    paid: !!s.paid,
-    roadsOpen: roadsOpen(s),
+    mapOpen: mapOpen(s),
   };
 }
 
@@ -372,11 +394,10 @@ export function hostView(s, roomCode) {
       pid: p.pid, name: p.name,
       outer: p.outer, outerStart: p.outerStart, inner: p.inner || 0,
       visits: p.visits, newcomer: p.newcomer,
+      path: arr(p.path), gain: p.gain || 0,
       answered: typeof arr(p.answers)[s.quizIdx] === 'number',
       correct: p.correct || 0,
-      road: p.road,
-      climbGain: p.climbGain || 0, climbFall: p.climbFall || 0,
-      sinsDone: arr(p.sins).length > 0,
+      vote: typeof p.vote === 'number' ? p.vote : null,
       hasBurden: !!p.hasBurden,
       receivedVerse: !!p.receivedVerse, cardDone: !!p.cardDone, adjust: p.adjust || 0,
     })),
@@ -384,12 +405,10 @@ export function hostView(s, roomCode) {
       count: ps.length,
       reconnected: sc.length,
       newcomers: ps.filter((p) => p.newcomer).length,
+      forkPicked: ps.filter((p) => arr(p.path)[s.forkIdx]).length,
       answered: ps.filter((p) => typeof arr(p.answers)[s.quizIdx] === 'number').length,
-      quizDone: openList(s).length,
-      quizTotal: QUIZ.length,
-      sinsDone: ps.filter((p) => arr(p.sins).length > 0).length,
-      sinCounts: sinCounts(s),
-      roadsPicked: ps.filter((p) => p.road).length,
+      voted: ps.filter((p) => typeof p.vote === 'number').length,
+      voteCounts: voteCounts(s),
       outerAvg: outers.length ? Math.round(outers.reduce((a, b) => a + b, 0) / outers.length) : null,
       startAvg: starts.length ? Math.round(starts.reduce((a, b) => a + b, 0) / starts.length) : null,
       innerAvg: ps.length ? Math.round(ps.reduce((a, b) => a + (b.inner || 0), 0) / ps.length) : 0,
@@ -410,11 +429,12 @@ export function playerView(s, pid, roomCode) {
     playerCount: alive(s).length,
     // 手機在等別人的時候要看得到進度。只有人數，不含任何人的答案。
     reconnected: alive(s).filter((x) => x.outer !== null).length,
+    forkPicked: alive(s).filter((x) => arr(x.path)[s.forkIdx]).length,
     answered: alive(s).filter((x) => typeof arr(x.answers)[s.quizIdx] === 'number').length,
-    sinsDone: alive(s).filter((x) => arr(x.sins).length > 0).length,
-    roadsPicked: alive(s).filter((x) => x.road).length,
+    voted: alive(s).filter((x) => typeof x.vote === 'number').length,
   };
   if (!p) return { ...base, me: null };
+  const e = s.walked ? endingOf(pathOf(p)) : null;
   return {
     ...base,
     me: {
@@ -422,10 +442,11 @@ export function playerView(s, pid, roomCode) {
       outer: p.outer, outerStart: p.outerStart,
       inner: p.inner || 0, innerCap: INNER_CAP,
       visits: p.visits, newcomer: p.newcomer,
+      path: arr(p.path),
+      gain: p.gain || 0,
+      ending: e ? { text: e.text, gain: e.gain } : null,
       answers: arr(p.answers), correct: p.correct || 0,
-      road: p.road, climbGain: p.climbGain || 0, climbFall: p.climbFall || 0,
-      sins: arr(p.sins),
-      paid: p.paid || 0,
+      vote: typeof p.vote === 'number' ? p.vote : null,
       whois: arr(p.whois),
       hasBurden: !!p.hasBurden, prayed: !!p.prayed,
       receivedVerse: !!p.receivedVerse, cardDone: !!p.cardDone,

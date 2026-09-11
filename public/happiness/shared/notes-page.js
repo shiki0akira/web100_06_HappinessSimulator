@@ -75,23 +75,27 @@
       }
     }
 
-    // 第三關的三條梯子：大家選完再按「開始爬」。
-    var climbc = el('climbctl');
-    if (climbc) {
-      climbc.hidden = S.phase.id !== 'roads';
-      if (!climbc.hidden) {
-        el('climbbtn').textContent = S.climbed ? '爬完了' : '開始爬（' + S.stats.roadsPicked + '/' + S.stats.count + ' 已選路）';
-        el('climbbtn').disabled = !!S.climbed;
+    // 第三關的人生模擬器：大家選完再往前走。
+    var mapc = el('mapctl');
+    if (mapc) {
+      mapc.hidden = S.phase.id !== 'map' || !S.mapNow;
+      if (!mapc.hidden) {
+        var lastFork = S.mapNow.idx >= S.mapNow.total - 1;
+        el('forkprev').disabled = S.mapNow.idx <= 0;
+        el('forknext').textContent = lastFork
+          ? '走完了，按下一頁'
+          : '往前走 →（' + S.stats.forkPicked + '/' + S.stats.count + ' 已選）';
+        el('forknext').disabled = lastFork;
       }
     }
 
-    // 第三關的救恩之路：一段一段點出來，不要一次全亮。
-    var wayc = el('wayctl');
-    if (wayc) {
-      wayc.hidden = S.phase.id !== 'way';
-      if (!wayc.hidden) {
-        el('waystep').textContent = S.wayStep >= 2 ? '三段都出來了' : '下一段（' + ((S.wayStep || 0) + 1) + '/3）';
-        el('waystep').disabled = S.wayStep >= 2;
+    // 第三關的「藉著他到父那裡去」：一段一段點出來，不要一次全亮。
+    var crossc = el('crossctl');
+    if (crossc) {
+      crossc.hidden = S.phase.id !== 'cross';
+      if (!crossc.hidden) {
+        el('crossstep').textContent = S.crossStep >= 2 ? '三段都出來了' : '下一段（' + ((S.crossStep || 0) + 1) + '/3）';
+        el('crossstep').disabled = S.crossStep >= 2;
       }
     }
 
@@ -153,8 +157,9 @@
     });
     on('quizstep', function () { post('quizStep'); });
     on('quizprev', function () { post('quizPrev'); });
-    on('climbbtn', function () { post('climb'); });
-    on('waystep', function () { post('wayStep'); });
+    on('forkprev', function () { post('forkPrev'); });
+    on('forknext', function () { post('forkNext'); });
+    on('crossstep', function () { post('crossStep'); });
     on('flipnext', function () { post('flipNext'); });
     on('flipall', function () {
       if (confirm('剩下的全部翻開？')) post('flipAll');

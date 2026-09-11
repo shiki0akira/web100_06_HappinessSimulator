@@ -62,18 +62,17 @@
   .lotchk.road { border-color: var(--gold); }
   .lotchk.road b { font-size: 20px; }
 
-  /* 選好的那一條路 */
-  .picked { margin-top: 16px; padding: 20px; border: 3px solid var(--gold); color: var(--gold);
-    font-size: 24px; font-weight: 900; text-align: center; }
+  /* 他自己走過的路 */
+  .mypath { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 14px; }
+  .mypath span { padding: 4px 10px; border: 3px solid var(--edge-soft); background: var(--surface);
+    font-size: 16px; font-weight: 700; }
+  .mypath i { font-style: normal; color: var(--ink-3); }
 
-  /* 爬梯子：一階一階亮起來 */
-  .steps { display: flex; flex-direction: column-reverse; gap: 8px; margin-top: 18px; }
-  .st { padding: 13px 14px; border: 3px solid var(--edge-soft); background: var(--surface-2);
-    font-size: 18px; font-weight: 700; opacity: .3; transition: opacity .2s, border-color .2s; }
-  .st.lit { opacity: 1; border-color: var(--root-c); background: var(--surface); }
-  .short { margin-top: 16px; text-align: center; font-size: 34px; font-weight: 900;
-    letter-spacing: .2em; color: var(--vol); opacity: 0; transition: opacity .4s; }
-  .short.on { opacity: 1; }
+  /* 他走到的那個結局 */
+  .ending { margin-top: 16px; padding: 18px; border: 3px solid var(--gold);
+    font-size: 21px; font-weight: 700; line-height: 1.8; }
+
+  .crossline { margin-top: 14px; font-size: 22px; font-weight: 900; }
 
   .score { margin-top: 16px; padding: 16px; border: 3px solid var(--root-c);
     background: var(--root-soft); color: var(--root-c); text-align: center;

@@ -12,7 +12,6 @@
   };
 
   var WEEK = 3;
-  var CLIMB_MS = 4000;
   var ROOM = Room.readCode();
   // 測試用：同一台電腦要開多個玩家，就在網址後面加 &seat=2、&seat=3……
   var SEAT = new URLSearchParams(location.search).get('seat') || '';
@@ -42,13 +41,21 @@
   function join(name) { if (src) src.join(name); }
 
   // 送出之前只活在這支手機上的暫存
-  var draft = { byVisits: false, sins: [], sinsSent: false, whois: [] };
+  var draft = { byVisits: false, whois: [] };
 
   // ── 畫面 ─────────────────────────────────────────────────────────────
   var wait = function (msg, sub) {
     return '<div class="wait"><div class="dot">. . .</div><p style="font-size:21px;color:var(--ink-2)">' +
       esc(msg) + '</p>' + (sub ? '<p style="font-size:17px">' + esc(sub) + '</p>' : '') + '</div>';
   };
+
+  // 他自己走過的路。走到哪裡就印到哪裡。
+  function myPath(me) {
+    if (!me.path.length) return '';
+    return '<div class="mypath">' + me.path.map(function (c, k) {
+      return '<span>' + esc(c === 'A' ? S.forks[k].a.short : S.forks[k].b.short) + '</span>';
+    }).join('<i>→</i>') + '</div>';
+  }
 
   var views = {
     lobby: function (me) {
@@ -77,7 +84,43 @@
           (draft.byVisits ? '我有卡片，改填幸福根基' : '忘記帶卡片？改填「這是你第幾次來」') + '</button>';
     },
 
-    // 猜句子：三選一，點一下就好。揭答案之前隨時可以改。
+    // 岔路：兩顆按鈕。主持人往前走之前隨時可以改。
+    map: function (me) {
+      var m = S.mapNow;
+      var mine = me.path[m.idx];
+      return '<div class="qn">' + esc(m.age) + '　岔路 ' + (m.idx + 1) + ' / ' + m.total + '</div>' +
+        myPath(me) +
+        '<div class="lotgrid">' +
+          '<div class="lotchk road' + (mine === 'A' ? ' on' : '') + '" data-fork="A">' +
+            '<span><b>' + esc(m.a.text) + '</b></span></div>' +
+          '<div class="lotchk road' + (mine === 'B' ? ' on' : '') + '" data-fork="B">' +
+            '<span><b>' + esc(m.b.text) + '</b></span></div>' +
+        '</div>' +
+        (mine ? '<p class="privacy">選好了，主持人往前走之前都可以改。</p>'
+              : '<p class="privacy">選你自己會選的那一個 —— 不用想哪個是對的。</p>');
+    },
+
+    // 結局：只給他自己那一條。八條要在大螢幕上一起看才有意思。
+    endings: function (me) {
+      if (!me.ending) return '<h2>你走到哪裡</h2>' + wait('看大螢幕', '這一輪你沒有走完');
+      return '<h2>你走到哪裡</h2>' +
+        myPath(me) +
+        '<div class="ending">' + esc(me.ending.text) + '</div>' +
+        '<div class="hit up">幸福指數 +' + me.ending.gain + '</div>' +
+        wait('看大螢幕', '八條路都在上面');
+    },
+
+    sin: function () {
+      return '<div class="misskey">' + esc(S.sin.key) + '</div>' + wait('聽主持人說');
+    },
+
+    star: function () {
+      return '<h2>' + esc(S.star.teaseTitle) + '</h2>' +
+        '<p>' + esc(S.star.teaseKicker) + '</p>' +
+        wait('看大螢幕');
+    },
+
+    // 猜句子：三選一，點一下就好。**不加分。**
     quiz: function (me) {
       var q = S.quiz;
       var mine = me.answers[q.idx];
@@ -92,7 +135,7 @@
             '<span class="lbl">答案</span><b>' + esc(q.options[q.answer]) + '</b>' +
             '<span class="src">' + esc(q.src) + '</span></div>' +
           (picked
-            ? '<p class="myans">' + (right ? '你答對了　<b>+1</b>' : '你選的是「' + esc(q.options[mine]) + '」') + '</p>'
+            ? '<p class="myans">' + (right ? '你答對了' : '你選的是「' + esc(q.options[mine]) + '」') + '</p>'
             : '<p class="myans">這一題你沒有答。</p>') +
           wait('看大螢幕');
       }
@@ -112,81 +155,26 @@
     },
 
     reveal: function () {
-      return '<h2>萬世巨星</h2>' +
-        '<p>' + esc(S.reveal.lead) + '</p>' +
+      return '<h2>' + esc(S.star.title) + '</h2>' +
         '<div class="quotelist">' + S.board.filter(function (b) { return b.jesus; }).map(function (b) {
           return '<div class="qrow">「' + esc(b.text) + '」</div>';
         }).join('') + '</div>' +
         wait('看大螢幕');
     },
 
-    // 罪：複選。不加分、不扣分、不評分。
-    sins: function (me) {
-      var chosen = draft.sinsSent ? me.sins : draft.sins;
-      return '<h2>' + esc(S.sinAsk.title) + '</h2>' +
-        '<p>' + esc(S.sinAsk.lead) + '</p>' +
-        '<div class="lotgrid">' + S.sins.map(function (o, i) {
-          var on = chosen.indexOf(i) >= 0;
-          return '<div class="lotchk' + (on ? ' on' : '') + '" data-sin="' + i + '">' +
-            '<span class="box"></span><span>' + esc(o) + '</span></div>';
+    afterlife: function (me) {
+      if (me.vote !== null) return wait('已投票：' + S.afterlife.options[me.vote], '看大螢幕');
+      return '<div class="claim">' + esc(S.afterlife.ask) + '</div>' +
+        '<div class="lotgrid">' + S.afterlife.options.map(function (o, i) {
+          return '<button class="btn fullbtn" style="margin-top:0" data-v="' + i + '">' + esc(o) + '</button>';
         }).join('') + '</div>' +
-        '<button class="btn primary fullbtn" id="savesins">' + (draft.sinsSent ? '更新' : '送出') + '</button>' +
-        '<p class="privacy">沒有標準答案，也不加分。憑你自己的感覺勾。</p>';
+        '<p class="privacy">沒有標準答案。</p>';
     },
 
-    sin_teach: function () {
-      return '<div class="misskey">' + esc(S.sinTeach.key) + '</div>' + wait('聽主持人說');
-    },
-
-    judge: function () {
-      return '<h2>' + esc(S.judge.title) + '</h2>' + wait('聽主持人說');
-    },
-
-    // 三條路：選一條，然後全場一起往上爬。
-    roads: function (me) {
-      if (S.climbed) {
-        var mine = null;
-        S.ladders.forEach(function (l) { if (l.id === me.road) mine = l; });
-        if (!mine) return '<h2>人生模擬器</h2>' + wait('看大螢幕', '這一輪你沒有選路');
-        return '<h2>' + esc(mine.name) + '</h2>' +
-          '<div class="steps" id="steps">' + mine.steps.map(function (t, i) {
-            return '<div class="st" data-i="' + i + '">' + esc(t) + '</div>';
-          }).join('') + '</div>' +
-          '<div class="short" id="short">' + esc(S.roads.short) + '</div>' +
-          (me.climbGain
-            ? '<div class="hit up">+' + me.climbGain + '　然後 −' + me.climbFall + '</div>'
-            : '');
-      }
-      if (me.road) {
-        var name = '';
-        S.ladders.forEach(function (l) { if (l.id === me.road) name = l.name; });
-        return '<h2>你選了</h2>' +
-          '<div class="picked">' + esc(name) + '</div>' +
-          '<button class="btn ghost fullbtn" id="reroad">改一條</button>' +
-          '<p class="privacy">爬上去之後就不能改了。</p>';
-      }
-      return '<h2>' + esc(S.roads.title) + '</h2>' +
-        '<p>' + esc(S.roads.lead) + '　<span class="sub">三條都試過的話，選你花最多力氣的那一條。</span></p>' +
-        '<div class="lotgrid">' + S.ladders.map(function (l) {
-          return '<div class="lotchk road" data-road="' + esc(l.id) + '">' +
-            '<span><b>' + esc(l.name) + '</b><span class="sub">' + esc(l.sub) + '</span></span></div>';
-        }).join('') + '</div>';
-    },
-
-    way: function () {
-      var h = S.verse.halves;
-      return '<div class="verse-p half' + (S.wayStep >= 2 ? ' second' : '') + '">' +
-        '<blockquote>「<span class="on">' + esc(h[0]) + '</span>' +
-          '<span class="' + (S.wayStep >= 2 ? 'on' : 'off') + '">' + esc(h[1]) + '</span>」</blockquote>' +
-        '<span class="ref">' + esc(S.verse.ref) + '</span></div>' +
-        wait('看大螢幕');
-    },
-
-    paid: function (me) {
-      return '<h2>' + esc(S.paidInfo.title) + '</h2>' +
-        '<div class="cross">✝</div>' +
-        '<p style="text-align:center">' + esc(S.paidInfo.line) + '</p>' +
-        (me.paid ? '<div class="hit up">幸福指數 +' + me.paid + '</div>' : '');
+    life: function () {
+      return '<div class="verse-p"><span class="ref">' + esc(S.life.ref) + '</span>' +
+        '<blockquote>「' + esc(S.life.quote) + '」</blockquote></div>' +
+        wait('聽主持人說');
     },
 
     verse: function (me) {
@@ -199,16 +187,21 @@
     },
 
     // 這一頁手機上沒有任何按鈕。今天不做決志、不舉手、不點名。
-    baptism: function () {
-      return '<h2>' + esc(S.baptism.title) + '</h2>' +
-        S.baptism.lines.map(function (l) { return '<p>' + esc(l) + '</p>'; }).join('') +
-        '<div class="close">' + esc(S.baptism.close) + '</div>';
+    cross: function (me) {
+      return '<h2>' + esc(S.cross.title) + '</h2>' +
+        S.cross.steps.slice(0, S.crossStep + 1).map(function (st) {
+          return '<p class="crossline"><b>' + esc(st.head) + '</b></p>';
+        }).join('') +
+        (S.crossStep >= 2
+          ? '<div class="hit up">幸福根基 +' + S.graceInner + '</div>' +
+            '<div class="close">' + esc(S.cross.close) + '</div>'
+          : wait('看大螢幕'));
     },
 
     // 祝福禱告：上面複選「以前」，下面自己寫「現在」。兩格都只有本人看得到。
     prayer: function (me) {
       var mine = readLine();
-      var chosen = me.hasBurden || me.whois.length ? me.whois : draft.whois;
+      var chosen = (me.hasBurden || me.whois.length) ? me.whois : draft.whois;
       return '<h2>祝福禱告</h2>' +
         '<p class="fieldlbl">' + esc(S.whois.ask) + '<span class="sub">可以複選，點一點就好</span></p>' +
         '<div class="lotgrid">' + S.whois.options.map(function (o, i) {
@@ -265,31 +258,17 @@
       if (tm) tm.onclick = function () { draft.byVisits = !draft.byVisits; sig = ''; render(); };
     }
 
+    document.querySelectorAll('[data-fork]').forEach(function (d) {
+      d.onclick = function () { act('fork', { idx: S.mapNow.idx, value: d.dataset.fork }); };
+    });
+
     document.querySelectorAll('[data-q]').forEach(function (b) {
       b.onclick = function () { act('quiz', { idx: S.quiz.idx, value: Number(b.dataset.q) }); };
     });
 
-    document.querySelectorAll('[data-sin]').forEach(function (d) {
-      d.onclick = function () {
-        var i = Number(d.dataset.sin);
-        if (draft.sinsSent) { draft.sins = me.sins.slice(); draft.sinsSent = false; }
-        var at = draft.sins.indexOf(i);
-        if (at >= 0) draft.sins.splice(at, 1); else draft.sins.push(i);
-        sig = '';
-        render();
-      };
+    document.querySelectorAll('[data-v]').forEach(function (b) {
+      b.onclick = function () { act('vote', { value: Number(b.dataset.v) }); };
     });
-    var ss = document.getElementById('savesins');
-    if (ss) ss.onclick = function () {
-      draft.sinsSent = true;
-      act('sins', { ids: draft.sins });
-    };
-
-    document.querySelectorAll('[data-road]').forEach(function (d) {
-      d.onclick = function () { act('road', { id: d.dataset.road }); };
-    });
-    var rr = document.getElementById('reroad');
-    if (rr) rr.onclick = function () { act('road', { id: null }); };
 
     document.querySelectorAll('[data-who]').forEach(function (d) {
       d.onclick = function () {
@@ -348,30 +327,7 @@
     }
   }
 
-  // 爬梯子：手機上的階梯跟著大螢幕一起亮，跑完那一下踩空。
-  var climbTimer = null;
-  function runClimb(instant) {
-    var box = document.getElementById('steps');
-    if (!box) return;
-    var sts = box.querySelectorAll('.st');
-    var shortEl = document.getElementById('short');
-    clearInterval(climbTimer);
-    var show = function (n) {
-      for (var i = 0; i < sts.length; i++) sts[i].classList.toggle('lit', i < n);
-      if (shortEl) shortEl.classList.toggle('on', n >= sts.length);
-    };
-    if (instant) { show(sts.length); return; }
-    show(0);
-    var t0 = Date.now();
-    climbTimer = setInterval(function () {
-      var k = Math.min(1, (Date.now() - t0) / CLIMB_MS);
-      show(Math.min(sts.length, Math.floor(k / 0.85 * sts.length) + (k > 0 ? 1 : 0)));
-      if (k >= 1) clearInterval(climbTimer);
-    }, 80);
-  }
-
   // ── 主渲染 ───────────────────────────────────────────────────────────
-  var lastClimbed = false;
   function render() {
     if (!S) return;
     var me = S.me;
@@ -405,21 +361,16 @@
     document.getElementById('innerbar').style.width = me.inner + '%';
 
     var next = [
-      S.phase.id, S.quiz.idx, S.quiz.revealed, S.climbed, S.paid, S.wayStep,
-      me.outer, me.inner, me.visits, me.answers.join(','), me.road,
-      me.sins.join(','), me.whois.join(','),
-      me.receivedVerse, me.cardDone, me.hasBurden,
-      draft.byVisits, draft.sins.join(','), draft.sinsSent,
+      S.phase.id, S.mapNow.idx, S.walked, S.quiz.idx, S.quiz.revealed, S.crossStep, S.graced,
+      me.outer, me.inner, me.visits, me.path.join(''), me.answers.join(','), me.vote,
+      me.whois.join(','), me.receivedVerse, me.cardDone, me.hasBurden,
+      draft.byVisits,
     ].join('|');
     if (next !== sig) {
       sig = next;
       screen.innerHTML = (views[S.phase.id] || function () { return wait('看大螢幕'); })(me);
       bind(me);
-      // 爬梯子的動畫：climbed 從 false 變 true 的那一刻才跑，翻回來不重跑
-      if (S.phase.id === 'roads' && S.climbed) runClimb(lastClimbed);
-      else clearInterval(climbTimer);
     }
-    lastClimbed = S.climbed;
   }
 
   // 沒有房號就先問房號（掃 QR 進來的話網址上就有，這頁不會出現）

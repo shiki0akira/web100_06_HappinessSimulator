@@ -155,57 +155,81 @@
   .judge h2 { font-size: min(calc(96px * var(--u)), 13vh); letter-spacing: .12em; }
   .judge p { margin-top: calc(20px * var(--u)); font-size: min(calc(26px * var(--u)), 3.4vh); color: var(--ink-2); }
 
-  /* ── 人生模擬器：三條梯子 ─────────────────────────────────────────── */
-  .climb { flex: 1; display: flex; flex-direction: column; min-height: 0;
-    margin-top: min(calc(10px * var(--u)), 1.4vh); }
-  /* 上面那一格。爬的時候是空的、不標字 —— 跟第一關的 ??? 是同一招。 */
-  .goal { align-self: center; width: min(calc(300px * var(--u)), 34vw);
-    height: min(calc(64px * var(--u)), 8vh); flex: none;
-    border: 4px dashed var(--gold); display: flex; align-items: center; justify-content: center;
-    background: var(--surface); box-shadow: 6px 6px 0 var(--hard); }
-  .goal .q { font-family: var(--pixel); font-size: min(calc(34px * var(--u)), 4.4vh); color: var(--gold); }
-  .goal b { font-size: min(calc(34px * var(--u)), 4.4vh); color: var(--root-c); letter-spacing: .1em; }
-  .goal.on { border-style: solid; border-color: var(--root-c); }
-  .goal.ready { cursor: pointer; }
-  .goal.ready:hover { transform: translate(-2px, -2px); box-shadow: 8px 8px 0 var(--hard); }
-  /* 梯子和上面那一格之間的那一段空白，就是「不夠」 */
-  .gapline { flex: none; height: min(calc(56px * var(--u)), 7.5vh);
-    display: flex; align-items: center; justify-content: center;
-    font-size: min(calc(40px * var(--u)), 5.4vh); font-weight: 900; color: var(--vol);
-    letter-spacing: .2em;
-    background-image: repeating-linear-gradient(var(--edge-soft) 0 6px, transparent 6px 14px);
-    background-size: 4px 100%; background-position: center; background-repeat: no-repeat; }
-  .ladders { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: calc(14px * var(--u)); min-height: 0; }
-  .ladder { display: flex; flex-direction: column; min-height: 0; }
-  .rungs { flex: 1; display: flex; flex-direction: column; justify-content: flex-end;
-    gap: min(calc(6px * var(--u)), .9vh); min-height: 0; }
-  .rung { display: flex; align-items: center; gap: calc(10px * var(--u));
-    border: 3px solid var(--edge-soft); background: var(--surface-2);
-    padding: min(calc(7px * var(--u)), 1vh) calc(10px * var(--u));
-    opacity: .3; transition: opacity .18s, border-color .18s, transform .18s; }
-  .rung .s { flex: none; font-family: var(--pixel); font-size: calc(13px * var(--u)); color: var(--ink-3); }
-  .rung .t { font-size: min(calc(16px * var(--u)), 2.3vh); font-weight: 700; line-height: 1.35; }
-  .rung.lit { opacity: 1; border-color: var(--root-c); background: var(--surface); box-shadow: 4px 4px 0 var(--hard); }
-  /* 最後一階踩空 */
-  .rung.slip { border-color: var(--vol); border-style: dashed; opacity: .6; transform: translateY(6px); box-shadow: none; }
-  .rung.slip .t { color: var(--vol); }
-  .sign { flex: none; margin-top: calc(10px * var(--u)); border-left: 10px solid var(--gold);
-    background: var(--surface); border-top: 3px solid var(--edge); border-right: 3px solid var(--edge);
-    border-bottom: 3px solid var(--edge); padding: min(calc(8px * var(--u)), 1.2vh) calc(12px * var(--u)); }
-  .sign b { display: block; font-size: min(calc(21px * var(--u)), 3vh); line-height: 1.3; }
-  .sign span { display: block; margin-top: 3px; font-size: min(calc(13px * var(--u)), 1.9vh); color: var(--ink-3); }
-  .who { flex: none; display: flex; flex-wrap: wrap; gap: 6px; margin-top: calc(8px * var(--u)); }
-  .who span { padding: 2px 8px; border: 2px solid var(--edge-soft); background: var(--surface);
-    font-size: calc(14px * var(--u)); font-weight: 700; }
-  .who .none { border: 0; background: none; color: var(--ink-3); font-weight: 500; }
+  /* ── 人生模擬器：三個岔路 ─────────────────────────────────────────── */
+  /* 走過的岔路留在上面，那是地圖的形狀 */
+  .trail { margin-top: min(calc(10px * var(--u)), 1.4vh); border-left: 6px solid var(--edge-soft);
+    padding-left: calc(14px * var(--u)); }
+  .trailrow { display: flex; align-items: baseline; gap: calc(16px * var(--u));
+    padding: min(calc(5px * var(--u)), .8vh) 0; }
+  .trailrow .age { flex: none; width: calc(58px * var(--u)); font-family: var(--pixel);
+    font-size: calc(14px * var(--u)); color: var(--ink-3); }
+  .trailrow .side { flex: 1; min-width: 0; font-size: min(calc(16px * var(--u)), 2.3vh); font-weight: 700; }
+  .trailrow .side i { display: block; font-style: normal; font-weight: 500;
+    font-size: min(calc(14px * var(--u)), 2vh); color: var(--ink-3);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* 現在這一個岔路：兩個大格子 */
+  .forkbox { margin-top: min(calc(14px * var(--u)), 2vh); }
+  .forkage { font-family: var(--pixel); font-size: calc(24px * var(--u)); color: var(--gold); }
+  .forkage small { font-size: calc(15px * var(--u)); color: var(--ink-3); }
+  .forks { display: grid; grid-template-columns: 1fr 1fr; gap: calc(16px * var(--u));
+    margin-top: min(calc(12px * var(--u)), 1.8vh); }
+  .fk { background: var(--surface); border: 4px solid var(--edge); box-shadow: 6px 6px 0 var(--hard);
+    padding: min(calc(20px * var(--u)), 3vh) calc(18px * var(--u)); }
+  .fk .tag2 { display: inline-block; font-family: var(--pixel); font-size: calc(16px * var(--u));
+    color: var(--gold); border: 3px solid var(--gold); padding: 1px 8px; margin-bottom: calc(8px * var(--u)); }
+  .fk b { display: block; font-size: min(calc(26px * var(--u)), 3.6vh); line-height: 1.5; }
+
+  /* 結局頁：八條全部攤開。只看自己那一條是運氣，八條一起看才是「沒有規則」。 */
+  .endlist { margin-top: min(calc(12px * var(--u)), 1.8vh); border-top: 3px solid var(--edge-soft); }
+  /* 八條一定要塞在一個畫面裡 —— 只看自己那一條就沒有「沒有規則」這件事了，
+     所以這裡寧可字小一點，也不能捲動。 */
+  .endrow { display: flex; align-items: baseline; gap: calc(14px * var(--u));
+    padding: min(calc(4px * var(--u)), .6vh) 0; border-bottom: 2px dashed var(--edge-soft); }
+  .endrow .steps { flex: none; width: calc(190px * var(--u)); display: flex; align-items: baseline; gap: 4px; }
+  .endrow .steps .st { font-size: min(calc(15px * var(--u)), 2.1vh); font-weight: 700; }
+  .endrow .steps i { font-style: normal; color: var(--ink-3); font-size: calc(12px * var(--u)); }
+  .endrow .txt { flex: 1; min-width: 0; font-size: min(calc(16px * var(--u)), 2.2vh); color: var(--ink-2);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .endrow .gain { flex: none; width: calc(56px * var(--u)); text-align: right;
+    font-family: var(--pixel); font-size: min(calc(20px * var(--u)), 2.8vh); color: var(--root-c); }
+  .endrow .who { flex: none; width: calc(140px * var(--u)); text-align: right;
+    font-size: min(calc(15px * var(--u)), 2.1vh); font-weight: 700; color: var(--ink-3);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* 有人走到的那一條亮起來 */
+  .endrow.mine { background: var(--surface); }
+  .endrow.mine .txt, .endrow.mine .steps .st { color: var(--ink); }
+  .endrow.mine .who { color: var(--vol); }
+  .endlist.dense .endrow { padding: min(calc(5px * var(--u)), .8vh) 0; }
+  .endline { margin-top: min(calc(10px * var(--u)), 1.4vh);
+    font-size: min(calc(28px * var(--u)), 3.8vh); font-weight: 900; }
+
+  /* 罪：那一句是這一段的主角 */
+  .sinlines { margin-top: min(calc(14px * var(--u)), 2vh); }
+  .sinlines p { margin: 0 0 min(calc(10px * var(--u)), 1.4vh);
+    font-size: min(calc(22px * var(--u)), 3.1vh); line-height: 1.8; color: var(--ink-2); }
+
+  /* 萬世巨星的開場白：燈亮著，光裡還沒有人 */
+  .teaser { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .teaser .big-title { font-size: min(calc(72px * var(--u)), 9vh); letter-spacing: .14em; }
+  .teaseart img { display: block; width: min(calc(200px * var(--u)), 34vh); height: auto;
+    image-rendering: pixelated; margin-top: min(calc(10px * var(--u)), 1.4vh); }
+
+  /* 藉著他到父那裡去：三段點出來 */
+  .steps3 { margin-top: min(calc(16px * var(--u)), 2.2vh); display: grid;
+    gap: min(calc(12px * var(--u)), 1.8vh); }
+  .s3 { border-left: 10px solid var(--edge-soft); padding-left: calc(16px * var(--u));
+    opacity: .3; transition: opacity .2s, border-color .2s; }
+  .s3 b { display: block; font-size: min(calc(30px * var(--u)), 4.2vh); line-height: 1.4; }
+  .s3 span { display: block; margin-top: calc(6px * var(--u));
+    font-size: min(calc(18px * var(--u)), 2.5vh); color: var(--ink-2); line-height: 1.7; }
+  .s3.on { opacity: 1; border-left-color: var(--root-c); }
+
   .afterhd { display: flex; align-items: baseline; gap: calc(28px * var(--u)); flex-wrap: wrap; }
   .afterhd .stat { font-family: var(--pixel); font-size: min(calc(34px * var(--u)), 4.4vh); line-height: 1; }
   .afterhd .stat > span { font-family: var(--sans); font-weight: 700; font-size: calc(14px * var(--u));
     color: var(--ink-3); margin-right: 8px; }
-  .afterhd .stat.drop { color: var(--vol); }
   .afterhd .stat.up { color: var(--root-c); }
-  .afterhd .flipcount { font-family: var(--pixel); font-size: calc(14px * var(--u)); color: var(--ink-3); }
 
   /* 救恩之路：一道階梯從上面降下來，接到地面 */
   .stair { flex: 1; display: flex; align-items: center; justify-content: center; }
@@ -304,13 +328,16 @@
     <button class="btn" data-cmd="prev">← 上一頁</button>
     <button class="btn primary" data-cmd="next">下一頁 →</button>
     <select id="jump"></select>
-    <!-- 猜句子那一頁才出現。照第一關拍賣控制列的做法 —— 現場不要靠鍵盤。 -->
+    <!-- 每一頁該有的控制鈕。照第一關拍賣控制列的做法 —— 現場不要靠鍵盤。 -->
+    <span id="mapctl" style="display:none;gap:8px;">
+      <button class="btn" data-cmd="forkPrev" id="fprev">← 上一個岔路</button>
+      <button class="btn primary" data-cmd="forkNext" id="fnext">往前走 →</button>
+    </span>
     <span id="quizctl" style="display:none;gap:8px;">
       <button class="btn" data-cmd="quizPrev" id="qprev">← 上一題</button>
       <button class="btn primary" data-cmd="quizStep" id="qstep">揭曉答案</button>
     </span>
-    <button class="btn" data-cmd="climb" id="climbbar" style="display:none">開始爬</button>
-    <button class="btn" data-cmd="wayStep" id="waybar" style="display:none">下一段</button>
+    <button class="btn primary" data-cmd="crossStep" id="crossbar" style="display:none">下一段</button>
     <span class="sp"></span>
     <span class="hint" id="hint"></span>
     <button class="btn" data-cmd="reset" id="resetbtn">全部重置</button>
