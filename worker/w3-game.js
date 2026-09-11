@@ -293,6 +293,7 @@ function mapView(s) {
     idx: i,
     total: FORKS.length,
     age: FORKS[i].age,
+    when: FORKS[i].when,
     revealed: forkShown(s, i),
     // 選了就馬上出現在大螢幕上 —— 誰站在哪一邊，全場看得到。
     a: sideView(s, i, 'a'),

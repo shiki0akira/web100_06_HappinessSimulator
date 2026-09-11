@@ -89,7 +89,9 @@
     map: function (me) {
       var m = S.mapNow;
       var mine = me.path[m.idx];
-      var head = '<div class="qn">' + esc(m.age) + '　' + (m.idx + 1) + ' / ' + m.total + '</div>' +
+      // 跟大螢幕同一句話。手機上留著 N / 5，因為這裡沒有別的進度可看。
+      var head = '<div class="qn">當你 ' + esc(m.when) + '…　<small>' +
+          (m.idx + 1) + ' / ' + m.total + '</small></div>' +
         myPath(me);
       if (m.revealed) {
         var x = mine === 'B' ? m.b : m.a;
@@ -203,12 +205,10 @@
     },
 
     // 這一頁手機上沒有任何按鈕。今天不做決志、不舉手、不點名。
-    cross: function (me) {
-      return '<h2>' + esc(S.cross.title) + '</h2>' +
-        S.cross.steps.map(function (st) {
-          return '<p class="crossline"><b>' + esc(st.head) + '</b></p>';
-        }).join('') +
-        '<div class="close">' + esc(S.cross.close) + '</div>';
+    // 這一頁手機上**只寫「看大螢幕」**。三段同樣的字印在他手裡，
+    // 他會低頭讀完，然後主持人正在講的那三句就沒有人在聽了。
+    cross: function () {
+      return '<h2>' + esc(S.cross.title) + '</h2>' + wait('看大螢幕');
     },
 
     // 祝福禱告：上面複選「以前」，下面自己寫「現在」。兩格都只有本人看得到。
@@ -326,6 +326,14 @@
           outer: me.outer, outerPrev: me.outerStart,
           inner: me.inner, innerLabel: '幸福根基',
           verseRef: S.verse.ref, verseText: S.verse.text,
+          // 人生模擬器按的那五下也留在卡片上 ——
+          // 隔週再看到這張卡，他想得起自己選了什麼。
+          path: {
+            label: 'MY PATH',
+            steps: me.path.map(function (c, k) {
+              return c === 'A' ? S.forks[k].a.short : S.forks[k].b.short;
+            }),
+          },
           // 卡片上並排印「以前／現在」—— 這一關真正的產出
           listLabel: 'I THOUGHT',
           bought: me.whois.map(function (i) { return S.whois.options[i]; }),

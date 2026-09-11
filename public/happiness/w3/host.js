@@ -120,22 +120,46 @@
     };
     return forkTrail() +
       '<div class="forkbox">' +
-        '<div class="forkage">' + esc(m.age) + '　<small>' + (m.idx + 1) + ' / ' + m.total + '</small></div>' +
+        '<div class="forkage">當你 ' + esc(m.when) + '…</div>' +
         '<div class="forks">' + side(m.a, 'A') + side(m.b, 'B') + '</div>' +
       '</div>' +
       (m.revealed ? '' : counter(S.stats.forkPicked, '人已選'));
   }
 
-  // 結局頁：三十二條全部攤開，有人走到的排最上面。
+  // 結局頁：三十二條全部攤開，**有人走到的那幾條在上面、大一格、而且把路印出來**。
+  // 「+13 你換跑道那年…」看不出他是怎麼走到那裡的，
+  // 印出「讀書 → 準時 → 投資 → 重來 → 回家」他才接得回自己剛剛按的那五下。
+  // 沒有人走到的那些淡淡地排在下面 ——
   // **只看自己那一條是運氣，三十二條一起看才是「沒有規則」。**
   function endingBoard() {
-    return '<div class="endgrid">' + S.endings.map(function (e) {
-      return '<div class="erow' + (e.who.length ? ' mine' : '') + '">' +
+    var mine = [], rest = [];
+    S.endings.forEach(function (e) { (e.who.length ? mine : rest).push(e); });
+    // 人多的時候上面那一塊會長高，兩塊一起降一級 —— 這一頁不准捲動。
+    var dense = mine.length > 8 ? ' dense' : '';
+
+    var big = function (e) {
+      return '<div class="emine">' +
+        '<div class="eline">' +
+          '<span class="tot ' + (e.total > 0 ? 'up' : 'down') + '">' + sign(e.total) + '</span>' +
+          '<span class="txt">' + esc(e.text) + '</span>' +
+          '<span class="who">' + e.who.map(esc).join('・') + '</span>' +
+        '</div>' +
+        '<div class="epath">' + e.steps.map(function (t) {
+          return '<span>' + esc(t) + '</span>';
+        }).join('<i>→</i>') + '</div>' +
+      '</div>';
+    };
+    var small = function (e) {
+      return '<div class="erow">' +
         '<span class="tot ' + (e.total > 0 ? 'up' : 'down') + '">' + sign(e.total) + '</span>' +
         '<span class="txt">' + esc(e.text) + '</span>' +
-        '<span class="who">' + (e.who.length ? e.who.map(esc).join('・') : '') + '</span>' +
       '</div>';
-    }).join('') + '</div>';
+    };
+
+    return (mine.length
+        ? '<div class="endmine' + dense + '">' + mine.map(big).join('') + '</div>'
+        : '') +
+      '<div class="endrest' + dense + '">' + rest.map(small).join('') + '</div>';
   }
 
   // ── 猜句子 ───────────────────────────────────────────────────────────
@@ -239,10 +263,10 @@
       });
     },
 
+    // 標題旁邊不再掛「二十歲開始，五個選擇…」—— 底下那一行「當你 20 歲時…」
+    // 已經把人放進場景裡了，上面再講一次規則只會把這一頁變成說明書。
     map: function () {
-      return '<div class="qtop"><h2>' + esc(S.map.title) + '</h2>' +
-          '<span class="qn">' + esc(S.map.lead) + '</span></div>' +
-        forkBoard();
+      return '<div class="qtop"><h2>' + esc(S.map.title) + '</h2></div>' + forkBoard();
     },
 
     endings: function () {
@@ -287,13 +311,14 @@
     },
 
     // 他站進同一道光裡。同一個構圖、同一個位置，只多了他。
+    // **右邊不再排他說過的那四句** —— 上一頁（八題的答案）才剛看完，
+    // 同樣四句再排一次只是重複。右邊換成他留在生活裡的那四樣，那是新的東西。
     reveal: function () {
       return '<h2>' + esc(S.star.title) + '</h2>' +
         '<div class="starwrap">' +
           '<div class="starart"><img src="/happiness/shared/art/superstar.svg" alt=""></div>' +
-          '<div class="starcol">' + boardList(true) + '</div>' +
-        '</div>' +
-        traceGrid();
+          '<div class="starcol">' + traceGrid() + '</div>' +
+        '</div>';
     },
 
     afterlife: function () {

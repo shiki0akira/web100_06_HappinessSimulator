@@ -76,7 +76,8 @@ var GROUP_NAME = '幸福小組';
     7: { banner: 'W7  SET FREE',       title: '釋放與自由' },
   };
 
-  // data: { week, name, outer, outerPrev, inner, innerLabel, verseRef, verseText, burden, bought, listLabel }
+  // data: { week, name, outer, outerPrev, inner, innerLabel, verseRef, verseText,
+  //         burden, bought, listLabel, path: { label, steps: [] } }
   function drawWeekCard(canvas, data) {
     var W = 1080, H = 1440, M = 96, CW = W - M * 2;
     canvas.width = W; canvas.height = H;
@@ -147,8 +148,24 @@ var GROUP_NAME = '幸福小組';
     y += 26;
     blocks(ctx, M, y, CW, 44, 10, Math.round(inner / 10), GREEN);
 
+    // 他在遊戲裡走的那條路。第三關的人生模擬器按了五下，
+    // **那五下要留在卡片上** —— 隔週再看到這張卡，他想得起自己選了什麼。
+    // 只佔一行，而且把底下經文前面那段留白吃掉一半，整張卡的長度不變。
+    var hasPath = !!(data.path && data.path.steps && data.path.steps.length);
+    if (hasPath) {
+      y += 80;
+      ctx.fillStyle = ORANGE;
+      ctx.font = '400 18px ' + PIXEL;
+      ctx.fillText(data.path.label || 'MY PATH', M, y);
+      y += 40;
+      var road = data.path.steps.join('  ›  ');
+      ctx.fillStyle = INK;
+      ctx.font = '700 ' + (road.length > 30 ? 26 : 30) + 'px ' + SANS;
+      ctx.fillText(road, M, y);
+    }
+
     // 經文（字要大，這是最可能被轉發出去的部分）
-    y += 96;
+    y += hasPath ? 46 : 96;
     dots(ctx, M, y, CW, GREY);
     y += 70;
     ctx.fillStyle = GOLD;
