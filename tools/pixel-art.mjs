@@ -530,53 +530,51 @@ function animatedSvg(w, h, css, body, label) {
 }
 
 // ── 第三關：萬世巨星 ────────────────────────────────────────────────────
-// 揭曉那一頁左邊那一張。背後一個大十字架，頭頂一盞聚光燈一閃一閃，
-// 他張開手站在光裡 —— 「我想向大家介紹這一位」那句話要有一個對象站在那裡。
+// 揭曉那一頁左邊那一張。一個完整的十字架立在後面，頭頂一盞聚光燈一閃一閃，
+// 他站在十字架底下的光裡 —— 「我想向大家介紹這一位」那句話要有一個對象站在那裡。
 //
-// 形象照著參考圖走：長髮、**連成一圈的鬍子**（頭髮和鬍子接在一起，中間留一張臉）、
-// 白袍加一條紅色的斜披肩、雙手張開。
+// 形象照著參考圖走：長髮、**細細的一圈鬍子**（頭髮從兩側包到下巴收起來）、
+// 白袍加一條紅色的斜披肩。
+//
+// 兩個踩過的坑：
+//   1. 橫桿放在正中間 → 那是「＋」，不是十字架。橫桿要靠上面，頭頂留一段直柱。
+//   2. 十字架用灰色又壓在光束裡 → 跟光糊成一根柱子。改成木頭色，而且整個十字架
+//      要在他頭頂上方看得完整，他只擋住最底下那一段。
 {
   const OUT_SHARED = 'public/happiness/shared/art';
   fs.mkdirSync(OUT_SHARED, { recursive: true });
 
-  // 22 × 28。臉不畫五官細節 —— 放大到電視上，兩點眼睛比五官好看。
-  // 頭髮（n）從兩側一路包到下巴，就是那一圈鬍子；中間剩下的 k 才是臉。
+  // 18 × 22。臉不畫五官細節 —— 放大到電視上，兩點眼睛比五官好看。
+  // 鬍子是**兩側各一到兩格 ＋ 最底下一列**，不要畫厚：畫厚了會變成一坨。
   const HIM = [
-    '......................',
-    '.......nnnnnnnn.......',
-    '......nnnnnnnnnn......',
-    '.....nnnnnnnnnnnn.....',
-    '.....nnnkkkkkknnn.....',
-    '.....nnkkkkkkkknn.....',
-    '.....nkkkkkkkkkkn.....',
-    '.....nkkDkkkkDkkn.....',
-    '.....nkkkkkkkkkkn.....',
-    '.....nnkkkkkkkknn.....',
-    '.....nnnkkkkkknnn.....',
-    '......nnnkkkknnn......',
-    '.......nnnnnnnn.......',
-    '........kkkkkk........',
-    '....WWWWWWWWWWWWWW....',
-    '...WWWWWWWWWWWWWWWW...',
-    '.kkWWWWWWWWWWWWWWWWkk.',
-    'kkkWWWWWWWWWWWWWWWWkkk',
-    '.kkWWWWWWWWWWWWWWWWkk.',
-    '...WWWWWWWWWWWWWWWW...',
-    '...WWWWWWWWWWWWWWWW...',
-    '...WWWWWWWWWWWWWWWW...',
-    '...WWWWWWWWWWWWWWWW...',
-    '...WWWWWWWWWWWWWWWW...',
-    '...WWWWWWWWWWWWWWWW...',
-    '..WWWWWWWWWWWWWWWWWW..',
-    '..WWWWWWWWWWWWWWWWWW..',
-    '..wwwwwwwwwwwwwwwwww..',
+    '..................',
+    '......nnnnnn......',
+    '.....nnnnnnnn.....',
+    '....nnnnnnnnnn....',
+    '....nnkkkkkknn....',
+    '....nkkkkkkkkn....',
+    '....nkkkkkkkkn....',
+    '....nkDkkkkDkn....',
+    '....nkkkkkkkkn....',
+    '....nnkkkkkknn....',
+    '.....nnnnnnnn.....',
+    '.......kkkk.......',
+    '...WWWWWWWWWWWW...',
+    '..WWWWWWWWWWWWWW..',
+    '.kWWWWWWWWWWWWWWk.',
+    'kkWWWWWWWWWWWWWWkk',
+    '.kWWWWWWWWWWWWWWk.',
+    '..WWWWWWWWWWWWWW..',
+    '..WWWWWWWWWWWWWW..',
+    '..WWWWWWWWWWWWWW..',
+    '.WWWWWWWWWWWWWWWW.',
+    '.wwwwwwwwwwwwwwww.',
   ];
-  HIM.forEach((r, y) => { if (r.length !== 22) throw new Error('第 ' + y + ' 列不是 22 格：' + r.length); });
+  HIM.forEach((r, y) => { if (r.length !== 18) throw new Error('第 ' + y + ' 列不是 18 格：' + r.length); });
 
   const W = 48, H = 58;
-  const FX = 13, FY = 24;         // 他站的位置
+  const FX = 15, FY = 32;         // 他站的位置
   let body = '';
-
 
   // 聚光燈的燈罩
   body += `<rect x="21" y="0" width="6" height="2" fill="${PAL.D}"/>`;
@@ -596,27 +594,29 @@ function animatedSvg(w, h, css, body, label) {
   }
   body += `<g class="beam">${beam}</g>`;
 
-  // 十字架。**畫在光束前面、他後面** —— 畫在光束底下會被光洗掉，看起來像一根柱子。
-  // 用中性的灰，深色和淺色主題都看得見。
-  const cross = PAL.w;
-  body += `<rect x="21" y="6" width="6" height="46" fill="${cross}" opacity=".7"/>`;
-  body += `<rect x="5" y="26" width="38" height="6" fill="${cross}" opacity=".7"/>`;
-  // 上緣壓一條深線，十字架在亮底上才不會糊掉
-  body += `<rect x="21" y="6" width="6" height="1" fill="${PAL.D}" opacity=".45"/>`;
-  body += `<rect x="5" y="26" width="38" height="1" fill="${PAL.D}" opacity=".45"/>`;
+  // 十字架。**木頭色，畫在光束前面、他後面。**
+  // 用灰色會跟光束糊成一根柱子；木頭色在亮底上是深的，在光束裡是剪影，兩種主題都立得起來。
+  // 比例：直柱 y=6–48、橫桿壓在 y=16–20 —— 頭頂上面那一段留長，才是十字架不是加號。
+  const wood = PAL.n, edge = PAL.o;
+  body += `<rect x="22" y="6" width="4" height="42" fill="${wood}"/>`;
+  body += `<rect x="10" y="16" width="28" height="4" fill="${wood}"/>`;
+  // 上緣和左緣打一道亮邊，深色主題上才不會整根消失
+  body += `<rect x="22" y="6" width="4" height="1" fill="${edge}"/>`;
+  body += `<rect x="10" y="16" width="28" height="1" fill="${edge}"/>`;
+  body += `<rect x="22" y="20" width="1" height="28" fill="${edge}" opacity=".55"/>`;
 
-  // 他站在光裡。**畫在最前面** —— 光穿過他，十字架在他身後。
+  // 他站在光裡。**畫在最前面** —— 他只擋住十字架最底下那一段。
   body += sprite(HIM, FX, FY);
 
   // 紅色的斜披肩：從左肩斜到右腰。用畫的，不寫進字元圖 ——
   // 斜線在字元圖裡要一格一格對，改一次就要重數一次。
-  for (let i = 0; i < 9; i++) {
-    body += `<rect x="${FX + 5 + i}" y="${FY + 16 + i}" width="2" height="1" fill="${PAL.H}"/>`;
+  for (let i = 0; i < 8; i++) {
+    body += `<rect x="${FX + 4 + i}" y="${FY + 13 + i}" width="2" height="1" fill="${PAL.H}"/>`;
   }
 
   // 地板 ＋ 光落在地上的一圈
-  body += `<rect x="10" y="53" width="28" height="1" fill="${PAL.G}" opacity=".28"/>`;
-  body += `<rect x="4" y="55" width="40" height="1" fill="${PAL.w}" opacity=".45"/>`;
+  body += `<rect x="12" y="54" width="24" height="1" fill="${PAL.G}" opacity=".28"/>`;
+  body += `<rect x="5" y="56" width="38" height="1" fill="${PAL.w}" opacity=".45"/>`;
 
   // 兩側的星星，跟著光一起眨
   const star = (x, y, d) =>
@@ -624,7 +624,7 @@ function animatedSvg(w, h, css, body, label) {
     `<rect x="${x}" y="${y}" width="1" height="1" fill="${PAL.G}"/>` +
     `<rect x="${x - 1}" y="${y + 1}" width="3" height="1" fill="${PAL.G}"/>` +
     `<rect x="${x}" y="${y + 2}" width="1" height="1" fill="${PAL.G}"/></g>`;
-  body += star(3, 12, 0) + star(44, 16, 0.7) + star(2, 40, 1.4) + star(45, 44, 2.1);
+  body += star(4, 10, 0) + star(43, 12, 0.7) + star(3, 38, 1.4) + star(44, 42, 2.1);
 
   // 一閃一閃：硬切，不做淡入淡出 —— 這一套視覺沒有漸層。
   const css =
@@ -634,5 +634,5 @@ function animatedSvg(w, h, css, body, label) {
     '@keyframes tk{0%,45%{opacity:.15}50%,95%{opacity:1}100%{opacity:.15}}';
 
   fs.writeFileSync(OUT_SHARED + '/superstar.svg', animatedSvg(W, H, css, body, '萬世巨星'));
-  console.log('第三關：superstar.svg（十字架前、聚光燈下的他）');
+  console.log('第三關：superstar.svg（十字架下、聚光燈裡的他）');
 }
