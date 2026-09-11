@@ -220,6 +220,25 @@
     },
   };
 
+
+  // 開新分頁看的那一張：**照這支手機的比例補成整頁**。
+  // 卡片是固定的 1080×1560，直接開起來底下會露出一條瀏覽器的白，
+  // 而且每支手機露出來的長度還不一樣。這裡把它放進一張跟螢幕同比例的底上，
+  // 開起來剛好滿版 —— 截圖就是乾淨的一整張，沒有白邊。
+  function shareCanvas(card) {
+    var w = window.innerWidth || 375;
+    var h = window.innerHeight || 812;
+    var W = card.width;
+    var H = Math.max(card.height, Math.round(W * (h / w)));
+    var out = document.createElement('canvas');
+    out.width = W; out.height = H;
+    var c = out.getContext('2d');
+    c.fillStyle = '#0E1211';
+    c.fillRect(0, 0, W, H);
+    c.drawImage(card, 0, Math.round((H - card.height) / 2));
+    return out;
+  }
+
   // ── 綁定事件 ─────────────────────────────────────────────────────────
 
   function bind(me) {
@@ -281,7 +300,7 @@
         img.src = cardURL;
         // 開新分頁看的是這一份。**blob: 不是 data:** ——
         // Chrome 擋掉 data: 的頂層導航，blob: 才開得起來。
-        cv.toBlob(function (b) {
+        shareCanvas(cv).toBlob(function (b) {
           if (!b) return;
           if (cardBlob) URL.revokeObjectURL(cardBlob);
           cardBlob = URL.createObjectURL(b);
