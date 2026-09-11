@@ -545,7 +545,8 @@ function animatedSvg(w, h, css, body, label) {
   fs.mkdirSync(OUT_SHARED, { recursive: true });
 
   // 22 × 27。臉不畫五官細節 —— 放大到電視上，兩點眼睛比五官好看。
-  // 鬍子是**兩側各一到兩格 ＋ 最底下一列**，不要畫厚：畫厚了會變成一坨。
+  // 鬍子：兩側的頭髮包下來，加上人中那一道和下巴那一片，中間留一格當嘴巴。
+  // **中間那一格嘴巴不能省** —— 少了它整張臉下半部就是一坨咖啡色。
   const HIM = [
     '......................',
     '.......nnnnnnnn.......',
@@ -556,9 +557,9 @@ function animatedSvg(w, h, css, body, label) {
     '.....nkkkkkkkkkkn.....',
     '.....nkkDkkkkDkkn.....',
     '.....nkkkkkkkkkkn.....',
-    '.....nkkkkkkkkkkn.....',
-    '.....nnkkkkkkkknn.....',
-    '......nnkkkkkknn......',
+    '.....nkknnnnnnkkn.....',
+    '.....nnnnnkknnnnn.....',
+    '......nnnnnnnnnn......',
     '.......nnnnnnnn.......',
     '........kkkkkk........',
     '....WWWWWWWWWWWWWW....',
