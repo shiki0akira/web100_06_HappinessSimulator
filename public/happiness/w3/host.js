@@ -288,8 +288,7 @@
         '<p class="lede big-lede">' + esc(S.sins.lead) + '</p>' +
         '<div class="sintags">' + S.sins.tags.map(function (t) {
           return '<span class="sintag"><b>' + esc(t.k) + '</b><i>' + esc(t.v) + '</i></span>';
-        }).join('') + '</div>' +
-        '<p class="endline">' + esc(S.sins.close) + '</p>';
+        }).join('') + '</div>';
     },
 
     // 開場白：燈亮著，**光裡還沒有人**。不揭曉是誰。
@@ -345,21 +344,26 @@
       });
     },
 
-    // **三段一次全部出來。** 一段一段點會讓這一頁變成一場操作 ——
-    // 這一頁是你在講，畫面只要把三句話擺好就夠了。**這一頁不加分。**
+    // 排成 **RPG 的關卡地圖**：三個節點、中間有路連起來。
+    // 三張小圖連起來就是同一個故事：裂縫 → 十字架架在裂縫上 → 對面那扇門開著。
+    // **三段一次全部出來** —— 一段一段點會讓這一頁變成一場操作，
+    // 而這一頁是你在講。**這一頁不加分。**
     cross: function () {
       return '<h2>' + esc(S.cross.title) + '</h2>' +
-        '<div class="steps3">' + S.cross.steps.map(function (st) {
-          return '<div class="s3 on">' +
-            '<b>' + esc(st.head) + '</b>' +
-            '<span>' + esc(st.line) + '</span>' +
-          '</div>';
+        '<div class="quest">' + S.cross.steps.map(function (st, i) {
+          return (i ? '<span class="qroad" aria-hidden="true"></span>' : '') +
+            '<div class="qnode">' +
+              '<img src="/happiness/shared/art/' + esc(st.art) + '.svg" alt="">' +
+              '<span class="qno">' + (i + 1) + '</span>' +
+              '<b>' + esc(st.head) + '</b>' +
+              '<i>' + esc(st.sub) + '</i>' +
+            '</div>';
         }).join('') + '</div>';
     },
 
     prayer: function () {
       return StageParts.prayer({
-        lede: '在今天以前你以為他是誰，現在你覺得他是誰。兩句都只有你自己看得到。',
+        lede: '在今天以前你認識的耶穌是誰，現在你覺得他是誰。兩句都只有你自己看得到。',
         done: S.stats.burdens, total: S.stats.count,
       });
     },

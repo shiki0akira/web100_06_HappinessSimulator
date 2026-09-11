@@ -41,7 +41,9 @@
     background: rgba(6, 12, 11, .94); }
   .modal.on { display: flex; }
   .modal .box { background: var(--surface); border: 4px solid var(--edge);
-    box-shadow: 8px 8px 0 var(--hard); padding: 28px 24px; width: 100%; max-width: 420px; }
+    box-shadow: 8px 8px 0 var(--hard); padding: 28px 24px; width: 100%; max-width: 460px;
+    /* 保險：小螢幕上七關還是撐不破這張紙 */
+    max-height: calc(100vh - 40px); overflow-y: auto; }
   .modal h3 { font-size: 26px; font-weight: 900; letter-spacing: .03em; }
   .modal p { color: var(--ink-2); font-size: 16px; margin-top: 10px; }
   .modal input { width: 100%; margin-top: 18px; padding: 16px; font-size: 40px; font-weight: 700;
@@ -49,9 +51,14 @@
   .modal .err { color: var(--vol); font-size: 15px; font-weight: 700; margin-top: 10px; min-height: 22px; }
   .modal .pick { font-family: var(--pixel); font-size: 13px; color: var(--ink-3);
     letter-spacing: .06em; margin: 6px 0 10px; }
-  .modal .lv { display: grid; gap: 10px; }
-  .modal .lv button { padding: 16px; font-size: 19px; font-weight: 700; text-align: left; }
-  .modal .lv button b { font-family: var(--pixel); font-size: 13px; color: var(--gold); display: block; margin-bottom: 6px; }
+  /* 七關全部開了之後這裡會有七顆。一顆一行會把這張紙拉到要捲動 ——
+     改成兩欄、一顆一行字：左邊像素的關號，右邊關名。 */
+  .modal .lv { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  /* 一顆就是一行字：五個字的關名（十字架的勝利）也不准掉到第二行 */
+  .modal .lv button { display: flex; align-items: baseline; gap: 8px; white-space: nowrap;
+    padding: 13px 10px; font-size: 16px; font-weight: 700; text-align: left; }
+  .modal .lv button b { flex: none; margin: 0;
+    font-family: var(--pixel); font-size: 12px; color: var(--gold); }
   .modal .close { width: 100%; margin-top: 16px; }
   .modal .hint { font-size: 14px; color: var(--ink-3); margin-top: 16px; line-height: 1.8; }
 
@@ -227,7 +234,7 @@
   document.getElementById('lv').innerHTML = WEEKS.filter(function (w) { return w.ready; })
     .map(function (w) {
       return '<button class="btn" data-week="' + w.n + '">' +
-        '<b>第 ' + w.n + ' 關</b>' + esc(w.name) + '</button>';
+        '<b>' + (w.n < 10 ? '0' : '') + w.n + '</b>' + esc(w.name) + '</button>';
     }).join('');
 
   function openJoin() {

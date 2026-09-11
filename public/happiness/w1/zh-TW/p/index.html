@@ -84,6 +84,17 @@
     margin-top: 16px; position: relative; z-index: 95; }
   .ok { color: var(--root-c); font-weight: 700; }
   .mono { font-family: var(--pixel); }
+
+  /* 滿版看卡片。**要蓋掉上面那條狀態列** —— 截出來才是乾淨的一張卡。
+     不給下載：檔案掉進資料夾裡就找不到了，而且 iOS 每支手機的下載流程都不一樣。 */
+  #cardfull { position: fixed; inset: 0; z-index: 200; background: #0E1211;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 10px; padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
+  #cardfull img { width: 100%; max-height: 88vh; object-fit: contain; display: block; }
+  #cardfull .x { position: absolute; top: calc(env(safe-area-inset-top) + 10px); right: 12px;
+    font-family: var(--sans); font-size: 15px; font-weight: 700; padding: 8px 14px;
+    border: 3px solid #E8EDEB; background: transparent; color: #E8EDEB; }
+  #cardfull p { margin: 0; font-size: 15px; color: #9BAAA5; }
 </style>
 </head>
 <body>

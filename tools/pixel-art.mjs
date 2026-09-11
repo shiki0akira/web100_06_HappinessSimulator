@@ -722,3 +722,69 @@ function animatedSvg(w, h, css, body, label) {
   fs.writeFileSync(OUT_SHARED + '/superstar-empty.svg', animatedSvg(W, H, css, body, '聚光燈下還看不清楚的人'));
   console.log('第三關：superstar-empty.svg（聚光燈一閃一閃，台上一個黑影）');
 }
+
+// ── 第三關第 14 頁：三個關卡的小插畫 ──────────────────────────────────
+// 「藉著他到父那裡去」那一頁排成 RPG 的關卡地圖：三個節點、中間有路連起來。
+// 每個節點上面一張小圖 —— 三張連起來就是同一個故事：
+// 裂縫 → 十字架架在裂縫上 → 對面那扇門開著。
+//
+// **三張的地平線都在同一格（y=15）**，橫著擺才不會一張高一張低。
+{
+  const OUT_SHARED = 'public/happiness/shared/art';
+  const W = 32, H = 24;
+  const box = (x, y, w, h, c) =>
+    `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`;
+
+  // 兩側的台地。中間是裂縫，越下面越開 —— 那條縫就是「隔絕」。
+  function ledges() {
+    let s = '';
+    s += box(0, 15, 12, 2, PAL.W) + box(0, 17, 12, 7, PAL.D);
+    s += box(20, 15, 12, 2, PAL.W) + box(20, 17, 12, 7, PAL.D);
+    // 縫往下咬開，看起來才像斷崖不是兩塊磚
+    for (let i = 0; i < 5; i++) {
+      s += box(12 - i - 1, 18 + i, 1, 1, PAL.D);
+      s += box(20 + i, 18 + i, 1, 1, PAL.D);
+    }
+    return s;
+  }
+
+  // 站在左邊那塊台地上的人。**黑影，看不出是誰** —— 那是我們每一個人。
+  function man(x) {
+    return box(x + 1, 6, 3, 3, PAL.d) +      // 頭
+      box(x, 10, 5, 4, PAL.d) +               // 身體
+      box(x + 1, 14, 1, 1, PAL.d) + box(x + 3, 14, 1, 1, PAL.d);  // 腿
+  }
+
+  // 1 · 罪使我們與父隔絕：他站在這一邊，對面過不去。
+  {
+    let b = ledges() + man(4);
+    // 掉進縫裡的碎石
+    b += box(14, 20, 1, 1, PAL.w) + box(17, 22, 1, 1, PAL.w) + box(15, 23, 1, 1, PAL.w);
+    write('quest-gap.svg', `0 0 ${W} ${H}`, b, '斷開的兩邊', OUT_SHARED);
+  }
+
+  // 2 · 耶穌替我們付了那個代價：十字架橫過那道縫，剛好把兩邊接起來。
+  {
+    let b = ledges() + man(4);
+    b += box(9, 13, 14, 2, PAL.n);            // 橫過去的那根：就是橋
+    b += box(9, 13, 14, 1, PAL.o);            // 上緣打亮
+    b += box(15, 4, 2, 11, PAL.n);            // 直柱
+    b += box(11, 7, 10, 2, PAL.n);            // 橫桿
+    b += box(11, 7, 10, 1, PAL.o);
+    write('quest-cross.svg', `0 0 ${W} ${H}`, b, '十字架架在裂縫上', OUT_SHARED);
+  }
+
+  // 3 · 所以我們可以到父那裡去：對面那扇門開著，光從裡面出來。
+  {
+    let b = ledges();
+    b += box(9, 13, 14, 2, PAL.n) + box(9, 13, 14, 1, PAL.o);   // 橋還在
+    b += man(13);                              // 他已經在橋上了
+    b += box(23, 4, 8, 11, PAL.D);             // 門框
+    b += box(24, 5, 6, 10, PAL.G);             // 門裡的光
+    b += box(25, 6, 4, 9, PAL.k);
+    // 光灑出來的那幾格
+    b += box(21, 9, 2, 1, PAL.G) + box(21, 12, 2, 1, PAL.G) + box(19, 11, 2, 1, PAL.S);
+    write('quest-gate.svg', `0 0 ${W} ${H}`, b, '對面那扇門開著', OUT_SHARED);
+  }
+  console.log('第三關：quest-gap／quest-cross／quest-gate.svg（第 14 頁的三個關卡）');
+}

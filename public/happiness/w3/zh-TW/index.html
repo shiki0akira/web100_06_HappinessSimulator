@@ -290,15 +290,28 @@
   .teaseart img { display: block; width: min(calc(200px * var(--u)), 34vh); height: auto;
     image-rendering: pixelated; margin-top: min(calc(10px * var(--u)), 1.4vh); }
 
-  /* 藉著他到父那裡去：三段點出來 */
-  .steps3 { margin-top: min(calc(16px * var(--u)), 2.2vh); display: grid;
-    gap: min(calc(12px * var(--u)), 1.8vh); }
-  .s3 { border-left: 10px solid var(--edge-soft); padding-left: calc(16px * var(--u));
-    opacity: .3; transition: opacity .2s, border-color .2s; }
-  .s3 b { display: block; font-size: min(calc(30px * var(--u)), 4.2vh); line-height: 1.4; }
-  .s3 span { display: block; margin-top: calc(6px * var(--u));
-    font-size: min(calc(18px * var(--u)), 2.5vh); color: var(--ink-2); line-height: 1.7; }
-  .s3.on { opacity: 1; border-left-color: var(--root-c); }
+  /* 藉著他到父那裡去：排成 RPG 的關卡地圖 —— 三個節點，中間有路連起來。
+     三張小圖連起來是同一個故事：裂縫 → 十字架架在裂縫上 → 對面那扇門開著。 */
+  .quest { flex: 1; display: flex; align-items: center; justify-content: center;
+    gap: 0; margin-top: min(calc(14px * var(--u)), 2vh); }
+  /* 三格一樣寬 —— 寬度讓標題排得下一行，不要變成「罪使我們與父隔／絕」 */
+  .qnode { position: relative; flex: 1 1 0; min-width: 0; text-align: center;
+    background: var(--surface); border: 4px solid var(--edge); box-shadow: 7px 7px 0 var(--hard);
+    padding: min(calc(20px * var(--u)), 2.8vh) calc(14px * var(--u)) min(calc(16px * var(--u)), 2.2vh); }
+  .qnode img { display: block; margin: 0 auto min(calc(10px * var(--u)), 1.4vh);
+    width: min(calc(168px * var(--u)), 21vh); height: auto; image-rendering: pixelated; }
+  /* 關卡編號：像 RPG 地圖上那顆圓點 */
+  .qnode .qno { position: absolute; top: calc(-16px * var(--u)); left: 50%; transform: translateX(-50%);
+    font-family: var(--pixel); font-size: calc(16px * var(--u)); line-height: 1;
+    padding: calc(6px * var(--u)) calc(11px * var(--u));
+    background: var(--root-c); color: var(--surface); border: 3px solid var(--edge); }
+  .qnode b { display: block; font-size: min(calc(25px * var(--u)), 3.4vh); line-height: 1.45; }
+  .qnode i { display: block; margin-top: calc(6px * var(--u)); font-style: normal;
+    font-size: min(calc(17px * var(--u)), 2.3vh); color: var(--gold); }
+  /* 連起來的路：一格一格的點，走過去的那種 */
+  .qroad { flex: 0 0 calc(34px * var(--u)); height: 8px;
+    background: repeating-linear-gradient(to right,
+      var(--root-c) 0 8px, transparent 8px 16px); }
 
   .afterhd { display: flex; align-items: baseline; gap: calc(28px * var(--u)); flex-wrap: wrap; }
   .afterhd .stat { font-family: var(--pixel); font-size: min(calc(34px * var(--u)), 4.4vh); line-height: 1; }

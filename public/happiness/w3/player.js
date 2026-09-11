@@ -224,8 +224,8 @@
         }).join('') + '</div>' +
         '<p class="fieldlbl">' + esc(S.whois.now) + '<span class="sub">自己寫一句</span></p>' +
         '<textarea id="bd" maxlength="120" placeholder="' + esc(S.whois.now) + '……">' + esc(mine) + '</textarea>' +
-        '<button class="btn primary fullbtn" id="savebd">' + (me.hasBurden ? '更新' : '寫好了') + '</button>' +
-        (me.prayed || me.hasBurden
+        '<button class="btn primary fullbtn" id="savebd">' + (me.prayed ? '更新' : '寫好了') + '</button>' +
+        (me.prayed
           ? '<div class="grew"><img src="/happiness/shared/art/prayer.svg" alt="">' +
             '<p class="ok">已存下<br><b>幸福根基 +5</b></p></div>'
           : '') +
@@ -312,7 +312,8 @@
         if (me.hasBurden || me.whois.length) draft.whois = me.whois.slice();
         var at = draft.whois.indexOf(i);
         if (at >= 0) draft.whois.splice(at, 1); else draft.whois.push(i);
-        // 勾了就先送上去，不用等他按「寫好了」—— 有人只勾不寫
+        // 勾了就先存上去，免得他勾完手機掉線就沒了。
+        // **但這裡不算送出** —— 幸福根基 +5 和「已存下」要等他自己按那顆按鈕。
         act('burden', { whois: draft.whois, has: !!readLine().trim() });
       };
     });
@@ -325,7 +326,7 @@
       var text = document.getElementById('bd').value;
       writeLine(text);
       // 只送「有寫」這件事上去。那句話留在這支手機裡，一個字都不會離開。
-      act('burden', { whois: (me.whois.length ? me.whois : draft.whois), has: !!text.trim() });
+      act('burden', { whois: (me.whois.length ? me.whois : draft.whois), has: !!text.trim(), submit: true });
       sig = '';
       render();
     };

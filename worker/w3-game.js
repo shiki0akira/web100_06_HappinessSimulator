@@ -94,7 +94,7 @@ export function addPlayer(s, name) {
     answers: [],          // 八題各選了哪一個（不加分，只是他自己的記錄）
     correct: 0,
     vote: null,           // 天堂和地獄
-    whois: [],            // 「我以前以為耶穌是」複選（只有本人看得到）
+    whois: [],            // 「我認識的耶穌是」複選（只有本人看得到）
     hasBurden: false,     // 「現在我覺得他是」留在他自己的手機上
     prayed: false,
     receivedVerse: false,
@@ -234,7 +234,9 @@ export function applyAction(s, pid, msg) {
       p.whois = arr(msg.whois).map(Number)
         .filter((x, i, list) => x >= 0 && x < WHOIS.options.length && list.indexOf(x) === i);
       p.hasBurden = !!msg.has;
-      if (!p.prayed) { p.prayed = true; grow(p, INNER_PRAYER); }
+      // **只有他自己按下那顆按鈕才算送出。** 勾選會一路存上來（免得他勾完
+      // 手機掉線就沒了），但勾一個就給 +5、就跳「已存下」，他會以為做完了。
+      if (msg.submit && !p.prayed) { p.prayed = true; grow(p, INNER_PRAYER); }
       break;
     }
     case 'card':
@@ -434,7 +436,8 @@ export function hostView(s, roomCode) {
       innerStartAvg: sc.length ? Math.round(sc.reduce((a, b) => a + (b.innerStart || 0), 0) / sc.length) : null,
       versesReceived: ps.filter((p) => p.receivedVerse).length,
       cardsDone: ps.filter((p) => p.cardDone).length,
-      burdens: ps.filter((p) => p.hasBurden).length,
+      // 「已填寫」＝按過那顆按鈕的人。只勾選還沒按的不算 —— 你要等的是那顆按鈕。
+      burdens: ps.filter((p) => p.prayed).length,
     },
   };
 }
