@@ -75,17 +75,18 @@
       }
     }
 
-    // 第三關的人生模擬器：大家選完再往前走。
+    // 第三關的人生模擬器：大家選完你才公布結果，公布完再往前走。
     var mapc = el('mapctl');
     if (mapc) {
       mapc.hidden = S.phase.id !== 'map' || !S.mapNow;
       if (!mapc.hidden) {
+        // 一顆按鈕按到底：還沒公布就是「公布結果」，公布過了才變「往前走」。
         var lastFork = S.mapNow.idx >= S.mapNow.total - 1;
         el('forkprev').disabled = S.mapNow.idx <= 0;
-        el('forknext').textContent = lastFork
-          ? '走完了，按下一頁'
-          : '往前走 →（' + S.stats.forkPicked + '/' + S.stats.count + ' 已選）';
-        el('forknext').disabled = lastFork;
+        el('forkstep').textContent = !S.mapNow.revealed
+          ? '公布結果（' + S.stats.forkPicked + '/' + S.stats.count + ' 已選）'
+          : (lastFork ? '走完了，按下一頁' : '往前走 →（' + (S.mapNow.idx + 2) + '/' + S.mapNow.total + '）');
+        el('forkstep').disabled = S.mapNow.revealed && lastFork;
       }
     }
 
@@ -148,7 +149,7 @@
     on('quizstep', function () { post('quizStep'); });
     on('quizprev', function () { post('quizPrev'); });
     on('forkprev', function () { post('forkPrev'); });
-    on('forknext', function () { post('forkNext'); });
+    on('forkstep', function () { post('forkStep'); });
     on('flipnext', function () { post('flipNext'); });
     on('flipall', function () {
       if (confirm('剩下的全部翻開？')) post('flipAll');

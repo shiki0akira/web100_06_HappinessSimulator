@@ -46,6 +46,8 @@
   /* 爬完那一下的漲跌一起印出來：先 +N 再 −M，看得到那個波動 */
   .prow .nm .drop { font-family: var(--pixel); font-size: calc(13px * var(--u)); color: var(--vol); }
   .prow .nm .up { font-family: var(--pixel); font-size: calc(13px * var(--u)); color: var(--root-c); }
+  /* 這一關一正一負，會有人掉分 —— 側欄要吃得下負號 */
+  .prow .nm .down { font-family: var(--pixel); font-size: calc(13px * var(--u)); color: var(--vol); }
   .prow .g { display: flex; align-items: center; gap: 8px; margin-top: calc(3px * var(--u)); line-height: 1.15;
     font-family: var(--pixel); font-size: calc(13px * var(--u)); color: var(--ink-3); }
   .prow .g .lbl { flex: none; width: 4.4em; }
@@ -157,58 +159,78 @@
   .judge h2 { font-size: min(calc(96px * var(--u)), 13vh); letter-spacing: .12em; }
   .judge p { margin-top: calc(20px * var(--u)); font-size: min(calc(26px * var(--u)), 3.4vh); color: var(--ink-2); }
 
-  /* ── 人生模擬器：三個岔路 ─────────────────────────────────────────── */
-  /* 走過的岔路留在上面，那是地圖的形狀 */
-  .trail { margin-top: min(calc(10px * var(--u)), 1.4vh); border-left: 6px solid var(--edge-soft);
+  /* ── 人生模擬器：五個岔路 ─────────────────────────────────────────── */
+  /* 公布過的岔路留在上面，那是地圖的形狀。只留人數和加減，名字在下面那兩格。 */
+  .trail { margin-top: min(calc(8px * var(--u)), 1.2vh); border-left: 6px solid var(--edge-soft);
     padding-left: calc(14px * var(--u)); }
-  .trailrow { display: flex; align-items: baseline; gap: calc(16px * var(--u));
-    padding: min(calc(5px * var(--u)), .8vh) 0; }
-  .trailrow .age { flex: none; width: calc(58px * var(--u)); font-family: var(--pixel);
-    font-size: calc(14px * var(--u)); color: var(--ink-3); }
-  .trailrow .side { flex: 1; min-width: 0; font-size: min(calc(16px * var(--u)), 2.3vh); font-weight: 700; }
-  .trailrow .side i { display: block; font-style: normal; font-weight: 500;
-    font-size: min(calc(14px * var(--u)), 2vh); color: var(--ink-3);
+  .trailrow { display: flex; align-items: baseline; gap: calc(20px * var(--u));
+    padding: min(calc(2px * var(--u)), .3vh) 0; }
+  .trailrow .age { flex: none; width: calc(56px * var(--u)); font-family: var(--pixel);
+    font-size: calc(13px * var(--u)); color: var(--ink-3); }
+  .trailrow .side { flex: 1; min-width: 0; font-size: min(calc(15px * var(--u)), 2vh); font-weight: 700;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .trailrow .side i { font-style: normal; font-family: var(--pixel);
+    font-size: min(calc(14px * var(--u)), 2vh); margin-left: 10px; }
+  .trailrow .side em { font-style: normal; font-weight: 500; margin-left: 10px;
+    font-size: min(calc(14px * var(--u)), 2vh); color: var(--ink-3); }
+  .trailrow .side.up i { color: var(--root-c); }
+  .trailrow .side.down i { color: var(--vol); }
 
-  /* 現在這一個岔路：兩個大格子 */
-  .forkbox { margin-top: min(calc(14px * var(--u)), 2vh); }
-  .forkage { font-family: var(--pixel); font-size: calc(24px * var(--u)); color: var(--gold); }
+  /* 現在這一個岔路：左右兩大格。誰選了哪一邊，選完馬上出現在格子裡。 */
+  .forkbox { margin-top: min(calc(12px * var(--u)), 1.8vh); }
+  .forkage { font-family: var(--pixel); font-size: min(calc(22px * var(--u)), 3vh); color: var(--gold); }
   .forkage small { font-size: calc(15px * var(--u)); color: var(--ink-3); }
   .forks { display: grid; grid-template-columns: 1fr 1fr; gap: calc(16px * var(--u));
-    margin-top: min(calc(12px * var(--u)), 1.8vh); }
+    margin-top: min(calc(10px * var(--u)), 1.5vh); align-items: start; }
   .fk { background: var(--surface); border: 4px solid var(--edge); box-shadow: 6px 6px 0 var(--hard);
-    padding: min(calc(20px * var(--u)), 3vh) calc(18px * var(--u)); }
+    padding: min(calc(16px * var(--u)), 2.4vh) calc(18px * var(--u)); }
+  .fkhd { display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: calc(8px * var(--u)); }
   .fk .tag2 { display: inline-block; font-family: var(--pixel); font-size: calc(16px * var(--u));
-    color: var(--gold); border: 3px solid var(--gold); padding: 1px 8px; margin-bottom: calc(8px * var(--u)); }
-  .fk b { display: block; font-size: min(calc(26px * var(--u)), 3.6vh); line-height: 1.5; }
+    color: var(--gold); border: 3px solid var(--gold); padding: 1px 8px; }
+  .fk .fkd { font-family: var(--pixel); font-size: min(calc(34px * var(--u)), 4.4vh); }
+  .fk b { display: block; font-size: min(calc(24px * var(--u)), 3.2vh); line-height: 1.45; }
+  /* 選了就馬上出現在這裡 —— 這一行就是「大家選完了沒」 */
+  .fkwho { margin-top: min(calc(6px * var(--u)), 1vh); min-height: 1.4em;
+    font-size: min(calc(17px * var(--u)), 2.4vh); font-weight: 700; color: var(--vol); line-height: 1.5; }
+  .fkres { margin-top: min(calc(6px * var(--u)), 1vh); padding-top: min(calc(6px * var(--u)), 1vh);
+    border-top: 2px dashed var(--edge-soft);
+    font-size: min(calc(17px * var(--u)), 2.3vh); line-height: 1.55; color: var(--ink-2); }
+  .fk.win { border-color: var(--root-c); }
+  .fk.win .fkd { color: var(--root-c); }
+  .fk.lose .fkd { color: var(--vol); }
 
-  /* 結局頁：八條全部攤開。只看自己那一條是運氣，八條一起看才是「沒有規則」。 */
-  .endlist { margin-top: min(calc(12px * var(--u)), 1.8vh); border-top: 3px solid var(--edge-soft); }
-  /* 八條一定要塞在一個畫面裡 —— 只看自己那一條就沒有「沒有規則」這件事了，
-     所以這裡寧可字小一點，也不能捲動。 */
-  .endrow { display: flex; align-items: baseline; gap: calc(14px * var(--u));
-    padding: min(calc(4px * var(--u)), .6vh) 0; border-bottom: 2px dashed var(--edge-soft); }
-  .endrow .steps { flex: none; width: calc(190px * var(--u)); display: flex; align-items: baseline; gap: 4px; }
-  .endrow .steps .st { font-size: min(calc(15px * var(--u)), 2.1vh); font-weight: 700; }
-  .endrow .steps i { font-style: normal; color: var(--ink-3); font-size: calc(12px * var(--u)); }
-  .endrow .txt { flex: 1; min-width: 0; font-size: min(calc(16px * var(--u)), 2.2vh); color: var(--ink-2);
+  /* 結局頁：三十二條全部攤開，有人走到的排最上面。
+     只看自己那一條是運氣，三十二條一起看才是「沒有規則」。
+     三十二條一定要塞在一個畫面裡，所以寧可字小一點，也不能捲動 ——
+     兩欄由上往下填（grid-auto-flow: column），「最上面」才真的在左上角。 */
+  .endgrid { margin-top: min(calc(8px * var(--u)), 1.2vh); display: grid;
+    grid-template-columns: 1fr 1fr; grid-template-rows: repeat(16, auto);
+    grid-auto-flow: column; column-gap: calc(24px * var(--u)); }
+  .erow { display: flex; align-items: baseline; gap: calc(10px * var(--u)); line-height: 1.35;
+    padding: min(calc(2px * var(--u)), .3vh) 0; border-bottom: 2px dashed var(--edge-soft); }
+  .erow .tot { flex: none; width: calc(46px * var(--u)); text-align: right;
+    font-family: var(--pixel); font-size: min(calc(14px * var(--u)), 1.85vh); opacity: .5; }
+  .erow .tot.up { color: var(--root-c); }
+  .erow .tot.down { color: var(--vol); }
+  .erow .txt { flex: 1; min-width: 0; font-size: min(calc(15px * var(--u)), 1.95vh); color: var(--ink-3);
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .endrow .gain { flex: none; width: calc(56px * var(--u)); text-align: right;
-    font-family: var(--pixel); font-size: min(calc(20px * var(--u)), 2.8vh); color: var(--root-c); }
-  .endrow .who { flex: none; width: calc(140px * var(--u)); text-align: right;
-    font-size: min(calc(15px * var(--u)), 2.1vh); font-weight: 700; color: var(--ink-3);
+  .erow .who { flex: none; max-width: calc(150px * var(--u));
+    font-size: min(calc(14px * var(--u)), 1.85vh); font-weight: 700; color: var(--vol);
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  /* 有人走到的那一條亮起來 */
-  .endrow.mine { background: var(--surface); }
-  .endrow.mine .txt, .endrow.mine .steps .st { color: var(--ink); }
-  .endrow.mine .who { color: var(--vol); }
-  .endlist.dense .endrow { padding: min(calc(5px * var(--u)), .8vh) 0; }
-  .endline { margin-top: min(calc(10px * var(--u)), 1.4vh);
-    font-size: min(calc(28px * var(--u)), 3.8vh); font-weight: 900; }
+  /* 有人走到的那幾條亮起來 */
+  .erow.mine { background: var(--surface); }
+  .erow.mine .txt { color: var(--ink); font-weight: 700; }
+  .erow.mine .tot { opacity: 1; }
+  .endline { margin-top: min(calc(6px * var(--u)), 1vh);
+    font-size: min(calc(24px * var(--u)), 3.1vh); font-weight: 900; }
 
   /* 整頁只有一句話的版型。畫面上不放解釋 —— 那是主持人的工作。 */
   .solo { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-  .solo h2 { font-size: min(calc(64px * var(--u)), 9vh); line-height: 1.45; letter-spacing: .04em; max-width: 16em; }
+  /* **這一句不准斷行。** 一斷行「選擇？」會自己掉到第二行，問句就散了 ——
+     所以不吃 max-width，改成一行到底，字級跟著版面寬度縮。 */
+  .solo h2 { font-size: min(calc(64px * var(--u)), 9vh, 4vw); line-height: 1.45;
+    letter-spacing: .04em; max-width: none; white-space: nowrap; }
 
   /* 他來，是要叫我們得生命：那兩行 */
   .sinlines { margin-top: min(calc(14px * var(--u)), 2vh); }
@@ -230,6 +252,9 @@
   .s3 span { display: block; margin-top: calc(6px * var(--u));
     font-size: min(calc(18px * var(--u)), 2.5vh); color: var(--ink-2); line-height: 1.7; }
   .s3.on { opacity: 1; border-left-color: var(--root-c); }
+  /* 因為兩件事：標題前面那個編號 */
+  .s3 b .no { display: inline-block; min-width: 1.6em; font-family: var(--pixel);
+    font-size: min(calc(22px * var(--u)), 3vh); color: var(--gold); }
 
   .afterhd { display: flex; align-items: baseline; gap: calc(28px * var(--u)); flex-wrap: wrap; }
   .afterhd .stat { font-family: var(--pixel); font-size: min(calc(34px * var(--u)), 4.4vh); line-height: 1; }
@@ -294,6 +319,12 @@
     margin: 18px 0 0; max-width: 20em; }
   .verse .ref { font-family: var(--pixel); color: var(--gold); font-size: calc(20px * var(--u)); }
   .verse blockquote .ref { display: block; margin-top: calc(14px * var(--u)); }
+  /* 回收上一關那一句：**不准斷行**。
+     一斷行最後那兩個字會自己掉到第二行，念起來就散了 ——
+     所以這一句不吃 max-width，改成一行到底，字級跟著版面寬度縮。 */
+  .verse.back blockquote { max-width: none; white-space: nowrap;
+    font-size: min(calc(40px * var(--u)), 4.6vh, 2.7vw); }
+  .verse.back blockquote .ref { white-space: normal; }
   /* 救恩之路那一頁：還沒點到的後半句先淡著 */
   .verse.half blockquote .on { color: var(--root-c); }
   .verse.half blockquote .off { color: var(--ink-3); opacity: .45; }
@@ -341,7 +372,7 @@
     <!-- 每一頁該有的控制鈕。照第一關拍賣控制列的做法 —— 現場不要靠鍵盤。 -->
     <span id="mapctl" style="display:none;gap:8px;">
       <button class="btn" data-cmd="forkPrev" id="fprev">← 上一個岔路</button>
-      <button class="btn primary" data-cmd="forkNext" id="fnext">往前走 →</button>
+      <button class="btn primary" data-cmd="forkStep" id="fstep">公布結果</button>
     </span>
     <span id="quizctl" style="display:none;gap:8px;">
       <button class="btn" data-cmd="quizPrev" id="qprev">← 上一題</button>

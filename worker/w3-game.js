@@ -3,10 +3,10 @@
 // 這一關完全不依賴前兩關 —— 上一次沒來的人不會少玩到任何東西。
 // 接過來的只有卡片上的兩條線。**第三關起第一次來的人，幸福根基直接給 15。**
 //
-// 一句話講完這一關：走三個岔路的人生模擬器（八個結局，分數刻意打亂），
+// 一句話講完這一關：走五個岔路的人生模擬器（三十二個結局，一正一負當場公布），
 // 講罪＝射不中，介紹萬世巨星，玩八題猜句子，最後藉著他到父那裡去。
 import {
-  FORKS, ENDINGS, MAP, SIN, STAR, TRACES,
+  FORKS, ENDINGS, MAP, SIN, WHY, STAR, TRACES,
   QUIZ, AFTERLIFE, LIFE, VERSE, CROSS, WHOIS,
 } from './w3-data.js';
 
@@ -23,8 +23,9 @@ export const PHASES = [
   { id: 'lobby',     tag: '入場',     title: '掃碼進場' },
   { id: 'reconnect', tag: '接關',     title: '輸入幸福指數' },
   { id: 'map',       tag: '互動點 1', title: '人生模擬器 · 選一條路' },
-  { id: 'endings',   tag: '結算頁',   title: '你走到哪裡' },
-  { id: 'sin',       tag: '信息',     title: '為什麼我們做不出最好的選擇' },
+  { id: 'endings',   tag: '結算頁',   title: '三十二種人生' },
+  { id: 'sin',       tag: '信息',     title: '為什麼我們做不出最好的選擇？' },
+  { id: 'why',       tag: '信息',     title: '因為兩件事' },
   { id: 'star',      tag: '開場',     title: '萬世巨星' },
   { id: 'quiz',      tag: '互動點 2', title: '這句話是誰說的' },
   { id: 'answers',   tag: '解答',     title: '八題的答案' },
@@ -48,8 +49,8 @@ export function createState() {
     phaseIdx: 0,
     players: {},
     order: [],
-    forkIdx: 0,          // 現在走到第幾個岔路（0–2）
-    walked: false,       // 八個結局結算過了沒
+    forkIdx: 0,          // 現在走到第幾個岔路（0–4）
+    forkOpen: [],        // 哪幾個岔路已經公布結果了（公布的那一刻才動分數）
     quizIdx: 0,          // 猜句子開到第幾題
     quizOpen: [],        // 哪幾題已經揭答案了
     seq: 0,
@@ -64,8 +65,15 @@ const grow = (p, n) => { p.inner = Math.min(INNER_CAP, (p.inner || 0) + n); };
 // 防呆：舊版規則建立的房間還會在 DO 裡活六小時，別讓它們把房間打掛。
 const arr = (v) => (Array.isArray(v) ? v : []);
 const openList = (s) => (Array.isArray(s.quizOpen) ? s.quizOpen : (s.quizOpen = []));
+const openForks = (s) => (Array.isArray(s.forkOpen) ? s.forkOpen : (s.forkOpen = []));
+const forkShown = (s, i) => openForks(s).indexOf(i) >= 0;
+// 五個岔路都公布完了才算走完 —— 結局那一頁靠它決定要不要印名字。
+const mapDone = (s) => openForks(s).length >= FORKS.length;
 const pathOf = (p) => arr(p.path).join('');
 const endingOf = (key) => ENDINGS.find((e) => e.path === key) || null;
+// 一條路的總分就是那五個選擇的加減總和，算出來的，不另外寫一張表。
+const pathTotal = (key) => String(key).split('')
+  .reduce((sum, c, k) => sum + (c === 'A' ? FORKS[k].a.delta : FORKS[k].b.delta), 0);
 
 export function addPlayer(s, name) {
   s.seq += 1;
@@ -80,8 +88,9 @@ export function addPlayer(s, name) {
     innerStart: 0,
     visits: 0,
     newcomer: false,
-    path: [],             // 三個岔路各選了 A 還是 B
-    gain: 0,              // 結局加了幾分
+    path: [],             // 五個岔路各選了 A 還是 B
+    deltas: [],           // 五個岔路各加減了幾分（公布的那一刻寫進來）
+    gain: 0,              // 五個岔路的加減總和，可能是負的
     answers: [],          // 八題各選了哪一個（不加分，只是他自己的記錄）
     correct: 0,
     vote: null,           // 天堂和地獄
@@ -97,30 +106,40 @@ export function addPlayer(s, name) {
 }
 
 // ── 人生模擬器 ──────────────────────────────────────────────────────────
-// 三個岔路，主持人按「往前走」才推進。走過的不能回頭改。
-export function forkNext(s) {
-  if (s.forkIdx >= FORKS.length - 1) return false;
-  s.forkIdx += 1;
+// 五個岔路。每一個都是：大家選（隨時可以改）→ 主持人按「公布結果」
+// （兩邊的結果同時翻出來，分數在這一刻才動）→ 按「往前走」進下一個。
+// 公布過的那一個不能回頭改 —— 「你算不到結果」靠它。
+
+// 公布：一個加分、一個扣分，兩邊同時翻。**沒選的人不動分數。**
+export function revealFork(s) {
+  const i = s.forkIdx;
+  const f = FORKS[i];
+  if (!f || forkShown(s, i)) return false;
+  s.forkOpen.push(i);
+  alive(s).forEach((p) => {
+    const c = arr(p.path)[i];
+    if (!c || p.outer === null) return;
+    const d = c === 'B' ? f.b.delta : f.a.delta;
+    const ds = arr(p.deltas).slice();
+    ds[i] = d;
+    p.deltas = ds;
+    p.gain = (p.gain || 0) + d;
+    p.outer = clamp(p.outer + d);
+  });
   return true;
+}
+
+// 一顆按鈕按到底：還沒公布就公布，公布過了才換下一個岔路。
+// **不要拆成兩顆** —— 現場一定會有人只按「往前走」，那一關就沒公布到。
+export function forkStep(s) {
+  if (!forkShown(s, s.forkIdx)) return revealFork(s);
+  if (s.forkIdx < FORKS.length - 1) { s.forkIdx += 1; return true; }
+  return false;
 }
 
 export function forkPrev(s) {
   if (s.forkIdx <= 0) return false;
   s.forkIdx -= 1;
-  return true;
-}
-
-// 走到結局那一頁才結算。**每一條都是加分，沒有人會掉** ——
-// 這一關接在被打到低點的第二關之後，全場往上是這一關的語氣。
-export function walk(s) {
-  if (s.walked) return false;
-  s.walked = true;
-  alive(s).forEach((p) => {
-    const e = endingOf(pathOf(p));
-    if (!e || p.outer === null) return;
-    p.gain = e.gain;
-    p.outer = clamp(p.outer + e.gain);
-  });
   return true;
 }
 
@@ -152,11 +171,9 @@ export function quizPrev(s) {
 }
 
 // ── 階段切換 ────────────────────────────────────────────────────────────
+// 分數在「公布結果」那一刻就動完了，翻頁不再結算任何東西。
 export function enterPhase(s, idx) {
   s.phaseIdx = Math.max(0, Math.min(PHASES.length - 1, idx));
-  const id = phaseId(s);
-  // 走到結局那一頁就結算。爬不回頭 —— 翻走再翻回來不會重算。
-  if (id === 'endings') walk(s);
   return null;
 }
 
@@ -182,11 +199,11 @@ export function applyAction(s, pid, msg) {
       p.innerStart = p.inner;
       break;
     }
-    // 岔路：A 或 B。主持人按「往前走」之前隨時可以改，走過的不能回頭。
+    // 岔路：A 或 B。主持人按「公布結果」之前隨時可以改來改去，公布了就定了。
     case 'fork': {
-      if (!mapOpen(s) || s.walked) break;
+      if (!mapOpen(s)) break;
       const i = Math.max(0, Math.min(FORKS.length - 1, Math.floor(Number(msg.idx))));
-      if (i !== s.forkIdx) break;
+      if (i !== s.forkIdx || forkShown(s, i)) break;
       const v = msg.value === 'B' ? 'B' : 'A';
       const a = arr(p.path).slice();
       a[i] = v;
@@ -234,7 +251,7 @@ export function applyHost(s, msg) {
     case 'next': return enterPhase(s, s.phaseIdx + 1);
     case 'prev': return enterPhase(s, s.phaseIdx - 1);
     case 'goto': return enterPhase(s, Number(msg.idx));
-    case 'forkNext': forkNext(s); return null;
+    case 'forkStep': forkStep(s); return null;
     case 'forkPrev': forkPrev(s); return null;
     case 'quizStep': quizStep(s); return null;
     case 'quizPrev': quizPrev(s); return null;
@@ -256,42 +273,58 @@ export function applyHost(s, msg) {
 }
 
 // ── 對外視圖 ────────────────────────────────────────────────────────────
-// 還沒走完就**不送出結局的文字和分數** —— 送出去等於把答案印在手機上。
+// 還沒公布就**不送出那一格的 delta 和結果** —— 送出去等於把答案印在手機上。
+function sideView(s, i, key) {
+  const f = FORKS[i][key];
+  const shown = forkShown(s, i);
+  return {
+    short: f.short,
+    text: f.text,
+    delta: shown ? f.delta : null,
+    result: shown ? f.result : '',
+    who: alive(s).filter((p) => arr(p.path)[i] === (key === 'a' ? 'A' : 'B')).map((p) => p.name),
+  };
+}
+
 function mapView(s) {
   const ps = alive(s);
   const i = s.forkIdx;
-  const f = FORKS[i];
   return {
     idx: i,
     total: FORKS.length,
-    age: f.age,
-    a: f.a, b: f.b,
+    age: FORKS[i].age,
+    revealed: forkShown(s, i),
+    // 選了就馬上出現在大螢幕上 —— 誰站在哪一邊，全場看得到。
+    a: sideView(s, i, 'a'),
+    b: sideView(s, i, 'b'),
     picked: ps.filter((p) => arr(p.path)[i]).length,
-    counts: {
-      A: ps.filter((p) => arr(p.path)[i] === 'A').length,
-      B: ps.filter((p) => arr(p.path)[i] === 'B').length,
-    },
-    // 走過的岔路攤開誰走了哪一邊 —— 那是地圖的形狀
-    trail: FORKS.map((ff, k) => (k < i || s.walked ? {
+    // 公布過的岔路留在上面，那是地圖的形狀。只留人數和加減，不留名字 ——
+    // 名字在下面那兩格已經有了，上面再排一次會把這一頁擠爆。
+    trail: FORKS.map((ff, k) => (forkShown(s, k) ? {
       age: ff.age,
-      a: ps.filter((p) => arr(p.path)[k] === 'A').map((p) => p.name),
-      b: ps.filter((p) => arr(p.path)[k] === 'B').map((p) => p.name),
+      a: { short: ff.a.short, delta: ff.a.delta, n: ps.filter((p) => arr(p.path)[k] === 'A').length },
+      b: { short: ff.b.short, delta: ff.b.delta, n: ps.filter((p) => arr(p.path)[k] === 'B').length },
     } : null)),
   };
 }
 
-// 結局頁：八條全部攤開。**只看自己那一條是運氣，八條一起看才是「沒有規則」。**
+// 結局頁：三十二條全部攤開。**只看自己那一條是運氣，三十二條一起看才是「沒有規則」。**
+// 有人走到的排最上面，走的人越多越上面。
 function endingsView(s) {
   const ps = alive(s);
-  const shown = s.walked;
-  return ENDINGS.map((e) => ({
+  const rows = ENDINGS.map((e) => ({
     path: e.path,
-    // 短標籤：穩定 → 加班 → 投資
+    // 短標籤：打工 → 接下 → 投資 → 留下 → 回家
     steps: e.path.split('').map((c, k) => (c === 'A' ? FORKS[k].a.short : FORKS[k].b.short)),
-    text: shown ? e.text : '',
-    gain: shown ? e.gain : null,
+    text: e.text,
+    total: pathTotal(e.path),
     who: ps.filter((p) => pathOf(p) === e.path).map((p) => p.name),
   }));
+  // 有人走到的先排，人多的在前面；剩下的維持原本的順序。
+  return rows
+    .map((r, i) => ({ r, i }))
+    .sort((x, y) => (y.r.who.length - x.r.who.length) || (x.i - y.i))
+    .map((x) => x.r);
 }
 
 function quizView(s) {
@@ -347,8 +380,9 @@ function common(s) {
     map: MAP,
     mapNow: mapView(s),
     endings: endingsView(s),
-    walked: !!s.walked,
+    mapDone: mapDone(s),
     sin: SIN,
+    why: WHY,
     star: STAR,
     traces: TRACES,
     quiz: quizView(s),
@@ -377,7 +411,7 @@ export function hostView(s, roomCode) {
       pid: p.pid, name: p.name,
       outer: p.outer, outerStart: p.outerStart, inner: p.inner || 0,
       visits: p.visits, newcomer: p.newcomer,
-      path: arr(p.path), gain: p.gain || 0,
+      path: arr(p.path), deltas: arr(p.deltas), gain: p.gain || 0,
       answered: typeof arr(p.answers)[s.quizIdx] === 'number',
       correct: p.correct || 0,
       vote: typeof p.vote === 'number' ? p.vote : null,
@@ -418,7 +452,8 @@ export function playerView(s, pid, roomCode) {
     voted: alive(s).filter((x) => typeof x.vote === 'number').length,
   };
   if (!p) return { ...base, me: null };
-  const e = s.walked ? endingOf(pathOf(p)) : null;
+  // 五個岔路都公布完了才給他結局的文字 —— 提早送出就是把答案印在他手機上。
+  const e = mapDone(s) ? endingOf(pathOf(p)) : null;
   return {
     ...base,
     me: {
@@ -427,8 +462,9 @@ export function playerView(s, pid, roomCode) {
       inner: p.inner || 0, innerCap: INNER_CAP,
       visits: p.visits, newcomer: p.newcomer,
       path: arr(p.path),
+      deltas: arr(p.deltas),
       gain: p.gain || 0,
-      ending: e ? { text: e.text, gain: e.gain } : null,
+      ending: e ? { text: e.text, total: pathTotal(e.path) } : null,
       answers: arr(p.answers), correct: p.correct || 0,
       vote: typeof p.vote === 'number' ? p.vote : null,
       whois: arr(p.whois),

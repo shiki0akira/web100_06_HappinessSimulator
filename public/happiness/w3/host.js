@@ -49,7 +49,7 @@
       // **不掛「新朋友」標籤。** 它就貼在名字旁邊，全場都看得到 ——
       // 第一次來的人會覺得自己被標記了。要知道誰第一次來，看主持人備忘錄。
       var chips = [];
-      if (onMap && !S.walked) chips.push('<span class="chip' + (p.path[S.mapNow.idx] ? ' on' : '') + '">' + (p.path[S.mapNow.idx] ? '已選' : '還沒選') + '</span>');
+      if (onMap && !S.mapNow.revealed) chips.push('<span class="chip' + (p.path[S.mapNow.idx] ? ' on' : '') + '">' + (p.path[S.mapNow.idx] ? '已選' : '還沒選') + '</span>');
       if (onQuiz) chips.push('<span class="chip' + (p.answered ? ' on' : '') + '">' + (p.answered ? '已作答' : '還沒答') + '</span>');
       if (onVote) chips.push('<span class="chip' + (p.vote !== null ? ' on' : '') + '">' + (p.vote !== null ? '已投票' : '還沒投') + '</span>');
       if (p.hasBurden) chips.push('<span class="chip">已填寫</span>');
@@ -57,12 +57,16 @@
 
       // 走完之後印他那一條路。主持人接話全靠這一行。
       var meta = '';
-      if (S.walked && p.path.length) {
+      if (S.mapDone && p.path.length) {
         meta = '<div class="meta keep">' + p.path.map(function (c, k) {
           return esc(c === 'A' ? S.forks[k].a.short : S.forks[k].b.short);
         }).join(' → ') + '</div>';
       }
-      var delta = (S.walked && p.gain) ? '<span class="up">+' + p.gain + '</span>' : '';
+      // **這一關會有人掉分**（一正一負），所以這裡要吃得下負號。
+      var delta = p.gain
+        ? '<span class="' + (p.gain > 0 ? 'up' : 'down') + '">' +
+            (p.gain > 0 ? '+' : '') + p.gain + '</span>'
+        : '';
       return '' +
         '<div class="prow">' +
           '<div class="nm">' + esc(p.name) + delta + chips.join('') + '</div>' +
@@ -81,40 +85,54 @@
   }
 
   // ── 人生模擬器 ───────────────────────────────────────────────────────
-  // 走過的岔路留在畫面上，那是地圖的形狀；現在這一個是兩個大格子。
-  function forkBoard() {
-    var m = S.mapNow;
-    var trail = m.trail.map(function (t, k) {
-      if (!t) return '';
+  var sign = function (n) { return (n > 0 ? '+' : '') + n; };
+
+  // 公布過的岔路留在上面，那是地圖的形狀。只留人數和加減 ——
+  // 名字在下面那兩格已經有了，上面再排一次會把這一頁擠爆。
+  function forkTrail() {
+    var rows = S.mapNow.trail.map(function (t, k) {
+      if (!t || k >= S.mapNow.idx) return '';
+      var side = function (x) {
+        return '<span class="side' + (x.delta > 0 ? ' up' : ' down') + '">' +
+          esc(x.short) + '<i>' + sign(x.delta) + '</i><em>' + x.n + ' 人</em></span>';
+      };
       return '<div class="trailrow">' +
-        '<span class="age">' + esc(S.forks[k].age) + '</span>' +
-        '<span class="side">' + esc(S.forks[k].a.short) +
-          '<i>' + (t.a.length ? t.a.map(esc).join('・') : '—') + '</i></span>' +
-        '<span class="side">' + esc(S.forks[k].b.short) +
-          '<i>' + (t.b.length ? t.b.map(esc).join('・') : '—') + '</i></span>' +
+        '<span class="age">' + esc(t.age) + '</span>' + side(t.a) + side(t.b) +
       '</div>';
     }).join('');
-
-    return (trail ? '<div class="trail">' + trail + '</div>' : '') +
-      '<div class="forkbox">' +
-        '<div class="forkage">' + esc(m.age) + '　<small>岔路 ' + (m.idx + 1) + ' / ' + m.total + '</small></div>' +
-        '<div class="forks">' +
-          '<div class="fk"><span class="tag2">A</span><b>' + esc(m.a.text) + '</b></div>' +
-          '<div class="fk"><span class="tag2">B</span><b>' + esc(m.b.text) + '</b></div>' +
-        '</div>' +
-      '</div>' +
-      counter(S.stats.forkPicked, '人已選');
+    return rows ? '<div class="trail">' + rows + '</div>' : '';
   }
 
-  // 結局頁：八條全部攤開。**只看自己那一條是運氣，八條一起看才是「沒有規則」。**
+  // 現在這一個岔路：**左右兩大格**。誰選了哪一邊，選完馬上出現在格子裡。
+  // 主持人按「公布結果」，兩邊的結果和加減同時翻出來。
+  function forkBoard() {
+    var m = S.mapNow;
+    var side = function (x, tag) {
+      var cls = 'fk';
+      if (m.revealed) cls += x.delta > 0 ? ' win' : ' lose';
+      return '<div class="' + cls + '">' +
+        '<div class="fkhd"><span class="tag2">' + tag + '</span>' +
+          (m.revealed ? '<span class="fkd">' + sign(x.delta) + '</span>' : '') + '</div>' +
+        '<b>' + esc(x.text) + '</b>' +
+        '<div class="fkwho">' + (x.who.length ? x.who.map(esc).join('・') : '　') + '</div>' +
+        (m.revealed ? '<div class="fkres">' + esc(x.result) + '</div>' : '') +
+      '</div>';
+    };
+    return forkTrail() +
+      '<div class="forkbox">' +
+        '<div class="forkage">' + esc(m.age) + '　<small>' + (m.idx + 1) + ' / ' + m.total + '</small></div>' +
+        '<div class="forks">' + side(m.a, 'A') + side(m.b, 'B') + '</div>' +
+      '</div>' +
+      (m.revealed ? '' : counter(S.stats.forkPicked, '人已選'));
+  }
+
+  // 結局頁：三十二條全部攤開，有人走到的排最上面。
+  // **只看自己那一條是運氣，三十二條一起看才是「沒有規則」。**
   function endingBoard() {
-    return '<div class="endlist' + (S.endings.length > 6 ? ' dense' : '') + '">' + S.endings.map(function (e) {
-      return '<div class="endrow' + (e.who.length ? ' mine' : '') + '">' +
-        '<span class="steps">' + e.steps.map(function (t) {
-          return '<span class="st">' + esc(t) + '</span>';
-        }).join('<i>→</i>') + '</span>' +
+    return '<div class="endgrid">' + S.endings.map(function (e) {
+      return '<div class="erow' + (e.who.length ? ' mine' : '') + '">' +
+        '<span class="tot ' + (e.total > 0 ? 'up' : 'down') + '">' + sign(e.total) + '</span>' +
         '<span class="txt">' + esc(e.text) + '</span>' +
-        '<span class="gain">' + (e.gain == null ? '' : '+' + e.gain) + '</span>' +
         '<span class="who">' + (e.who.length ? e.who.map(esc).join('・') : '') + '</span>' +
       '</div>';
     }).join('') + '</div>';
@@ -233,10 +251,20 @@
         '<p class="endline">' + esc(S.map.endLine) + '</p>';
     },
 
-    // **畫面上只有這一句。** 射不中那一段是你講的 —— 印在牆上他們會自己讀完，
-    // 而且那幾行是解釋，不是題目。跟舊版「死後還有審判」只放五個字是同一個做法。
+    // **畫面上只有這一句問句。** 答案在下一頁 —— 先印出來他們就不會自己想了。
     sin: function () {
       return '<div class="solo"><h2>' + esc(S.sin.title) + '</h2></div>';
+    },
+
+    // 兩個答案。**「罪＝射不中」那一段不印在牆上** —— 那是你講的。
+    why: function () {
+      return '<h2>' + esc(S.why.title) + '</h2>' +
+        '<div class="steps3">' + S.why.reasons.map(function (r, i) {
+          return '<div class="s3 on">' +
+            '<b><span class="no">' + (i + 1) + '</span>' + esc(r.head) + '</b>' +
+            '<span>' + esc(r.line) + '</span>' +
+          '</div>';
+        }).join('') + '</div>';
     },
 
     // 開場白：燈亮著，**光裡還沒有人**。不揭曉是誰。
@@ -373,11 +401,14 @@
 
 
     if (S.phase.id === 'map') {
+      // 一顆按鈕按到底：還沒公布就是「公布結果」，公布過了才變「往前走」。
       var last = S.mapNow.idx >= S.mapNow.total - 1;
       document.getElementById('fprev').disabled = S.mapNow.idx <= 0;
-      var fn = document.getElementById('fnext');
-      fn.textContent = last ? '走完了，按下一頁' : '往前走 →（' + (S.mapNow.idx + 2) + '/' + S.mapNow.total + '）';
-      fn.disabled = last;
+      var fn = document.getElementById('fstep');
+      fn.textContent = !S.mapNow.revealed
+        ? '公布結果（' + (S.mapNow.idx + 1) + '/' + S.mapNow.total + '）'
+        : (last ? '走完了，按下一頁' : '往前走 →（' + (S.mapNow.idx + 2) + '/' + S.mapNow.total + '）');
+      fn.disabled = S.mapNow.revealed && last;
     }
     if (S.phase.id === 'quiz') {
       // 一顆按鈕按到底：還沒揭就是「揭曉答案」，揭過了才變「下一題」。

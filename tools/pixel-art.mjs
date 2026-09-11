@@ -644,11 +644,12 @@ function animatedSvg(w, h, css, body, label) {
   console.log('第三關：superstar.svg（十字架下、聚光燈裡的他）');
 }
 
-// ── 第三關：還沒開燈 ────────────────────────────────────────────────────
-// 「我想先跟大家介紹一位萬世巨星」那一頁：**燈是暗的，台上只有一個黑色的人影**。
-// 沒有十字架、沒有光束、沒有星星 —— 這一頁的戲就是「有人站在那裡，但你看不見他是誰」。
+// ── 第三關：聚光燈打在一個還看不清楚的人身上 ──────────────────────────
+// 「我想先跟大家介紹一位萬世巨星」那一頁：**聚光燈一閃一閃的，台上是一個黑色的人影**。
+// 沒有十字架、沒有星星、看不見他的臉 ——
+// 這一頁的戲就是「燈已經打下去了，但你還看不出來他是誰」。
 //
-// 玩完八題、公布答案之後翻到下一頁：燈亮了、十字架出現、他的臉也出現。
+// 玩完八題、公布答案之後翻到下一頁：十字架出現、他的臉也出現。
 // **兩張圖的人站在同一個位置**（FX/FY 一樣），所以翻頁的時候他不會跳。
 {
   const OUT_SHARED = 'public/happiness/shared/art';
@@ -656,9 +657,22 @@ function animatedSvg(w, h, css, body, label) {
   const FX = 13, FY = 29;
   let body = '';
 
-  // 關著的燈：燈罩還在，但沒有那顆亮的燈泡，也沒有光束。
+  // 燈罩＋燈口。燈是開著的，所以燈口這一條是亮的。
   body += `<rect x="21" y="0" width="6" height="2" fill="${PAL.D}"/>`;
-  body += `<rect x="20" y="2" width="8" height="1" fill="${PAL.D}"/>`;
+  body += `<rect x="20" y="2" width="8" height="1" fill="${PAL.o}"/>`;
+  body += `<rect x="21" y="3" width="6" height="1" fill="${PAL.G}"/>`;
+
+  // 光束：從燈口一路開到地上，越下面越寬也越淡。跟下一頁同一個算式 ——
+  // **兩頁的光要疊得起來**，翻頁的時候只有十字架和他的臉會出現。
+  let beam = '';
+  for (let y = 4; y <= 54; y++) {
+    const k = (y - 4) / 50;
+    const w = 5 + k * 34;
+    const x = 24 - w / 2;
+    const op = (0.30 - k * 0.22).toFixed(3);
+    beam += `<rect x="${x.toFixed(1)}" y="${y}" width="${w.toFixed(1)}" height="1" fill="${PAL.G}" opacity="${op}"/>`;
+  }
+  body += `<g class="beam">${beam}</g>`;
 
   // 黑色的人影。用深板岩色不用純黑 ——
   // **純黑在深色主題上會整個消失**；這個顏色在亮底上夠深，在暗底上又還看得出輪廓。
@@ -694,12 +708,17 @@ function animatedSvg(w, h, css, body, label) {
   SHADOW.forEach((r, y) => { if (r.length !== 22) throw new Error('第 ' + y + ' 列不是 22 格：' + r.length); });
   body += sprite(SHADOW, FX, FY);
 
-  // 地板。燈沒開，所以地上沒有那一圈光。
-  body += `<rect x="4" y="57" width="40" height="1" fill="${PAL.w}" opacity=".3"/>`;
+  // 地板 ＋ 光落在地上的一圈
+  body += `<rect x="11" y="56" width="26" height="1" fill="${PAL.G}" opacity=".28"/>`;
+  body += `<rect x="4" y="57" width="40" height="1" fill="${PAL.w}" opacity=".4"/>`;
 
-  // **這一張不動。** 開場白要的是安靜，不是動畫 —— 會動的東西留給下一頁。
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" shape-rendering="crispEdges"` +
-    ` role="img" aria-label="還沒開燈">${body}</svg>\n`;
-  fs.writeFileSync(OUT_SHARED + '/superstar-empty.svg', svg);
-  console.log('第三關：superstar-empty.svg（燈還沒開，台上一個黑影）');
+  // 一閃一閃：硬切，不做淡入淡出 —— 這一套視覺沒有漸層。
+  // **比下一頁閃得更明顯**（0.25 ↔ 1，而且快一點）：這一頁的燈還在找人，
+  // 下一頁的燈已經找到他了，所以下一頁只是微微呼吸。
+  const css =
+    '.beam{animation:sp0 1.1s steps(1) infinite}' +
+    '@keyframes sp0{0%,44%{opacity:.25}45%,89%{opacity:1}90%,100%{opacity:.6}}';
+
+  fs.writeFileSync(OUT_SHARED + '/superstar-empty.svg', animatedSvg(W, H, css, body, '聚光燈下還看不清楚的人'));
+  console.log('第三關：superstar-empty.svg（聚光燈一閃一閃，台上一個黑影）');
 }

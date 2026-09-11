@@ -84,30 +84,46 @@
           (draft.byVisits ? '我有卡片，改填幸福根基' : '忘記帶卡片？改填「這是你第幾次來」') + '</button>';
     },
 
-    // 岔路：兩顆按鈕。主持人往前走之前隨時可以改。
+    // 岔路：兩顆單選按鈕，點來點去都可以 —— 主持人公布結果之前都算數。
+    // 公布之後這一頁就變成他自己那一邊的結果。
     map: function (me) {
       var m = S.mapNow;
       var mine = me.path[m.idx];
-      return '<div class="qn">' + esc(m.age) + '　岔路 ' + (m.idx + 1) + ' / ' + m.total + '</div>' +
-        myPath(me) +
+      var head = '<div class="qn">' + esc(m.age) + '　' + (m.idx + 1) + ' / ' + m.total + '</div>' +
+        myPath(me);
+      if (m.revealed) {
+        var x = mine === 'B' ? m.b : m.a;
+        if (!mine) return head + wait('看大螢幕', '這一題你沒有選');
+        return head +
+          '<div class="ending">' + esc(x.result) + '</div>' +
+          '<div class="hit ' + (x.delta > 0 ? 'up' : 'down') + '">幸福指數 ' +
+            (x.delta > 0 ? '+' : '') + x.delta + '</div>' +
+          wait('看大螢幕');
+      }
+      return head +
         '<div class="lotgrid">' +
           '<div class="lotchk road' + (mine === 'A' ? ' on' : '') + '" data-fork="A">' +
             '<span><b>' + esc(m.a.text) + '</b></span></div>' +
           '<div class="lotchk road' + (mine === 'B' ? ' on' : '') + '" data-fork="B">' +
             '<span><b>' + esc(m.b.text) + '</b></span></div>' +
         '</div>' +
-        (mine ? '<p class="privacy">選好了，主持人往前走之前都可以改。</p>'
+        (mine ? '<p class="privacy">選好了，主持人公布結果之前都可以改。</p>'
               : '<p class="privacy">選你自己會選的那一個 —— 不用想哪個是對的。</p>');
     },
 
-    // 結局：只給他自己那一條。八條要在大螢幕上一起看才有意思。
+    // 結局：只給他自己那一條。三十二條要在大螢幕上一起看才有意思。
     endings: function (me) {
-      if (!me.ending) return '<h2>你走到哪裡</h2>' + wait('看大螢幕', '這一輪你沒有走完');
-      return '<h2>你走到哪裡</h2>' +
+      if (!me.ending) return '<h2>你的人生</h2>' + wait('看大螢幕', '這一輪你沒有走完');
+      var t = me.ending.total;
+      return '<h2>你的人生</h2>' +
         myPath(me) +
         '<div class="ending">' + esc(me.ending.text) + '</div>' +
-        '<div class="hit up">幸福指數 +' + me.ending.gain + '</div>' +
-        wait('看大螢幕', '八條路都在上面');
+        '<div class="hit ' + (t > 0 ? 'up' : 'down') + '">幸福指數 ' + (t > 0 ? '+' : '') + t + '</div>' +
+        wait('看大螢幕', '三十二條路都在上面');
+    },
+
+    why: function () {
+      return '<h2>' + esc(S.why.title) + '</h2>' + wait('聽主持人說');
     },
 
     sin: function () {
@@ -358,7 +374,7 @@
     document.getElementById('innerbar').style.width = me.inner + '%';
 
     var next = [
-      S.phase.id, S.mapNow.idx, S.walked, S.quiz.idx, S.quiz.revealed,
+      S.phase.id, S.mapNow.idx, S.mapNow.revealed, S.quiz.idx, S.quiz.revealed,
       me.outer, me.inner, me.visits, me.path.join(''), me.answers.join(','), me.vote,
       me.whois.join(','), me.receivedVerse, me.cardDone, me.hasBurden,
       draft.byVisits,
