@@ -418,7 +418,7 @@ export function hostView(s, roomCode) {
       warmup: p.warmup,
       cardKind: p.card ? p.card.kind : null, cardFlipped: p.cardFlipped,
       auctionBonus: p.auctionBonus || 0,
-      hasBurden: p.hasBurden,
+      hasBurden: p.hasBurden, prayed: !!p.prayed,
       receivedVerse: p.receivedVerse, adjust: p.adjust,
     })),
     stats: {
@@ -433,7 +433,8 @@ export function hostView(s, roomCode) {
       startAvg: sc.length ? Math.round(sc.reduce((a, b) => a + b.outerStart, 0) / sc.length) : null,
       topBuyers, richest, poorest,
       flipped: ps.filter((p) => p.cardFlipped).length,
-      burdens: ps.filter((p) => p.hasBurden).length,
+      // 「已填寫」＝按過那顆按鈕的人。什麼都沒寫也算 —— 你等的是那顆按鈕。
+      burdens: ps.filter((p) => p.prayed).length,
       hitCards: hits.concat(narrate),
       // 每個人抽到的卡，翻開了才進來 —— 第 11 頁一次看完
       allCards: ps.filter((p) => p.cardFlipped && p.card)
@@ -473,7 +474,7 @@ export function playerView(s, pid, roomCode) {
       points: p.points, won: p.won, auctionBonus: p.auctionBonus || 0,
       card: p.cardFlipped ? p.card : (p.card ? { hidden: true } : null),
       cardFlipped: p.cardFlipped,
-      hasBurden: p.hasBurden,
+      hasBurden: p.hasBurden, prayed: !!p.prayed,
       receivedVerse: p.receivedVerse, cardDone: p.cardDone,
       myBid: s.auction.bids[p.pid] ? s.auction.bids[p.pid].amount : null,
     },

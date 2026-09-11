@@ -354,7 +354,8 @@ export function hostView(s, roomCode) {
       })(),
       versesReceived: ps.filter((p) => p.receivedVerse).length,
       cardsDone: ps.filter((p) => p.cardDone).length,
-      burdens: ps.filter((p) => p.hasBurden).length,
+      // 「已填寫」＝按過那顆按鈕的人。什麼都沒寫也算 —— 你等的是那顆按鈕。
+      burdens: ps.filter((p) => p.prayed).length,
     },
   };
 }
@@ -397,7 +398,7 @@ export function playerView(s, pid, roomCode) {
       bag: bagOf(s, p), bagIds: bagIds(p), bagDone: !!p.bagDone, loss: p.loss || 0,
       poll: typeof p.poll === 'number' ? p.poll : null,
       gift: p.gift || 0,
-      hasBurden: !!p.hasBurden,
+      hasBurden: !!p.hasBurden, prayed: !!p.prayed,
       receivedVerse: !!p.receivedVerse, cardDone: !!p.cardDone,
     },
   };

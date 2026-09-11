@@ -195,8 +195,8 @@
       return '<h2>祝福禱告</h2>' +
         '<p>領受經文後，你有什麼想法？寫下來，等一下一起禱告。</p>' +
         '<textarea id="bd" maxlength="120" placeholder="一句話就好">' + esc(mine) + '</textarea>' +
-        '<button class="btn primary fullbtn" id="savebd">' + (mine ? '更新' : '寫好了') + '</button>' +
-        (me.hasBurden || mine
+        '<button class="btn primary fullbtn" id="savebd">' + (me.prayed ? '更新' : '寫好了') + '</button>' +
+        (me.prayed
           ? '<div class="grew"><img src="/happiness/shared/art/prayer.svg" alt="">' +
             '<p class="ok">已存下<br><b>？？？ +5</b></p></div>'
           : '');
@@ -352,7 +352,7 @@
     var next = [
       S.phase.id, S.auction.status, S.auction.idx,
       me.warmup, me.outer, me.inner, me.myBid, me.cardFlipped,
-      me.receivedVerse, me.cardDone, me.hasBurden, me.points, me.won.length,
+      me.receivedVerse, me.cardDone, me.hasBurden, me.prayed, me.points, me.won.length,
       S.pointsInPlay, S.answeredWarmup, S.answeredScore, S.playerCount, me.auctionBonus,
     ].join('|');
     if (next !== sig) {

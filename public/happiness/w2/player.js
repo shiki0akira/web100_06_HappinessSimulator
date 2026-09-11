@@ -215,8 +215,8 @@
       return '<h2>祝福禱告</h2>' +
         '<p>今天有哪一樣的折舊，讓你心裡動了一下？寫下來，等一下一起禱告。</p>' +
         '<textarea id="bd" maxlength="120" placeholder="一句話就好">' + esc(mine) + '</textarea>' +
-        '<button class="btn primary fullbtn" id="savebd">' + (mine ? '更新' : '寫好了') + '</button>' +
-        (me.hasBurden || mine
+        '<button class="btn primary fullbtn" id="savebd">' + (me.prayed ? '更新' : '寫好了') + '</button>' +
+        (me.prayed
           ? '<div class="grew"><img src="/happiness/shared/art/prayer.svg" alt="">' +
             '<p class="ok">已存下<br><b>幸福根基 +5</b></p></div>'
           : '') +
@@ -422,7 +422,7 @@
     var next = [
       S.phase.id, S.shelf.flipped, S.named, S.giftOpen, S.shopOpen,
       me.outer, me.inner, me.visits, me.bagDone, me.bagIds.join(','),
-      me.poll, me.receivedVerse, me.cardDone, me.hasBurden,
+      me.poll, me.receivedVerse, me.cardDone, me.hasBurden, me.prayed,
       draft.editing, draft.byVisits, draft.bag.join(','),
     ].join('|');
     if (next !== sig) {

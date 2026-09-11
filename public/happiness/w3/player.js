@@ -418,7 +418,7 @@
     var next = [
       S.phase.id, S.mapNow.idx, S.mapNow.revealed, S.quiz.idx, S.quiz.revealed,
       me.outer, me.inner, me.visits, me.path.join(''), me.answers.join(','), me.vote,
-      me.whois.join(','), me.receivedVerse, me.cardDone, me.hasBurden,
+      me.whois.join(','), me.receivedVerse, me.cardDone, me.hasBurden, me.prayed,
       draft.byVisits,
     ].join('|');
     if (next !== sig) {
