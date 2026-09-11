@@ -1,7 +1,7 @@
 // 玩家手機 · 第三關「萬世巨星」
 (function () {
   'use strict';
-  var S = null, pid = null, src = null, sig = '', cardURL = null;
+  var S = null, pid = null, src = null, sig = '', cardURL = null, cardBlob = null;
   var screen = document.getElementById('screen');
   var statusEl = document.getElementById('status');
 
@@ -240,37 +240,18 @@
       return '<h2>儲存模擬回憶</h2>' +
         '<p>這張卡是下一關的入場券。</p>' +
         '<img class="weekcard" id="cardimg" alt="第三關週卡">' +
-        '<button class="btn primary fullbtn" id="zoom">放大這張卡</button>' +
-        '<p class="privacy">放大之後直接截圖就好。現在就截——回家就忘了。</p>';
+        '<a class="btn primary fullbtn" id="zoom" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none">放大這張卡</a>';
     },
 
     end: function (me) {
       return '<h2>下週見</h2>' +
         '<p>下次見。記得帶著你的卡片——開場會請你輸入上面的兩個數字。</p>' +
         (cardURL ? '<img class="weekcard" src="' + cardURL + '" alt="第三關週卡">' : '') +
-        (cardURL ? '<button class="btn ghost fullbtn" id="zoom">放大這張卡</button>' : '') +
+        (cardURL ? '<a class="btn ghost fullbtn" id="zoom" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none">放大這張卡</a>' : '') +
         '<p class="privacy">忘記截也沒關係。下一關直接重新評估現在的自己，一樣算數。</p>';
     },
   };
 
-  // 滿版看卡片。**這一層蓋掉上面那條狀態列**，截出來才是乾淨的一張卡。
-  // 為什麼不用 <a download>：下載到手機上就掉進檔案夾裡，
-  // 而且 iOS 每支手機的下載流程長得都不一樣，現場一定會卡住。
-  // 大家本來就都用截圖 —— 那就給他一頁滿版的圖。
-  function openCard() {
-    if (!cardURL) return;
-    var old = document.getElementById('cardfull');
-    if (old) old.remove();
-    var box = document.createElement('div');
-    box.id = 'cardfull';
-    box.innerHTML =
-      '<img src="' + cardURL + '" alt="第三關週卡">' +
-      '<button type="button" class="x">關閉</button>' +
-      '<p>直接截圖，然後按關閉。</p>';
-    // 點圖以外的地方也關得掉 —— 但圖本身點不關，截圖的時候手指會碰到它。
-    box.onclick = function (e) { if (e.target.tagName !== 'IMG') box.remove(); };
-    document.body.appendChild(box);
-  }
 
   // ── 綁定事件 ─────────────────────────────────────────────────────────
   function bind(me) {
@@ -338,7 +319,7 @@
     };
 
     var zm = document.getElementById('zoom');
-    if (zm) zm.onclick = function () { openCard(); };
+    if (zm && cardBlob) zm.href = cardBlob;
 
     // 進到週卡這一頁＝這一關做完了。狀態回來之後才畫圖。
     if (S.phase.id === 'card' && !me.cardDone) act('card');
@@ -368,6 +349,15 @@
         });
         cardURL = cv.toDataURL('image/png');
         img.src = cardURL;
+        // 開新分頁看的是這一份。**blob: 不是 data:** ——
+        // Chrome 擋掉 data: 的頂層導航，blob: 才開得起來。
+        cv.toBlob(function (b) {
+          if (!b) return;
+          if (cardBlob) URL.revokeObjectURL(cardBlob);
+          cardBlob = URL.createObjectURL(b);
+          var z = document.getElementById('zoom');
+          if (z) z.href = cardBlob;
+        }, 'image/png');
       };
       if (document.fonts && document.fonts.ready) document.fonts.ready.then(make); else make();
     }
