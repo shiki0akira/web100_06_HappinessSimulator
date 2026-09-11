@@ -277,18 +277,19 @@
 
     // **畫面上只有這一句問句。** 答案在下一頁 —— 先印出來他們就不會自己想了。
     sin: function () {
-      return '<div class="solo"><h2>' + esc(S.sin.title) + '</h2></div>';
+      return '<div class="solo"><h2>' + esc(S.sin.title) + '</h2>' +
+        '<p class="sololine">' + esc(S.sin.line) + '</p></div>';
     },
 
-    // 兩個答案。**「罪＝射不中」那一段不印在牆上** —— 那是你講的。
-    why: function () {
-      return '<h2>' + esc(S.why.title) + '</h2>' +
-        '<div class="steps3">' + S.why.reasons.map(function (r, i) {
-          return '<div class="s3 on">' +
-            '<b><span class="no">' + (i + 1) + '</span>' + esc(r.head) + '</b>' +
-            '<span>' + esc(r.line) + '</span>' +
-          '</div>';
-        }).join('') + '</div>';
+    // 答案只有一個字：罪。**先把它跟法律切開**，再把七宗罪貼出來。
+    // 「射不中」那一段不印在牆上 —— 那是你講的。
+    sins: function () {
+      return '<h2>' + esc(S.sins.title) + '</h2>' +
+        '<p class="lede big-lede">' + esc(S.sins.lead) + '</p>' +
+        '<div class="sintags">' + S.sins.tags.map(function (t) {
+          return '<span class="sintag"><b>' + esc(t.k) + '</b><i>' + esc(t.v) + '</i></span>';
+        }).join('') + '</div>' +
+        '<p class="endline">' + esc(S.sins.close) + '</p>';
     },
 
     // 開場白：燈亮著，**光裡還沒有人**。不揭曉是誰。

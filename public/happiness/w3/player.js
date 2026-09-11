@@ -124,8 +124,8 @@
         wait('看大螢幕', '三十二條路都在上面');
     },
 
-    why: function () {
-      return '<h2>' + esc(S.why.title) + '</h2>' + wait('聽主持人說');
+    sins: function () {
+      return '<h2>' + esc(S.sins.title) + '</h2>' + wait('看大螢幕');
     },
 
     sin: function () {
@@ -232,22 +232,45 @@
         '<p class="privacy">🔒 這兩格只存在你這支手機裡，主持人的畫面只看得到「已填寫」。它們會並排印在你今天的卡片上。</p>';
     },
 
+    // **不給「下載」。** 下載到手機上就掉進檔案夾裡，而且 iOS 的下載流程
+    // 每支手機長得都不一樣，現場會卡住。大家本來就都用截圖 ——
+    // 那就給他一頁滿版的圖，按一下截圖就走。
     card: function (me) {
       if (!me.cardDone) return '<h2>儲存模擬回憶</h2>' + wait('生成中');
       return '<h2>儲存模擬回憶</h2>' +
-        '<p>長按圖片存進相簿。這張卡是下一關的入場券。</p>' +
+        '<p>這張卡是下一關的入場券。</p>' +
         '<img class="weekcard" id="cardimg" alt="第三關週卡">' +
-        '<a class="btn primary fullbtn" id="dl" style="display:block;text-align:center;text-decoration:none" download="幸福模擬器-W3-萬世巨星.png">下載這張卡</a>' +
-        '<p class="privacy">現在就存。不要等回家——回家就忘了。</p>';
+        '<button class="btn primary fullbtn" id="zoom">放大這張卡</button>' +
+        '<p class="privacy">放大之後直接截圖就好。現在就截——回家就忘了。</p>';
     },
 
     end: function (me) {
       return '<h2>下週見</h2>' +
         '<p>下次見。記得帶著你的卡片——開場會請你輸入上面的兩個數字。</p>' +
         (cardURL ? '<img class="weekcard" src="' + cardURL + '" alt="第三關週卡">' : '') +
-        '<p class="privacy">忘記存也沒關係。下一關直接重新評估現在的自己，一樣算數。</p>';
+        (cardURL ? '<button class="btn ghost fullbtn" id="zoom">放大這張卡</button>' : '') +
+        '<p class="privacy">忘記截也沒關係。下一關直接重新評估現在的自己，一樣算數。</p>';
     },
   };
+
+  // 滿版看卡片。**這一層蓋掉上面那條狀態列**，截出來才是乾淨的一張卡。
+  // 為什麼不用 <a download>：下載到手機上就掉進檔案夾裡，
+  // 而且 iOS 每支手機的下載流程長得都不一樣，現場一定會卡住。
+  // 大家本來就都用截圖 —— 那就給他一頁滿版的圖。
+  function openCard() {
+    if (!cardURL) return;
+    var old = document.getElementById('cardfull');
+    if (old) old.remove();
+    var box = document.createElement('div');
+    box.id = 'cardfull';
+    box.innerHTML =
+      '<img src="' + cardURL + '" alt="第三關週卡">' +
+      '<button type="button" class="x">關閉</button>' +
+      '<p>直接截圖，然後按關閉。</p>';
+    // 點圖以外的地方也關得掉 —— 但圖本身點不關，截圖的時候手指會碰到它。
+    box.onclick = function (e) { if (e.target.tagName !== 'IMG') box.remove(); };
+    document.body.appendChild(box);
+  }
 
   // ── 綁定事件 ─────────────────────────────────────────────────────────
   function bind(me) {
@@ -313,6 +336,9 @@
       if (n) act('rename', { name: n });
     };
 
+    var zm = document.getElementById('zoom');
+    if (zm) zm.onclick = function () { openCard(); };
+
     // 進到週卡這一頁＝這一關做完了。狀態回來之後才畫圖。
     if (S.phase.id === 'card' && !me.cardDone) act('card');
 
@@ -341,8 +367,6 @@
         });
         cardURL = cv.toDataURL('image/png');
         img.src = cardURL;
-        var dl = document.getElementById('dl');
-        if (dl) dl.href = cardURL;
       };
       if (document.fonts && document.fonts.ready) document.fonts.ready.then(make); else make();
     }

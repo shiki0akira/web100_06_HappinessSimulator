@@ -79,7 +79,7 @@ var GROUP_NAME = '幸福小組';
   // data: { week, name, outer, outerPrev, inner, innerLabel, verseRef, verseText,
   //         burden, bought, listLabel, path: { label, steps: [] } }
   function drawWeekCard(canvas, data) {
-    var W = 1080, H = 1440, M = 96, CW = W - M * 2;
+    var W = 1080, H = 1560, M = 96, CW = W - M * 2;
     canvas.width = W; canvas.height = H;
     var ctx = canvas.getContext('2d');
     ctx.textBaseline = 'alphabetic';
@@ -173,8 +173,8 @@ var GROUP_NAME = '幸福小組';
     ctx.fillText(data.verseRef.replace(/\s+/g, ' '), M, y);
     y += 76;
     ctx.fillStyle = INK;
-    ctx.font = '900 54px ' + SANS;
-    y = wrap(ctx, '「' + data.verseText + '」', M, y, CW, 86);
+    ctx.font = '900 50px ' + SANS;
+    y = wrap(ctx, '「' + data.verseText + '」', M, y, CW, 80);
 
     // 這一關他手上有什麼。第一關是買到的東西，第二關是他保住的三樣 ——
     // 標籤用 listLabel 換掉就好。
@@ -190,21 +190,23 @@ var GROUP_NAME = '幸福小組';
       ctx.fillStyle = INK;
       ctx.font = "700 " + lsize + "px " + SANS;
       // 底下還要留給「他自己寫的那一句」，所以這一塊最多畫到這裡
-      y = wrap(ctx, list, M, y, CW, Math.round(lsize * 1.5), H - M - 210);
+      y = wrap(ctx, list, M, y, CW, Math.round(lsize * 1.5), H - M - 250);
     }
 
     // 他自己寫的那一句（整張卡最有重量的地方）
     if (data.burden) {
-      y += 62;
+      y += 58;
       ctx.fillStyle = GREEN;
       ctx.fillRect(M, y - 34, 10, 44);
       ctx.font = '400 18px ' + PIXEL;
       ctx.fillText('MY LINE', M + 28, y);
-      y += 58;
-      var size = data.burden.length <= 24 ? 44 : data.burden.length <= 60 ? 36 : 30;
+      y += 52;
+      var size = data.burden.length <= 24 ? 42 : data.burden.length <= 60 ? 34 : 28;
       ctx.fillStyle = INK;
       ctx.font = '700 ' + size + 'px ' + SANS;
-      y = wrap(ctx, '「' + data.burden + '」', M, y, CW, Math.round(size * 1.68), H - M - 96);
+      // 最後一行至少要離頁尾那排點點 100px —— 不然那句話會壓在日期上面。
+      // 寫太長的就在第二行收掉（wrap 會補一個刪節號）。
+      y = wrap(ctx, '「' + data.burden + '」', M, y, CW, Math.round(size * 1.62), H - M - 110);
     }
 
     // 頁尾

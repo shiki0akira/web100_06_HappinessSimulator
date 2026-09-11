@@ -6,7 +6,7 @@
 // 一句話講完這一關：走五個岔路的人生模擬器（三十二個結局，一正一負當場公布），
 // 講罪＝射不中，介紹萬世巨星，玩八題猜句子，最後藉著他到父那裡去。
 import {
-  FORKS, ENDINGS, MAP, SIN, WHY, STAR, TRACES,
+  FORKS, ENDINGS, MAP, SIN, SINS, STAR, TRACES,
   QUIZ, AFTERLIFE, LIFE, VERSE, CROSS, WHOIS,
 } from './w3-data.js';
 
@@ -25,7 +25,7 @@ export const PHASES = [
   { id: 'map',       tag: '互動點 1', title: '人生模擬器 · 選一條路' },
   { id: 'endings',   tag: '結算頁',   title: '三十二種人生' },
   { id: 'sin',       tag: '信息',     title: '為什麼我們做不出最好的選擇？' },
-  { id: 'why',       tag: '信息',     title: '因為兩件事' },
+  { id: 'sins',      tag: '信息',     title: '因為罪' },
   { id: 'star',      tag: '開場',     title: '萬世巨星' },
   { id: 'quiz',      tag: '互動點 2', title: '這句話是誰說的' },
   { id: 'answers',   tag: '解答',     title: '八題的答案' },
@@ -383,7 +383,7 @@ function common(s) {
     endings: endingsView(s),
     mapDone: mapDone(s),
     sin: SIN,
-    why: WHY,
+    sins: SINS,
     star: STAR,
     traces: TRACES,
     quiz: quizView(s),

@@ -262,6 +262,23 @@
   .solo h2 { font-size: min(calc(64px * var(--u)), 9vh, 4vw); line-height: 1.45;
     letter-spacing: .04em; max-width: none; white-space: nowrap; }
 
+  /* 問句底下那一句。**問句是主角，這一句是註腳** —— 字級差一倍以上。 */
+  .sololine { margin-top: min(calc(22px * var(--u)), 3vh); max-width: 34em;
+    font-size: min(calc(24px * var(--u)), 3.2vh); line-height: 1.8; color: var(--ink-2); }
+
+  /* 因為罪：七宗罪貼成標籤 */
+  .big-lede { font-size: min(calc(26px * var(--u)), 3.4vh) !important; max-width: 40em;
+    margin-top: min(calc(14px * var(--u)), 2vh) !important; }
+  /* 七個標籤排成四欄，4 ＋ 3 —— 用 flex 換行會變成 6 ＋ 1，最後一個很孤單 */
+  .sintags { display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: min(calc(14px * var(--u)), 2vh) calc(14px * var(--u));
+    margin-top: min(calc(26px * var(--u)), 3.4vh); }
+  .sintag { display: flex; flex-direction: column; gap: calc(4px * var(--u));
+    background: var(--surface); border: 4px solid var(--edge); box-shadow: 6px 6px 0 var(--hard);
+    padding: min(calc(12px * var(--u)), 1.8vh) calc(22px * var(--u)); }
+  .sintag b { font-size: min(calc(34px * var(--u)), 4.4vh); line-height: 1.2; letter-spacing: .06em; }
+  .sintag i { font-style: normal; font-size: min(calc(17px * var(--u)), 2.3vh); color: var(--gold); }
+
   /* 他來，是要叫我們得生命：那兩行 */
   .sinlines { margin-top: min(calc(14px * var(--u)), 2vh); }
   .sinlines p { margin: 0 0 min(calc(10px * var(--u)), 1.4vh);
@@ -282,9 +299,6 @@
   .s3 span { display: block; margin-top: calc(6px * var(--u));
     font-size: min(calc(18px * var(--u)), 2.5vh); color: var(--ink-2); line-height: 1.7; }
   .s3.on { opacity: 1; border-left-color: var(--root-c); }
-  /* 因為兩件事：標題前面那個編號 */
-  .s3 b .no { display: inline-block; min-width: 1.6em; font-family: var(--pixel);
-    font-size: min(calc(22px * var(--u)), 3vh); color: var(--gold); }
 
   .afterhd { display: flex; align-items: baseline; gap: calc(28px * var(--u)); flex-wrap: wrap; }
   .afterhd .stat { font-family: var(--pixel); font-size: min(calc(34px * var(--u)), 4.4vh); line-height: 1; }
