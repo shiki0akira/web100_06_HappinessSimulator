@@ -544,36 +544,41 @@ function animatedSvg(w, h, css, body, label) {
   const OUT_SHARED = 'public/happiness/shared/art';
   fs.mkdirSync(OUT_SHARED, { recursive: true });
 
-  // 18 × 22。臉不畫五官細節 —— 放大到電視上，兩點眼睛比五官好看。
+  // 22 × 27。臉不畫五官細節 —— 放大到電視上，兩點眼睛比五官好看。
   // 鬍子是**兩側各一到兩格 ＋ 最底下一列**，不要畫厚：畫厚了會變成一坨。
   const HIM = [
-    '..................',
-    '......nnnnnn......',
-    '.....nnnnnnnn.....',
-    '....nnnnnnnnnn....',
-    '....nnkkkkkknn....',
-    '....nkkkkkkkkn....',
-    '....nkkkkkkkkn....',
-    '....nkDkkkkDkn....',
-    '....nkkkkkkkkn....',
-    '....nnkkkkkknn....',
-    '.....nnnnnnnn.....',
-    '.......kkkk.......',
-    '...WWWWWWWWWWWW...',
-    '..WWWWWWWWWWWWWW..',
-    '.kWWWWWWWWWWWWWWk.',
-    'kkWWWWWWWWWWWWWWkk',
-    '.kWWWWWWWWWWWWWWk.',
-    '..WWWWWWWWWWWWWW..',
-    '..WWWWWWWWWWWWWW..',
-    '..WWWWWWWWWWWWWW..',
-    '.WWWWWWWWWWWWWWWW.',
-    '.wwwwwwwwwwwwwwww.',
+    '......................',
+    '.......nnnnnnnn.......',
+    '......nnnnnnnnnn......',
+    '.....nnnnnnnnnnnn.....',
+    '.....nnkkkkkkkknn.....',
+    '.....nkkkkkkkkkkn.....',
+    '.....nkkkkkkkkkkn.....',
+    '.....nkkDkkkkDkkn.....',
+    '.....nkkkkkkkkkkn.....',
+    '.....nkkkkkkkkkkn.....',
+    '.....nnkkkkkkkknn.....',
+    '......nnkkkkkknn......',
+    '.......nnnnnnnn.......',
+    '........kkkkkk........',
+    '....WWWWWWWWWWWWWW....',
+    '...WWWWWWWWWWWWWWWW...',
+    '.kkWWWWWWWWWWWWWWWWkk.',
+    'kkkWWWWWWWWWWWWWWWWkkk',
+    '.kkWWWWWWWWWWWWWWWWkk.',
+    '...WWWWWWWWWWWWWWWW...',
+    '...WWWWWWWWWWWWWWWW...',
+    '...WWWWWWWWWWWWWWWW...',
+    '...WWWWWWWWWWWWWWWW...',
+    '...WWWWWWWWWWWWWWWW...',
+    '..WWWWWWWWWWWWWWWWWW..',
+    '..WWWWWWWWWWWWWWWWWW..',
+    '..wwwwwwwwwwwwwwwwww..',
   ];
-  HIM.forEach((r, y) => { if (r.length !== 18) throw new Error('第 ' + y + ' 列不是 18 格：' + r.length); });
+  HIM.forEach((r, y) => { if (r.length !== 22) throw new Error('第 ' + y + ' 列不是 22 格：' + r.length); });
 
   const W = 48, H = 58;
-  const FX = 15, FY = 32;         // 他站的位置
+  const FX = 13, FY = 29;         // 他站的位置
   let body = '';
 
   // 聚光燈的燈罩
@@ -599,10 +604,10 @@ function animatedSvg(w, h, css, body, label) {
   // 比例：直柱 y=6–48、橫桿壓在 y=16–20 —— 頭頂上面那一段留長，才是十字架不是加號。
   const wood = PAL.n, edge = PAL.o;
   body += `<rect x="22" y="6" width="4" height="42" fill="${wood}"/>`;
-  body += `<rect x="10" y="16" width="28" height="4" fill="${wood}"/>`;
+  body += `<rect x="8" y="16" width="32" height="4" fill="${wood}"/>`;
   // 上緣和左緣打一道亮邊，深色主題上才不會整根消失
   body += `<rect x="22" y="6" width="4" height="1" fill="${edge}"/>`;
-  body += `<rect x="10" y="16" width="28" height="1" fill="${edge}"/>`;
+  body += `<rect x="8" y="16" width="32" height="1" fill="${edge}"/>`;
   body += `<rect x="22" y="20" width="1" height="28" fill="${edge}" opacity=".55"/>`;
 
   // 他站在光裡。**畫在最前面** —— 他只擋住十字架最底下那一段。
@@ -610,13 +615,13 @@ function animatedSvg(w, h, css, body, label) {
 
   // 紅色的斜披肩：從左肩斜到右腰。用畫的，不寫進字元圖 ——
   // 斜線在字元圖裡要一格一格對，改一次就要重數一次。
-  for (let i = 0; i < 8; i++) {
-    body += `<rect x="${FX + 4 + i}" y="${FY + 13 + i}" width="2" height="1" fill="${PAL.H}"/>`;
+  for (let i = 0; i < 9; i++) {
+    body += `<rect x="${FX + 5 + i}" y="${FY + 15 + i}" width="2" height="1" fill="${PAL.H}"/>`;
   }
 
   // 地板 ＋ 光落在地上的一圈
-  body += `<rect x="12" y="54" width="24" height="1" fill="${PAL.G}" opacity=".28"/>`;
-  body += `<rect x="5" y="56" width="38" height="1" fill="${PAL.w}" opacity=".45"/>`;
+  body += `<rect x="11" y="56" width="26" height="1" fill="${PAL.G}" opacity=".28"/>`;
+  body += `<rect x="4" y="57" width="40" height="1" fill="${PAL.w}" opacity=".45"/>`;
 
   // 兩側的星星，跟著光一起眨
   const star = (x, y, d) =>
