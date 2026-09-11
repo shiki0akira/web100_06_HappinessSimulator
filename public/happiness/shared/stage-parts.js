@@ -32,8 +32,11 @@ window.StageParts = (function () {
     reconnect: function (opts) {
       opts = opts || {};
       var all = (opts.total || 0) > 0 && (opts.done || 0) >= opts.total;
+      // 第二條線的名字要傳進來：**第二關這一頁還沒替它命名**，那裡是「？？？」。
+      // 命名是第二關後段的戲，接關頁提早講出來就把那一下劇透掉了。
+      var inner = opts.innerLabel || '幸福根基';
       return '<h2>打開上一次的卡片</h2>' +
-        '<p class="lede">把卡片上的<b>幸福指數</b>和<b>幸福根基</b>打進去。</p>' +
+        '<p class="lede">把卡片上的<b>幸福指數</b>和<b>' + inner + '</b>打進去。</p>' +
         counter(opts.done, opts.total, '已接上') +
         (all ? '<div class="note" style="border-left-color:var(--root-c);color:var(--ink)">' +
           '<b>大家都好了</b></div>' : '');

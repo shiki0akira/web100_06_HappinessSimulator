@@ -78,7 +78,7 @@
           ? '<p class="fieldlbl">這是你第幾次來？<span class="sub">系統會幫你算第二條線</span></p>' +
             '<input id="vc" type="tel" inputmode="numeric" maxlength="1" placeholder="1" class="numin">'
           : '<p class="fieldlbl">幸福根基<span class="sub">卡片上的第二個數字，第一次來就填 0</span></p>' +
-            '<input id="ic" type="tel" inputmode="numeric" maxlength="2" placeholder="0 – 95" class="numin">') +
+            '<input id="ic" type="tel" inputmode="numeric" maxlength="2" class="numin">') +
         '<button class="btn primary fullbtn" id="sendrec">送出</button>' +
         '<button class="btn ghost fullbtn" id="togglemode">' +
           (draft.byVisits ? '我有卡片，改填幸福根基' : '忘記帶卡片？改填「這是你第幾次來」') + '</button>';

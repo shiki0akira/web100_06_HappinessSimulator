@@ -245,6 +245,7 @@
     reconnect: function () {
       return StageParts.reconnect({
         done: S.stats.reconnected, total: S.stats.count,
+        innerLabel: S.named ? '幸福根基' : '？？？',
       });
     },
 

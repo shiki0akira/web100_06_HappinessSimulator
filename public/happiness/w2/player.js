@@ -78,6 +78,11 @@
       '」</blockquote></div>';
   }
 
+  // 第二條線的名字。**這一關的後段才替它命名**（S.named）——
+  // 在那之前畫面上一律是「？？？」，接關頁也不例外。
+  // 第一關的卡片上印的就是「？？？」，這裡提早講出「幸福根基」等於把那一下劇透掉。
+  function innerName() { return S && S.named ? '幸福根基' : '？？？'; }
+
   var views = {
     lobby: function (me) {
       return '<h2>你已經進場了</h2>' +
@@ -89,7 +94,7 @@
     // 接關。卡片上有兩個數字，兩個都自己打。忘記帶卡片才改用「第幾次來」估。
     reconnect: function (me) {
       if (me.outer !== null) {
-        return wait('已接上：' + me.outer + ' 分', '幸福根基 ' + (me.inner ? me.inner : '—'));
+        return wait('已接上：' + me.outer + ' 分', innerName() + ' ' + (me.inner ? me.inner : '—'));
       }
       return '<h2>打開上一次的卡片</h2>' +
         '<p><span class="sub">第一次來的話自由填 —— 按你現在的感覺給自己一個分數就好。</span></p>' +
@@ -98,11 +103,11 @@
         (draft.byVisits
           ? '<p class="fieldlbl">這是你第幾次來？<span class="sub">系統會幫你算第二條線</span></p>' +
             '<input id="vc" type="tel" inputmode="numeric" maxlength="1" placeholder="1" class="numin">'
-          : '<p class="fieldlbl">幸福根基<span class="sub">卡片上的第二個數字，第一次來就填 0</span></p>' +
-            '<input id="ic" type="tel" inputmode="numeric" maxlength="2" placeholder="0 – 95" class="numin">') +
+          : '<p class="fieldlbl">' + innerName() + '<span class="sub">卡片上的第二個數字，第一次來就填 0</span></p>' +
+            '<input id="ic" type="tel" inputmode="numeric" maxlength="2" class="numin">') +
         '<button class="btn primary fullbtn" id="sendrec">送出</button>' +
         '<button class="btn ghost fullbtn" id="togglemode">' +
-          (draft.byVisits ? '我有卡片，改填幸福根基' : '忘記帶卡片？改填「這是你第幾次來」') + '</button>';
+          (draft.byVisits ? '我有卡片，改填' + innerName() : '忘記帶卡片？改填「這是你第幾次來」') + '</button>';
     },
 
     // 幸福人生商店：挑三樣，買三送一。
