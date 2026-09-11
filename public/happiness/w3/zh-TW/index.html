@@ -87,7 +87,9 @@
   .qtop { display: flex; align-items: baseline; gap: calc(20px * var(--u)); flex-wrap: wrap; }
   .qtop .qn { font-family: var(--pixel); font-size: calc(22px * var(--u)); color: var(--gold); }
   .qtop .qn small { color: var(--ink-3); font-size: calc(15px * var(--u)); }
-  .qtop .qsrc { font-size: calc(19px * var(--u)); font-weight: 700; color: var(--root-c); }
+  /* 出處：揭答案之後接在標題底下，佔「幾人已作答」原本那一行 */
+  .qsrcline { margin-top: calc(6px * var(--u));
+    font-size: calc(19px * var(--u)); font-weight: 700; color: var(--root-c); }
   /* 「幾人已作答」是給主持人等人的一行小字，不是這一頁的主角 */
   .qcount { margin-top: calc(6px * var(--u)); font-family: var(--pixel);
     font-size: calc(15px * var(--u)); color: var(--ink-3); }
@@ -204,7 +206,11 @@
   .endline { margin-top: min(calc(10px * var(--u)), 1.4vh);
     font-size: min(calc(28px * var(--u)), 3.8vh); font-weight: 900; }
 
-  /* 罪：那一句是這一段的主角 */
+  /* 整頁只有一句話的版型。畫面上不放解釋 —— 那是主持人的工作。 */
+  .solo { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .solo h2 { font-size: min(calc(64px * var(--u)), 9vh); line-height: 1.45; letter-spacing: .04em; max-width: 16em; }
+
+  /* 他來，是要叫我們得生命：那兩行 */
   .sinlines { margin-top: min(calc(14px * var(--u)), 2vh); }
   .sinlines p { margin: 0 0 min(calc(10px * var(--u)), 1.4vh);
     font-size: min(calc(22px * var(--u)), 3.1vh); line-height: 1.8; color: var(--ink-2); }
@@ -267,6 +273,10 @@
     -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 8px, transparent 8px 10px);
     mask-image: repeating-linear-gradient(90deg, #000 0 8px, transparent 8px 10px); }
   .opt .n { font-family: var(--pixel); font-size: calc(15px * var(--u)); color: var(--ink-2); width: calc(52px * var(--u)); text-align: right; }
+
+  /* 天堂和地獄：誰投了哪一個。名字接在那一條長條底下。 */
+  .opts.vote .votewho { margin: calc(2px * var(--u)) 0 calc(6px * var(--u)) calc(162px * var(--u));
+    font-size: min(calc(16px * var(--u)), 2.2vh); font-weight: 700; color: var(--ink-3); }
 
   .cols3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 18px; }
   .col3 { background: var(--surface); border: 4px solid var(--edge); box-shadow: 6px 6px 0 var(--hard); padding: min(18px, 2.4vh) 18px; }
@@ -337,7 +347,6 @@
       <button class="btn" data-cmd="quizPrev" id="qprev">← 上一題</button>
       <button class="btn primary" data-cmd="quizStep" id="qstep">揭曉答案</button>
     </span>
-    <button class="btn primary" data-cmd="crossStep" id="crossbar" style="display:none">下一段</button>
     <span class="sp"></span>
     <span class="hint" id="hint"></span>
     <button class="btn" data-cmd="reset" id="resetbtn">全部重置</button>

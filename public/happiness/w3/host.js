@@ -121,14 +121,17 @@
   }
 
   // ── 猜句子 ───────────────────────────────────────────────────────────
+  // 標題那一行只有題目和題號。**出處放在標題底下那一行** ——
+  // 跟「幾人已作答」同一個位置，揭答案之後那一行就從計數換成出處。
   function quizHead() {
     var q = S.quiz;
     return '<div class="qtop">' +
         '<h2>這句話是誰說的</h2>' +
         '<span class="qn">Q' + (q.idx + 1) + ' <small>/ ' + q.total + '</small></span>' +
-        (q.revealed ? '<span class="qsrc">' + esc(q.src) + '</span>' : '') +
       '</div>' +
-      (q.revealed ? '' : counter(S.stats.answered, '人已作答'));
+      (q.revealed
+        ? '<div class="qsrcline">' + esc(q.src) + '</div>'
+        : counter(S.stats.answered, '人已作答'));
   }
 
   // **揭完不多印一行說明** —— 補充是你講的，印在牆上就變成一份工作手冊。
@@ -167,15 +170,22 @@
     }).join('') + '</div>';
   }
 
-  function voteBars() {
+  // **三個選項一開始就要在畫面上** —— 沒有人投的時候只有空的長條，
+  // 全場投完才長出比例和名字。先看到別人投什麼會互相定錨。
+  function voteBars(show) {
     var c = S.stats.voteCounts;
+    var who = S.stats.voteWho || [];
     var max = Math.max.apply(null, c.concat([1]));
-    return '<div class="opts">' + S.afterlife.options.map(function (o, i) {
+    return '<div class="opts vote">' + S.afterlife.options.map(function (o, i) {
+      var names = who[i] || [];
       return '<div class="opt">' +
         '<span class="lbl">' + esc(o) + '</span>' +
-        '<span class="track"><i style="width:' + (c[i] / max * 100) + '%"></i></span>' +
-        '<span class="n">' + c[i] + ' 人</span>' +
-      '</div>';
+        '<span class="track"><i style="width:' + (show ? (c[i] / max * 100) : 0) + '%"></i></span>' +
+        '<span class="n">' + (show ? c[i] + ' 人' : '') + '</span>' +
+      '</div>' +
+      (show && names.length
+        ? '<div class="votewho">' + names.map(esc).join('・') + '</div>'
+        : '');
     }).join('') + '</div>';
   }
 
@@ -204,12 +214,11 @@
           : '<span class="muted">等人進來…</span>') + '</div>';
     },
 
-    // **大螢幕上不數第一次來的人，也不解釋他們拿到幾分。**
-    // 那兩件事是寫給主持人看的，印在牆上就等於當著全場點名。
+    // 七關共用的一頁，內容在 shared/stage-parts.js
     reconnect: function () {
-      return '<h2>打開上一次的卡片</h2>' +
-        '<p class="lede">把卡片上的<b>幸福指數</b>和<b>幸福根基</b>打進去。</p>' +
-        counter(S.stats.reconnected, '已接上');
+      return StageParts.reconnect({
+        done: S.stats.reconnected, total: S.stats.count,
+      });
     },
 
     map: function () {
@@ -224,12 +233,10 @@
         '<p class="endline">' + esc(S.map.endLine) + '</p>';
     },
 
+    // **畫面上只有這一句。** 射不中那一段是你講的 —— 印在牆上他們會自己讀完，
+    // 而且那幾行是解釋，不是題目。跟舊版「死後還有審判」只放五個字是同一個做法。
     sin: function () {
-      return '<h2>' + esc(S.sin.title) + '</h2>' +
-        '<div class="misskey">' + esc(S.sin.key) + '</div>' +
-        '<div class="sinlines">' + S.sin.lines.map(function (l) {
-          return '<p>' + esc(l) + '</p>';
-        }).join('') + '</div>';
+      return '<div class="solo"><h2>' + esc(S.sin.title) + '</h2></div>';
     },
 
     // 開場白：燈亮著，**光裡還沒有人**。不揭曉是誰。
@@ -262,10 +269,10 @@
     },
 
     afterlife: function () {
-      return '<div class="claim">' + esc(S.afterlife.ask) + '</div>' +
-        (S.stats.voted >= S.stats.count && S.stats.count > 0
-          ? voteBars()
-          : counter(S.stats.voted, '人已投票'));
+      var all = S.stats.count > 0 && S.stats.voted >= S.stats.count;
+      return '<h2>' + esc(S.afterlife.ask) + '</h2>' +
+        (all ? '' : counter(S.stats.voted, '人已投票')) +
+        voteBars(all);
     },
 
     life: function () {
@@ -284,19 +291,16 @@
       });
     },
 
-    // 三段點出來。第三段點到的那一刻，全場幸福根基 +5。
+    // **三段一次全部出來。** 一段一段點會讓這一頁變成一場操作 ——
+    // 這一頁是你在講，畫面只要把三句話擺好就夠了。**這一頁不加分。**
     cross: function () {
       return '<h2>' + esc(S.cross.title) + '</h2>' +
-        '<div class="steps3">' + S.cross.steps.map(function (st, i) {
-          var on = i <= S.crossStep;
-          return '<div class="s3' + (on ? ' on' : '') + '">' +
+        '<div class="steps3">' + S.cross.steps.map(function (st) {
+          return '<div class="s3 on">' +
             '<b>' + esc(st.head) + '</b>' +
-            (on ? '<span>' + esc(st.line) + '</span>' : '') +
+            '<span>' + esc(st.line) + '</span>' +
           '</div>';
-        }).join('') + '</div>' +
-        (S.crossStep >= 2
-          ? '<div class="plus">全場　幸福根基 +' + S.graceInner + '</div>'
-          : '');
+        }).join('') + '</div>';
     },
 
     prayer: function () {
@@ -366,7 +370,7 @@
     };
     show('mapctl', S.phase.id === 'map');
     show('quizctl', S.phase.id === 'quiz');
-    show('crossbar', S.phase.id === 'cross');
+
 
     if (S.phase.id === 'map') {
       var last = S.mapNow.idx >= S.mapNow.total - 1;
@@ -385,12 +389,6 @@
         : (lastQ ? '最後一題' : '下一題 →（' + (S.quiz.idx + 2) + '/' + S.quiz.total + '）');
       step.disabled = S.quiz.revealed && lastQ;
     }
-    if (S.phase.id === 'cross') {
-      var cb = document.getElementById('crossbar');
-      cb.textContent = S.crossStep >= 2 ? '三段都出來了' : '下一段（' + ((S.crossStep || 0) + 1) + '/3）';
-      cb.disabled = S.crossStep >= 2;
-    }
-
     renderPlayers();
     paint();
   }

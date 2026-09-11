@@ -23,6 +23,7 @@ const PAL = {
   W: '#B9C7C1', w: '#8A9C96', D: '#3A4A45',
   g: '#C99B1C', k: '#F3DCC0',   // 燈罩的暗面／膚色
   n: '#4A3220',                 // 深棕：頭髮和鬍子（第三關的那一位）
+  d: '#2B3A36',                 // 黑影：亮底上夠深，暗底上還看得出輪廓（純黑會整個消失）
 };
 
 // 同一列同色併成一個 rect，檔案才不會長出幾百個節點
@@ -643,52 +644,62 @@ function animatedSvg(w, h, css, body, label) {
   console.log('第三關：superstar.svg（十字架下、聚光燈裡的他）');
 }
 
-// ── 第三關：空的聚光燈 ──────────────────────────────────────────────────
-// 「我想先跟大家介紹一位萬世巨星」那一頁：燈亮著，十字架在後面，**光裡還沒有人**。
-// 玩完八題才翻到下一頁，他站進同一道光裡 —— 同一個構圖、同一個位置，只多了他。
+// ── 第三關：還沒開燈 ────────────────────────────────────────────────────
+// 「我想先跟大家介紹一位萬世巨星」那一頁：**燈是暗的，台上只有一個黑色的人影**。
+// 沒有十字架、沒有光束、沒有星星 —— 這一頁的戲就是「有人站在那裡，但你看不見他是誰」。
+//
+// 玩完八題、公布答案之後翻到下一頁：燈亮了、十字架出現、他的臉也出現。
+// **兩張圖的人站在同一個位置**（FX/FY 一樣），所以翻頁的時候他不會跳。
 {
   const OUT_SHARED = 'public/happiness/shared/art';
   const W = 48, H = 58;
+  const FX = 13, FY = 29;
   let body = '';
 
+  // 關著的燈：燈罩還在，但沒有那顆亮的燈泡，也沒有光束。
   body += `<rect x="21" y="0" width="6" height="2" fill="${PAL.D}"/>`;
-  body += `<rect x="20" y="2" width="8" height="1" fill="${PAL.o}"/>`;
-  body += `<rect x="21" y="3" width="6" height="1" fill="${PAL.G}"/>`;
+  body += `<rect x="20" y="2" width="8" height="1" fill="${PAL.D}"/>`;
 
-  let beam = '';
-  for (let y = 4; y <= 54; y++) {
-    const k = (y - 4) / 50;
-    const w = 5 + k * 34;
-    const x = 24 - w / 2;
-    const op = (0.30 - k * 0.22).toFixed(3);
-    beam += `<rect x="${x.toFixed(1)}" y="${y}" width="${w.toFixed(1)}" height="1" fill="${PAL.G}" opacity="${op}"/>`;
-  }
-  body += `<g class="beam">${beam}</g>`;
+  // 黑色的人影。用深板岩色不用純黑 ——
+  // **純黑在深色主題上會整個消失**；這個顏色在亮底上夠深，在暗底上又還看得出輪廓。
+  const SHADOW = [
+    '......................',
+    '.......dddddddd.......',
+    '......dddddddddd......',
+    '.....dddddddddddd.....',
+    '.....dddddddddddd.....',
+    '.....dddddddddddd.....',
+    '.....dddddddddddd.....',
+    '.....dddddddddddd.....',
+    '.....dddddddddddd.....',
+    '.....dddddddddddd.....',
+    '.....dddddddddddd.....',
+    '......dddddddddd......',
+    '.......dddddddd.......',
+    '........dddddd........',
+    '....dddddddddddddd....',
+    '...dddddddddddddddd...',
+    '.dddddddddddddddddddd.',
+    'dddddddddddddddddddddd',
+    '.dddddddddddddddddddd.',
+    '...dddddddddddddddd...',
+    '...dddddddddddddddd...',
+    '...dddddddddddddddd...',
+    '...dddddddddddddddd...',
+    '...dddddddddddddddd...',
+    '..dddddddddddddddddd..',
+    '..dddddddddddddddddd..',
+    '..dddddddddddddddddd..',
+  ];
+  SHADOW.forEach((r, y) => { if (r.length !== 22) throw new Error('第 ' + y + ' 列不是 22 格：' + r.length); });
+  body += sprite(SHADOW, FX, FY);
 
-  const wood = PAL.n, edge = PAL.o;
-  body += `<rect x="22" y="6" width="4" height="42" fill="${wood}"/>`;
-  body += `<rect x="8" y="16" width="32" height="4" fill="${wood}"/>`;
-  body += `<rect x="22" y="6" width="4" height="1" fill="${edge}"/>`;
-  body += `<rect x="8" y="16" width="32" height="1" fill="${edge}"/>`;
-  body += `<rect x="22" y="20" width="1" height="28" fill="${edge}" opacity=".55"/>`;
+  // 地板。燈沒開，所以地上沒有那一圈光。
+  body += `<rect x="4" y="57" width="40" height="1" fill="${PAL.w}" opacity=".3"/>`;
 
-  // 地板 ＋ 光落在地上的一圈。**站的位置是空的。**
-  body += `<rect x="11" y="56" width="26" height="1" fill="${PAL.G}" opacity=".28"/>`;
-  body += `<rect x="4" y="57" width="40" height="1" fill="${PAL.w}" opacity=".45"/>`;
-
-  const star = (x, y, d) =>
-    `<g class="tw" style="animation-delay:${d}s">` +
-    `<rect x="${x}" y="${y}" width="1" height="1" fill="${PAL.G}"/>` +
-    `<rect x="${x - 1}" y="${y + 1}" width="3" height="1" fill="${PAL.G}"/>` +
-    `<rect x="${x}" y="${y + 2}" width="1" height="1" fill="${PAL.G}"/></g>`;
-  body += star(4, 10, 0) + star(43, 12, 0.7) + star(3, 38, 1.4) + star(44, 42, 2.1);
-
-  const css =
-    '.beam{animation:sp 1.8s steps(1) infinite}' +
-    '@keyframes sp{0%,49%{opacity:.55}50%,99%{opacity:1}100%{opacity:.55}}' +
-    '.tw{animation:tk 2.4s steps(1) infinite}' +
-    '@keyframes tk{0%,45%{opacity:.15}50%,95%{opacity:1}100%{opacity:.15}}';
-
-  fs.writeFileSync(OUT_SHARED + '/superstar-empty.svg', animatedSvg(W, H, css, body, '空的聚光燈'));
-  console.log('第三關：superstar-empty.svg（光裡還沒有人）');
+  // **這一張不動。** 開場白要的是安靜，不是動畫 —— 會動的東西留給下一頁。
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" shape-rendering="crispEdges"` +
+    ` role="img" aria-label="還沒開燈">${body}</svg>\n`;
+  fs.writeFileSync(OUT_SHARED + '/superstar-empty.svg', svg);
+  console.log('第三關：superstar-empty.svg（燈還沒開，台上一個黑影）');
 }

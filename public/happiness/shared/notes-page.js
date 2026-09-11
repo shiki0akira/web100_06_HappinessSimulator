@@ -89,16 +89,6 @@
       }
     }
 
-    // 第三關的「藉著他到父那裡去」：一段一段點出來，不要一次全亮。
-    var crossc = el('crossctl');
-    if (crossc) {
-      crossc.hidden = S.phase.id !== 'cross';
-      if (!crossc.hidden) {
-        el('crossstep').textContent = S.crossStep >= 2 ? '三段都出來了' : '下一段（' + ((S.crossStep || 0) + 1) + '/3）';
-        el('crossstep').disabled = S.crossStep >= 2;
-      }
-    }
-
     // 第二關的寶箱：主持人拿著手機也能打開它。
     var giftc = el('giftctl');
     if (giftc) {
@@ -159,7 +149,6 @@
     on('quizprev', function () { post('quizPrev'); });
     on('forkprev', function () { post('forkPrev'); });
     on('forknext', function () { post('forkNext'); });
-    on('crossstep', function () { post('crossStep'); });
     on('flipnext', function () { post('flipNext'); });
     on('flipall', function () {
       if (confirm('剩下的全部翻開？')) post('flipAll');

@@ -7,7 +7,7 @@
 // 講罪＝射不中，介紹萬世巨星，玩八題猜句子，最後藉著他到父那裡去。
 import {
   FORKS, ENDINGS, MAP, SIN, STAR, TRACES,
-  QUIZ, AFTERLIFE, LIFE, VERSE, CROSS, GRACE_INNER, WHOIS,
+  QUIZ, AFTERLIFE, LIFE, VERSE, CROSS, WHOIS,
 } from './w3-data.js';
 
 // 幸福根基的規則七關都一樣。上限 95 不是 100 —— 你自己填不滿。
@@ -24,13 +24,13 @@ export const PHASES = [
   { id: 'reconnect', tag: '接關',     title: '輸入幸福指數' },
   { id: 'map',       tag: '互動點 1', title: '人生模擬器 · 選一條路' },
   { id: 'endings',   tag: '結算頁',   title: '你走到哪裡' },
-  { id: 'sin',       tag: '信息',     title: '為什麼我們做不出好的選擇' },
+  { id: 'sin',       tag: '信息',     title: '為什麼我們做不出最好的選擇' },
   { id: 'star',      tag: '開場',     title: '萬世巨星' },
   { id: 'quiz',      tag: '互動點 2', title: '這句話是誰說的' },
   { id: 'answers',   tag: '解答',     title: '八題的答案' },
   { id: 'reveal',    tag: '揭曉',     title: '就是這一位' },
   { id: 'afterlife', tag: '互動點 3', title: '天堂和地獄' },
-  { id: 'life',      tag: '信息',     title: '他來，是要叫我們得生命' },
+  { id: 'life',      tag: '信息',     title: '永生的生命' },
   { id: 'verse',     tag: '經文',     title: '領受經文' },
   { id: 'cross',     tag: '高潮',     title: '藉著他到父那裡去' },
   { id: 'prayer',    tag: '互動點 4', title: '祝福禱告' },
@@ -52,8 +52,6 @@ export function createState() {
     walked: false,       // 八個結局結算過了沒
     quizIdx: 0,          // 猜句子開到第幾題
     quizOpen: [],        // 哪幾題已經揭答案了
-    crossStep: 0,        // 藉著他到父那裡去：點到第幾段（0–2）
-    graced: false,       // 那 +5 發過了沒
     seq: 0,
   };
 }
@@ -153,23 +151,6 @@ export function quizPrev(s) {
   return true;
 }
 
-// ── 藉著他到父那裡去 ───────────────────────────────────────────────────
-// 三段點出來。第三段點到的那一刻，全場幸福根基 +5。
-// **不綁任何按鈕、不綁走到哪個結局** —— 一綁上就變成用分數換恩典。
-export function crossStep(s) {
-  if (s.crossStep >= CROSS.steps.length - 1) return false;
-  s.crossStep += 1;
-  if (s.crossStep >= CROSS.steps.length - 1) grace(s);
-  return true;
-}
-
-export function grace(s) {
-  if (s.graced) return false;
-  s.graced = true;
-  alive(s).forEach((p) => grow(p, GRACE_INNER));
-  return true;
-}
-
 // ── 階段切換 ────────────────────────────────────────────────────────────
 export function enterPhase(s, idx) {
   s.phaseIdx = Math.max(0, Math.min(PHASES.length - 1, idx));
@@ -257,7 +238,6 @@ export function applyHost(s, msg) {
     case 'forkPrev': forkPrev(s); return null;
     case 'quizStep': quizStep(s); return null;
     case 'quizPrev': quizPrev(s); return null;
-    case 'crossStep': crossStep(s); return null;
     case 'adjust': {
       const p = s.players[msg.pid];
       if (p && p.outer !== null) {
@@ -352,6 +332,12 @@ function voteCounts(s) {
   return c;
 }
 
+// 誰投了哪一個。主持人要知道誰選了「沒有想過」—— 第六關決志的時候用得到。
+function voteWho(s) {
+  return AFTERLIFE.options.map((_, i) =>
+    alive(s).filter((p) => p.vote === i).map((p) => p.name));
+}
+
 function common(s) {
   return {
     week: 3,
@@ -371,9 +357,6 @@ function common(s) {
     life: LIFE,
     verse: VERSE,
     cross: CROSS,
-    crossStep: s.crossStep || 0,
-    graced: !!s.graced,
-    graceInner: GRACE_INNER,
     whois: WHOIS,
     mapOpen: mapOpen(s),
   };
@@ -409,6 +392,7 @@ export function hostView(s, roomCode) {
       answered: ps.filter((p) => typeof arr(p.answers)[s.quizIdx] === 'number').length,
       voted: ps.filter((p) => typeof p.vote === 'number').length,
       voteCounts: voteCounts(s),
+      voteWho: voteWho(s),
       outerAvg: outers.length ? Math.round(outers.reduce((a, b) => a + b, 0) / outers.length) : null,
       startAvg: starts.length ? Math.round(starts.reduce((a, b) => a + b, 0) / starts.length) : null,
       innerAvg: ps.length ? Math.round(ps.reduce((a, b) => a + (b.inner || 0), 0) / ps.length) : 0,

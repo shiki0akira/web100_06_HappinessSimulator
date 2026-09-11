@@ -111,7 +111,7 @@
     },
 
     sin: function () {
-      return '<div class="misskey">' + esc(S.sin.key) + '</div>' + wait('聽主持人說');
+      return '<h2>' + esc(S.sin.title) + '</h2>' + wait('聽主持人說');
     },
 
     star: function () {
@@ -164,7 +164,7 @@
 
     afterlife: function (me) {
       if (me.vote !== null) return wait('已投票：' + S.afterlife.options[me.vote], '看大螢幕');
-      return '<div class="claim">' + esc(S.afterlife.ask) + '</div>' +
+      return '<h2>' + esc(S.afterlife.ask) + '</h2>' +
         '<div class="lotgrid">' + S.afterlife.options.map(function (o, i) {
           return '<button class="btn fullbtn" style="margin-top:0" data-v="' + i + '">' + esc(o) + '</button>';
         }).join('') + '</div>' +
@@ -189,13 +189,10 @@
     // 這一頁手機上沒有任何按鈕。今天不做決志、不舉手、不點名。
     cross: function (me) {
       return '<h2>' + esc(S.cross.title) + '</h2>' +
-        S.cross.steps.slice(0, S.crossStep + 1).map(function (st) {
+        S.cross.steps.map(function (st) {
           return '<p class="crossline"><b>' + esc(st.head) + '</b></p>';
         }).join('') +
-        (S.crossStep >= 2
-          ? '<div class="hit up">幸福根基 +' + S.graceInner + '</div>' +
-            '<div class="close">' + esc(S.cross.close) + '</div>'
-          : wait('看大螢幕'));
+        '<div class="close">' + esc(S.cross.close) + '</div>';
     },
 
     // 祝福禱告：上面複選「以前」，下面自己寫「現在」。兩格都只有本人看得到。
@@ -361,7 +358,7 @@
     document.getElementById('innerbar').style.width = me.inner + '%';
 
     var next = [
-      S.phase.id, S.mapNow.idx, S.walked, S.quiz.idx, S.quiz.revealed, S.crossStep, S.graced,
+      S.phase.id, S.mapNow.idx, S.walked, S.quiz.idx, S.quiz.revealed,
       me.outer, me.inner, me.visits, me.path.join(''), me.answers.join(','), me.vote,
       me.whois.join(','), me.receivedVerse, me.cardDone, me.hasBurden,
       draft.byVisits,

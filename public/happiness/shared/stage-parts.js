@@ -23,6 +23,22 @@ window.StageParts = (function () {
   }
 
   return {
+    // 接關。**第二關起每一關的開場都是這一頁**，所以放在這裡 ——
+    // 改一次七關都改到，第四到七關直接呼叫就好。
+    //
+    // 畫面上只有三樣東西：標題、要他做什麼、幾個人接上了。
+    // **不要數第一次來的人，也不要解釋他們拿到幾分** —— 那兩件事是寫給主持人看的，
+    // 印在牆上就等於當著全場點名。它們在主持人備忘錄裡。
+    reconnect: function (opts) {
+      opts = opts || {};
+      var all = (opts.total || 0) > 0 && (opts.done || 0) >= opts.total;
+      return '<h2>打開上一次的卡片</h2>' +
+        '<p class="lede">把卡片上的<b>幸福指數</b>和<b>幸福根基</b>打進去。</p>' +
+        counter(opts.done, opts.total, '已接上') +
+        (all ? '<div class="note" style="border-left-color:var(--root-c);color:var(--ink)">' +
+          '<b>大家都好了</b></div>' : '');
+    },
+
     // 見證分享。主持人或組員站起來講自己的故事，畫面上不要有東西跟他搶注意力。
     testimony: function (opts) {
       opts = opts || {};
