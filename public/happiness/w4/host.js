@@ -252,17 +252,16 @@
         }).join('') + '</div>';
     },
 
-    // 主持人起頭 → **30 秒安靜** → 全場一起把底下那段念出來。
-    // 中間那一塊是空的，那個安靜就是他們人生第一次禱告。
+    // 主持人起頭 → **30 秒安靜** → 收尾。三行，中間那一塊是空的。
+    // **不要在這裡放制式禱告文** —— 一放上去這一頁就從「你自己講」變成「跟著念」，
+    // 而這一頁全部的重量就在那個空白裡。
     pray: function () {
       return '<h2>' + esc(S.pray.title) + '</h2>' +
         '<div class="prayscript">' +
           '<div class="l1">' + esc(S.pray.open) + '</div>' +
           '<div class="l2">' + esc(S.pray.middle) + '</div>' +
           '<div class="l3">' + esc(S.pray.close) + '</div>' +
-        '</div>' +
-        '<div class="together"><span>' + esc(S.pray.together) + '</span>' +
-          '<p>' + esc(S.pray.text) + '</p></div>';
+        '</div>';
     },
 
     // 天父的回信。**信是回的，籤是抽的** —— 前面剛講完算命，

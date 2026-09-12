@@ -188,7 +188,8 @@
         }).join('') + '</div>';
     },
 
-    // 一起禱告。手機上印一份稿 —— 後排看不清大螢幕的人照著這個念。
+    // 一起禱告。手機上只有起頭和收尾那兩句 ——
+    // **不要印制式禱告文**，那會讓他低頭跟著念，而這一頁是要他自己講。
     pray: function () {
       return '<h2>' + esc(S.pray.title) + '</h2>' +
         '<div class="prayscript">' +
@@ -196,8 +197,7 @@
           '<p class="dim">' + esc(S.pray.middle) + '</p>' +
           '<p>' + esc(S.pray.close) + '</p>' +
         '</div>' +
-        '<p class="privacy">心裡講也可以。</p>' +
-        '<p class="closetext">' + esc(S.pray.text) + '</p>';
+        '<p class="privacy">心裡講也可以。</p>';
     },
 
     // 天父的回信。**手機不做第二顆按鈕** —— 那一封是全場一起拆的，
