@@ -86,32 +86,44 @@
         wait('看大螢幕');
     },
 
-    // 七支電話，點一下就好。主持人撥出去之前都可以改。
+    // 七件事，**可以複選**，一排一個。主持人公布之前都可以改。
     calls: function (me) {
       var c = S.callsNow;
-      var mine = me.calls[c.idx];
-      var picked = typeof mine === 'number';
+      var picks = me.picks || [];
       var head = '<div class="qn">' + (c.idx + 1) + ' / ' + c.total + '</div>' +
-        '<div class="when">' + esc(c.when) + '</div>' +
-        '<div class="whensub">' + esc(c.sub) + '</div>';
+        '<div class="when">' + esc(c.text) + '</div>';
 
       if (c.revealed) {
-        if (!picked) return head + wait('看大螢幕', '這一通你沒有打');
-        var l = c.lines[mine];
+        if (!picks.length) return head + wait('看大螢幕', '這一題你沒有選');
+        // 他選了幾件就給他幾段 —— 複選的人本來就該看到每一件後來怎麼了。
         return head +
-          '<div class="reply"><span class="replyfrom">' + esc(l.name) + '</span><br>' + esc(l.reply) + '</div>' +
-          '<div class="hit">幸福指數 ' + c.cost + '</div>' +
-          // 七支扣一樣 —— 這一行是為了讓他知道自己沒有「選錯」。
-          '<p class="privacy">不管打給哪一支，都是一樣的。</p>' +
+          picks.map(function (i) {
+            var l = c.lines[i];
+            if (!l) return '';
+            return '<div class="reply"><span class="replyfrom">' + esc(l.name) + '</span><br>' +
+              esc(l.reply) + '</div>';
+          }).join('') +
+          '<p class="privacy">每一件都陪了你。沒有一件把那件事拿走。</p>' +
           wait('看大螢幕');
       }
+
+      var otherOn = picks.indexOf(S.otherIdx) >= 0;
       return head +
         '<div class="lotgrid lines">' + c.lines.map(function (l, i) {
-          return '<div class="lotchk line' + (mine === i ? ' on' : '') + '" data-call="' + i + '">' +
-            '<b>' + esc(l.name) + '</b><i>' + esc(l.cond) + '</i></div>';
+          return '<div class="lotchk line' + (picks.indexOf(i) >= 0 ? ' on' : '') + '" data-call="' + i + '">' +
+            '<span class="box"></span>' +
+            '<span class="t"><b>' + esc(l.name) + '</b><i>' + esc(l.cond) + '</i></span></div>';
         }).join('') + '</div>' +
-        (picked ? '<p class="privacy">選好了，主持人撥出去之前都可以改。</p>'
-                : '<p class="privacy">你自己真的會打的那一支。</p>');
+        // 勾了「其他」才長出輸入框。**這一格會上大螢幕**，所以底下那句警語不能省。
+        (otherOn
+          ? '<div class="otherbox">' +
+              '<input id="oth" maxlength="16" placeholder="你會做什麼？" value="' + esc(me.other || '') + '">' +
+              '<p class="warn">⚠️ 這一格寫的東西**全場都看得到**。不想公開就取消勾選，完全沒關係。</p>' +
+            '</div>'
+          : '') +
+        '<p class="privacy">' + (picks.length
+          ? '可以複選。主持人公布之前都可以改。'
+          : '你真的會做的那幾件 —— 可以選好幾個。') + '</p>';
     },
 
     idol: function () {
@@ -123,13 +135,11 @@
     },
 
     // 第三通。**一按就接** —— 不要鈴聲、不要等待、不要語音信箱。
+    // **不加分。** 那一刻的重量在「接通」和那半句經文上，不在數字上。
     hotline: function (me) {
       if (me.called) {
         return '<div class="connected">' + esc(S.hotline.connected) + '</div>' +
           '<div class="halfverse">「' + esc(S.hotline.half) + '」</div>' +
-          (me.outer !== null
-            ? '<div class="hit up">幸福指數 +' + S.hotlineNow.gain + '</div>'
-            : '') +
           wait('看大螢幕');
       }
       return '<h2>' + esc(S.hotline.title) + '</h2>' +
@@ -155,11 +165,11 @@
           : '<button class="btn primary fullbtn" id="verse">領受</button>');
     },
 
-    // 開頭印出來 —— 空白的框大家會寫「平安喜樂」。
-    // **什麼都沒寫也按得下去。**
+    // 祝福禱告。七關收尾的固定儀式，這一關有指定題目。
+    // 開頭印出來 —— 空白的框大家會寫「平安喜樂」。**什麼都沒寫也按得下去。**
     need: function (me) {
       var mine = readLine();
-      return '<h2>寫下來</h2>' +
+      return '<h2>祝福禱告</h2>' +
         '<p class="fieldlbl">' + esc(S.need.ask) + '<span class="sub">' + esc(S.need.hint) + '</span></p>' +
         '<textarea id="nd" maxlength="120" placeholder="' + esc(S.need.ask) + '……">' + esc(mine) + '</textarea>' +
         '<button class="btn primary fullbtn" id="savend">' + (me.prayed ? '更新' : '寫好了') + '</button>' +
@@ -178,30 +188,28 @@
         }).join('') + '</div>';
     },
 
-    // 一起禱告。手機上**只有他自己剛剛寫的那一句** —— 那是他的稿子，
-    // 他不用現想、不用組織、不用怕講錯。
-    pray: function (me) {
-      var mine = readLine().trim();
+    // 一起禱告。手機上印一份稿 —— 後排看不清大螢幕的人照著這個念。
+    pray: function () {
       return '<h2>' + esc(S.pray.title) + '</h2>' +
         '<div class="prayscript">' +
           '<p>' + esc(S.pray.open) + '</p>' +
-          (mine
-            ? '<div class="myline"><span class="ask">' + esc(S.need.ask) + '……</span>「' + esc(mine) + '」</div>'
-            : '<p class="dim">' + esc(S.pray.middle) + '</p>') +
-          '<p style="margin-top:16px">' + esc(S.pray.close) + '</p>' +
+          '<p class="dim">' + esc(S.pray.middle) + '</p>' +
+          '<p>' + esc(S.pray.close) + '</p>' +
         '</div>' +
-        '<p class="privacy">心裡講也可以。</p>';
+        '<p class="privacy">心裡講也可以。</p>' +
+        '<p class="closetext">' + esc(S.pray.text) + '</p>';
     },
 
-    // 恩典卡是實體的。手機這時候該收起來。
-    grace: function () {
-      return '<h2>恩典卡</h2>' + wait('把手機收起來', '抽一張，自己看');
-    },
-
-    // 全場一起念。手機上也印一份 —— 後排看不清大螢幕的人照著這個念。
-    closing: function () {
-      return '<h2>' + esc(S.closing.title) + '</h2>' +
-        '<p class="closetext">' + esc(S.closing.text) + '</p>';
+    // 天父的回信。**手機不做第二顆按鈕** —— 那一封是全場一起拆的，
+    // 每個人自己點一次就變成七支手機各拆各的，那個時刻就散了。
+    letter: function () {
+      if (!S.letterOpen) return '<h2>' + esc(S.grace.title) + '</h2>' + wait('看大螢幕', esc(S.grace.sealed));
+      return '<div class="letterp">' +
+          '<img src="/happiness/shared/art/letter-open.svg" alt="">' +
+          '<blockquote>「' + esc(S.grace.half) + '」</blockquote>' +
+          '<span class="ref">' + esc(S.verse.ref) + '</span>' +
+          '<span class="from">' + esc(S.grace.from) + '</span>' +
+        '</div>';
     },
 
     // **不給「下載」。** 下載到手機上就掉進檔案夾裡，而且 iOS 的下載流程
@@ -262,9 +270,20 @@
       if (tm) tm.onclick = function () { draft.byVisits = !draft.byVisits; sig = ''; render(); };
     }
 
+    // 複選：點一下切換那一格。點到「其他」底下才會長出輸入框。
     document.querySelectorAll('[data-call]').forEach(function (d) {
       d.onclick = function () { act('call', { idx: S.callsNow.idx, value: Number(d.dataset.call) }); };
     });
+
+    // 「其他」自己寫的那一句。邊打邊送上去 —— 現場沒有人會記得按送出，
+    // 而且主持人按「公布結果」的那一刻要看得到他打到一半的東西。
+    var oth = document.getElementById('oth');
+    if (oth) {
+      var push = function () { act('callOther', { idx: S.callsNow.idx, text: oth.value }); };
+      oth.oninput = push;
+      oth.onblur = push;
+      oth.onkeydown = function (e) { if (e.key === 'Enter') { push(); oth.blur(); } };
+    }
 
     var dl = document.getElementById('dial');
     if (dl) dl.onclick = function () { act('dial'); };
@@ -360,9 +379,12 @@
     document.getElementById('innerv').textContent = me.inner ? me.inner : '—';
     document.getElementById('innerbar').style.width = me.inner + '%';
 
+    // ⚠️ **me.other 不能進這一行。** 它一變就會整頁重畫，
+    // 而他正在那個輸入框裡打字 —— 打一個字焦點就被踢掉一次。
+    // 勾選（picks）要進來，因為「其他」那一格勾了才長出輸入框。
     var next = [
-      S.phase.id, S.callsNow.idx, S.callsNow.revealed,
-      me.outer, me.inner, me.visits, me.calls.join(','), me.called,
+      S.phase.id, S.callsNow.idx, S.callsNow.revealed, S.letterOpen,
+      me.outer, me.inner, me.visits, (me.picks || []).join(','), me.called,
       me.receivedVerse, me.cardDone, me.hasNeed, me.prayed,
       draft.byVisits,
     ].join('|');

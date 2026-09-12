@@ -90,7 +90,8 @@
   /* ── 標題頁：幸福連線 ─────────────────────────────────────────────── */
   .teaser { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
   .teaser .big-title { font-size: min(calc(72px * var(--u)), 9vh); letter-spacing: .14em; }
-  .teaseart img { display: block; width: min(calc(200px * var(--u)), 30vh); height: auto;
+  /* 手機是方的（viewBox 30×30），寬度給太大整張圖會把這一頁頂出去 */
+  .teaseart img { display: block; width: min(calc(150px * var(--u)), 25vh); height: auto;
     image-rendering: pixelated; margin: min(calc(14px * var(--u)), 2vh) auto 0; }
   /* **這一句不准斷行。** 一斷行「可以直達天聽」會自己掉到第二行，那一句就散了。 */
   .teaser .teaseline { margin-top: min(calc(20px * var(--u)), 2.8vh);
@@ -103,10 +104,11 @@
   .callhd h2 { font-size: min(calc(34px * var(--u)), 3.8vh); }
   .callhd .rn { font-family: var(--pixel); font-size: calc(19px * var(--u)); color: var(--gold); }
   .callhd .rn small { color: var(--ink-3); font-size: calc(14px * var(--u)); }
-  .callwhen { margin-top: min(calc(5px * var(--u)), .8vh); line-height: 1.4;
-    font-size: min(calc(30px * var(--u)), 2.7vh, 2.3vw); font-weight: 900; white-space: nowrap; }
-  .callsub { margin-top: calc(3px * var(--u)); line-height: 1.5;
-    font-size: min(calc(18px * var(--u)), 2vh); color: var(--ink-2); }
+  /* 情境是**一整段一樣大的字**。原本拆成大標＋小副標，讀起來像兩件事 ——
+     但它本來就是一口氣講完的一個場景，而且最後那句「此時你會怎麼做」才是題目。
+     整段一行排不下，所以這裡**不**鎖 nowrap，改用 max-width 讓它自己換行。 */
+  .callwhen { margin-top: min(calc(6px * var(--u)), 1vh); line-height: 1.55; max-width: 46em;
+    font-size: min(calc(24px * var(--u)), 2.5vh); font-weight: 900; }
 
   /* 七支電話排成**兩欄四列＝八格**，第八格放「幾人已選」／「都一樣 −3」。
      這一頁揭曉之後每一格會長出一句回應，八格塞不下就會掉出畫面下緣 ——
@@ -141,14 +143,38 @@
     font-style: normal; font-family: var(--pixel);
     font-size: min(calc(24px * var(--u)), 2.8vh); color: var(--vol); }
 
+  /* ── 統計圖 ───────────────────────────────────────────────────────── */
+  /* 兩題加起來，全場都去了哪裡。**算人數不算次數**，副標把這件事寫死在畫面上。 */
+  .bars { flex: 1; display: flex; flex-direction: column; justify-content: center;
+    gap: min(calc(8px * var(--u)), 1.2vh); margin-top: min(calc(14px * var(--u)), 2vh); }
+  .barrow { display: grid; grid-template-columns:
+      calc(200px * var(--u)) minmax(0, 1fr) calc(80px * var(--u)) calc(360px * var(--u));
+    align-items: center; gap: calc(14px * var(--u)); }
+  .barrow .blbl { font-size: min(calc(24px * var(--u)), 2.9vh); font-weight: 900; }
+  .barrow .btrack { height: min(calc(26px * var(--u)), 3.2vh);
+    border: 3px solid var(--edge); background: var(--surface-2); }
+  .barrow .btrack i { display: block; height: 100%; background: var(--vol); transition: width .3s;
+    -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 8px, transparent 8px 10px);
+    mask-image: repeating-linear-gradient(90deg, #000 0 8px, transparent 8px 10px); }
+  .barrow .bn { font-family: var(--pixel); font-size: min(calc(19px * var(--u)), 2.4vh); color: var(--ink-2); }
+  .barrow .bwho { min-width: 0; overflow: hidden; }
+  .barrow .bwho .nm { font-size: min(calc(16px * var(--u)), 2vh); font-weight: 700; color: var(--ink-3);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
+  /* 沒有人選的那幾格淡下去，但**留在畫面上** —— 沒有人去的地方也是一個事實 */
+  .barrow.zero { opacity: .4; }
+  /* 「其他」排最後，印的是他們自己寫的字。這一格是這一頁的壓軸。 */
+  .barrow.other .blbl { color: var(--gold); }
+  .barrow.other .btrack i { background: var(--gold); }
+  .barrow .bwho .ot { display: inline-block; margin: 0 calc(8px * var(--u)) 2px 0;
+    padding: 1px calc(9px * var(--u)); border: 3px solid var(--gold);
+    font-size: min(calc(17px * var(--u)), 2.1vh); font-weight: 700; }
+  .barrow .bwho .ot i { font-style: normal; margin-left: calc(8px * var(--u));
+    font-size: min(calc(13px * var(--u)), 1.7vh); color: var(--ink-3); }
+
   /* ── 偶像 ─────────────────────────────────────────────────────────── */
-  .idolquote { margin-top: min(calc(10px * var(--u)), 1.5vh); border-left: 10px solid var(--gold);
-    padding: min(calc(10px * var(--u)), 1.5vh) 0 min(calc(10px * var(--u)), 1.5vh) calc(20px * var(--u)); }
-  .idolquote .ref { font-family: var(--pixel); font-size: calc(17px * var(--u)); color: var(--gold); }
-  .idolquote p { margin: calc(10px * var(--u)) 0 0; max-width: 30em;
-    font-size: min(calc(24px * var(--u)), 3.2vh); line-height: 1.7; font-weight: 700; }
-  /* **這一句不准斷行。** 五個字掉到第二行，那個問句就沒力了。 */
-  .idolask { margin-top: min(calc(12px * var(--u)), 1.8vh);
+  /* 以賽亞書那一段**不印在牆上**（整段引上去這一頁就變成一塊要讀的長文）。
+     牆上只留標題和這個問句，所以問句可以放很大。 */
+  .idolask { margin-top: min(calc(26px * var(--u)), 4vh);
     font-size: min(calc(46px * var(--u)), 6vh, 3.4vw); font-weight: 900;
     color: var(--vol); white-space: nowrap; letter-spacing: .04em; }
   .costhd { margin-top: min(calc(16px * var(--u)), 2.4vh); font-family: var(--pixel);
@@ -174,7 +200,7 @@
   .dialwrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
   .dialcard { border: 5px solid var(--edge); background: var(--surface); box-shadow: 9px 9px 0 var(--hard);
     padding: min(calc(24px * var(--u)), 3.4vh) calc(48px * var(--u)); }
-  .dialcard img { display: block; margin: 0 auto; width: min(calc(280px * var(--u)), 26vh);
+  .dialcard img { display: block; margin: 0 auto; width: min(calc(180px * var(--u)), 24vh);
     height: auto; image-rendering: pixelated; }
   /* 沒有名字。條件那一行才是這一頁的內容。 */
   .dialno { margin-top: min(calc(10px * var(--u)), 1.5vh); font-family: var(--pixel);
@@ -216,24 +242,38 @@
   .prayscript .l2 { border: 4px dashed var(--edge-soft); padding: min(calc(26px * var(--u)), 4vh) calc(26px * var(--u));
     font-size: min(calc(26px * var(--u)), 3.4vh); color: var(--ink-3); }
 
-  /* ── 恩典卡 ───────────────────────────────────────────────────────── */
-  /* 三條護欄**印在大螢幕上**，不是只放在備忘錄裡 ——
-     這三句要全場都看到，不能只靠主持人記得講。 */
-  .rules { display: grid; grid-template-columns: repeat(3, 1fr); gap: calc(16px * var(--u));
-    margin-top: min(calc(14px * var(--u)), 2vh); }
-  .rule { background: var(--surface); border: 4px solid var(--root-c); box-shadow: 6px 6px 0 var(--hard);
-    padding: min(calc(14px * var(--u)), 2vh) calc(18px * var(--u)); }
-  .rule b { display: block; font-size: min(calc(27px * var(--u)), 3.6vh); line-height: 1.35; color: var(--root-c); }
-  .rule span { display: block; margin-top: calc(8px * var(--u));
-    font-size: min(calc(17px * var(--u)), 2.3vh); line-height: 1.6; color: var(--ink-2); }
+  /* 全場一起念的那一段（教會第 11 頁，併進禱告那一頁） */
+  .together { margin-top: min(calc(14px * var(--u)), 2vh); border-left: 10px solid var(--root-c);
+    padding-left: calc(20px * var(--u)); }
+  .together span { font-family: var(--pixel); font-size: calc(16px * var(--u)); color: var(--root-c); }
+  .together p { margin: calc(8px * var(--u)) 0 0; max-width: 34em;
+    font-size: min(calc(21px * var(--u)), 2.6vh); font-weight: 700; line-height: 1.8; }
+
+  /* ── 天父的回信 ───────────────────────────────────────────────────── */
+  /* 第二關的寶箱是同一個做法：封著的那一張輕輕浮動、點得開，
+     **主持人按下去才拆**。不要自己跑、不要倒數。 */
+  .letterbox { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .env.shut { width: min(calc(320px * var(--u)), 36vh); cursor: pointer;
+    image-rendering: pixelated; animation: envbob 2.4s ease-in-out infinite; }
+  .env.shut:hover { filter: brightness(1.12); }
+  @keyframes envbob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+  .sealed { margin-top: min(calc(18px * var(--u)), 2.6vh);
+    font-size: min(calc(26px * var(--u)), 3.4vh); font-weight: 700; color: var(--ink-2); }
+  /* 拆開：信封在左，信紙在右。整塊從下面浮上來一次，**只跑一次**。 */
+  .letteropen { flex: 1; display: grid; grid-template-columns: auto 1fr;
+    align-items: center; gap: calc(40px * var(--u));
+    animation: unseal .5s ease-out; }
+  @keyframes unseal { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+  .letteropen .env { width: min(calc(300px * var(--u)), 34vh); height: auto; image-rendering: pixelated; }
+  .letteropen .sheet { min-width: 0; }
+  .letteropen blockquote { margin: 0; font-size: min(calc(52px * var(--u)), 6.6vh);
+    font-weight: 900; line-height: 1.55; color: var(--root-c); }
+  .letteropen .ref { display: block; margin-top: calc(14px * var(--u));
+    font-family: var(--pixel); font-size: calc(20px * var(--u)); color: var(--gold); }
+  .letteropen .from { display: block; margin-top: min(calc(20px * var(--u)), 3vh);
+    font-size: min(calc(30px * var(--u)), 3.8vh); font-weight: 900; }
   .keepline { margin-top: auto; padding-top: min(calc(14px * var(--u)), 2vh);
     font-size: min(calc(28px * var(--u)), 3.8vh); font-weight: 900; color: var(--gold); }
-
-  /* ── 結尾禱告文 ───────────────────────────────────────────────────── */
-  .closetext { margin-top: min(calc(14px * var(--u)), 2vh); max-width: 26em;
-    font-size: min(calc(32px * var(--u)), 4.2vh); font-weight: 700; line-height: 1.85; }
-  .closeline { margin-top: auto; padding-top: min(calc(12px * var(--u)), 1.8vh);
-    font-size: min(calc(32px * var(--u)), 4.4vh); font-weight: 900; color: var(--root-c); letter-spacing: .04em; }
 
   .cols3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 18px; }
   .col3 { background: var(--surface); border: 4px solid var(--edge); box-shadow: 6px 6px 0 var(--hard); padding: min(18px, 2.4vh) 18px; }
@@ -294,13 +334,17 @@
     <select id="jump"></select>
     <!-- 每一頁該有的控制鈕。照第一關拍賣控制列的做法 —— 現場不要靠鍵盤。 -->
     <span id="callctl" style="display:none;gap:8px;">
-      <button class="btn" data-cmd="callPrev" id="cprev">← 上一通</button>
-      <button class="btn primary" data-cmd="callStep" id="cstep">撥出去</button>
+      <button class="btn" data-cmd="callPrev" id="cprev">← 上一題</button>
+      <button class="btn primary" data-cmd="callStep" id="cstep">公布結果</button>
     </span>
     <!-- 有人手機掛了、或者就是不按的時候，讓大螢幕接通。
          每個人自己的 +20 還是要他自己按 —— 這顆只動大螢幕。 -->
     <span id="dialctl" style="display:none;gap:8px;">
       <button class="btn primary" data-cmd="connect" id="cnow">全場接通</button>
+    </span>
+    <!-- 天父的回信：**那一下要由人按**，不要讓它自己跑。 -->
+    <span id="letterctl" style="display:none;gap:8px;">
+      <button class="btn primary" data-cmd="openLetter" id="lopen">拆開它</button>
     </span>
     <span class="sp"></span>
     <span class="hint" id="hint"></span>

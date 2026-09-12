@@ -53,12 +53,13 @@
       if (p.hasNeed) chips.push('<span class="chip">已寫下</span>');
       if (p.receivedVerse) chips.push('<span class="chip on">已領受</span>');
 
-      // 他打過的那兩支。主持人接話全靠這一行 ——
-      // **但只念數字，不要對著這一行點名。** 有幾支是很私人的（家人、自己撐）。
+      // 他做過的那幾件（兩題去重）。主持人接話全靠這一行 ——
+      // **但只念數字，不要對著這一行點名。** 有幾格是很私人的（家人、自己撐）。
       var meta = p.callNames.length
         ? '<div class="meta keep">' + p.callNames.map(esc).join(' · ') + '</div>'
         : '';
-      // 這一關前半扣分、後半加 20，所以側欄兩種號都要吃得下。
+      // **這一關幸福指數一分都不動**，所以這裡永遠是空的。
+      // 留著是因為主持人手動加減（adjust）還是走這條路。
       var delta = p.gain
         ? '<span class="' + (p.gain > 0 ? 'up' : 'down') + '">' +
             (p.gain > 0 ? '+' : '') + p.gain + '</span>'
@@ -80,33 +81,61 @@
       (all ? '　<b>大家都好了</b>' : '') + '</div>';
   }
 
-  // ── 七支電話 ─────────────────────────────────────────────────────────
-  // 揭曉之後**七格長得一模一樣** —— 螢幕不替任何人的信仰打分數。
-  // 差別只在那一頭回你什麼，而每一句都先承認它給了什麼，再說它沒給什麼。
+  // ── 七件事 ───────────────────────────────────────────────────────────
+  // 揭曉之後**七格長得一模一樣** —— 螢幕不替任何人的選擇打分數，
+  // 而且這一頁一分都不動。差別只在那件事後來怎麼了，
+  // 而每一句都先承認它給了什麼，再說它沒給什麼。
+  //
+  // **複選**：一個人可以同時出現在好幾格裡。真的出事的時候本來就是這樣。
   function callBoard() {
     var c = S.callsNow;
     return '<div class="callhd">' +
-        '<h2>深夜兩點，你打給誰</h2>' +
+        '<h2>深夜兩點，你會怎麼做</h2>' +
         '<span class="rn">' + (c.idx + 1) + ' <small>/ ' + c.total + '</small></span>' +
       '</div>' +
-      '<div class="callwhen">' + esc(c.when) + '</div>' +
-      '<div class="callsub">' + esc(c.sub) + '</div>' +
+      // **一整段一樣大的字。** 拆成大標＋小副標會讀成兩件事，
+      // 但它本來就是一口氣講完的一個場景。
+      '<div class="callwhen">' + esc(c.text) + '</div>' +
       '<div class="callgrid">' + c.lines.map(function (l) {
-        return '<div class="cl' + (c.revealed ? ' done' : '') + '">' +
+        return '<div class="cl' + (c.revealed ? ' done' : '') + (l.other ? ' other' : '') + '">' +
           '<div class="clhd"><b>' + esc(l.name) + '</b>' +
             '<span class="cond">' + esc(l.cond) + '</span></div>' +
           '<div class="who">' + (l.who.length ? l.who.map(esc).join('・') : '　') + '</div>' +
           (c.revealed ? '<div class="reply">' + esc(l.reply) + '</div>' : '') +
         '</div>';
       }).join('') +
-        // 七支電話排兩欄就是四列八格，第八格空著。那一格拿來放這一行 ——
+        // 七格排兩欄就是四列八格，第八格空著。那一格拿來放這一行 ——
         // 擺在格子底下會多吃掉一整行的高度，這一頁就掉出畫面了。
         '<div class="callend">' + (c.revealed
-          // 七支一樣的分 —— 這一行印出來的是「沒有哪一支比較好」。
-          ? '<div class="callcost">不管打給哪一支，都一樣<i>幸福指數 ' + c.cost + '</i></div>'
+          ? '<div class="callcost">每一件都陪了你。<i>沒有一件把那件事拿走。</i></div>'
           : counter(S.stats.callPicked, '人已選')) +
         '</div>' +
       '</div>';
+  }
+
+  // ── 統計圖 ───────────────────────────────────────────────────────────
+  // 兩題加起來，全場都去了哪裡。**算人數，不算次數** ——
+  // 主持人要念的是「今天晚上有五個人自己撐過去」，那是人。
+  // 「其他」排最後，而且印的是他們自己寫的字 —— 那一格是這一頁的壓軸。
+  function tallyBoard() {
+    var t = S.tallyNow;
+    return '<div class="callhd"><h2>' + esc(S.tally.title) + '</h2>' +
+        '<span class="rn"><small>' + esc(S.tally.sub) + '</small></span></div>' +
+      '<div class="bars">' + t.rows.map(function (r) {
+        var pct = Math.round(r.n / t.max * 100);
+        var tail = r.other && r.texts.length
+          ? r.texts.map(function (x) {
+              return '<span class="ot">' + esc(x.text) + '<i>' + esc(x.name) + '</i></span>';
+            }).join('')
+          : (r.who.length ? '<span class="nm">' + r.who.map(esc).join('・') + '</span>' : '');
+        return '<div class="barrow' + (r.other ? ' other' : '') + (r.n ? '' : ' zero') + '">' +
+          '<span class="blbl">' + esc(r.name) + '</span>' +
+          '<span class="btrack"><i style="width:' + pct + '%"></i></span>' +
+          '<span class="bn">' + r.n + ' 人</span>' +
+          '<span class="bwho">' + tail + '</span>' +
+        '</div>';
+      }).join('') + '</div>' +
+      '<div class="callcost" style="margin-top:auto">' + esc(S.tally.line) + '</div>';
   }
 
   // ── 第三通電話 ───────────────────────────────────────────────────────
@@ -171,12 +200,14 @@
 
     calls: function () { return callBoard(); },
 
-    // 這一關最會出事的一頁。畫面上只有經文的內容和那個問句 ——
-    // **四條避雷是寫給主持人自己看的，在備忘錄裡，不印在牆上。**
+    tally: function () { return tallyBoard(); },
+
+    // 這一關最會出事的一頁。
+    // **以賽亞書那一段不印在牆上** —— 整段引上去，這一頁就變成一塊要讀的長文，
+    // 全場會低頭讀完，主持人就沒有戲了。那是他講的故事，台詞在備忘錄裡。
+    // 牆上只留兩樣：標題，和那個問句。
     idol: function () {
       return '<h2>' + esc(S.idol.title) + '</h2>' +
-        '<div class="idolquote"><span class="ref">' + esc(S.idol.ref) + '</span>' +
-          '<p>' + esc(S.idol.quote) + '</p></div>' +
         '<div class="idolask">' + esc(S.idol.ask) + '</div>' +
         '<div class="costhd">' + esc(S.idol.costTitle) + '</div>' +
         '<div class="costs">' + S.idol.costs.map(function (c) {
@@ -221,33 +252,40 @@
         }).join('') + '</div>';
     },
 
-    // 三行。中間那一塊是空的 —— **那 30 秒的安靜要真的留滿。**
+    // 主持人起頭 → **30 秒安靜** → 全場一起把底下那段念出來。
+    // 中間那一塊是空的，那個安靜就是他們人生第一次禱告。
     pray: function () {
       return '<h2>' + esc(S.pray.title) + '</h2>' +
         '<div class="prayscript">' +
           '<div class="l1">' + esc(S.pray.open) + '</div>' +
           '<div class="l2">' + esc(S.pray.middle) + '</div>' +
           '<div class="l3">' + esc(S.pray.close) + '</div>' +
-        '</div>';
+        '</div>' +
+        '<div class="together"><span>' + esc(S.pray.together) + '</span>' +
+          '<p>' + esc(S.pray.text) + '</p></div>';
     },
 
-    // 恩典卡。**三條護欄印在牆上** —— 這三句要全場都看到，
-    // 不能只靠主持人記得講。前面剛講完算命，這一頁沒守住就會把整關推翻。
-    grace: function () {
+    // 天父的回信。**信是回的，籤是抽的** —— 前面剛講完算命，
+    // 這一頁改成一封信就不會被聽成抽籤了。
+    // 做法跟第二關的寶箱一樣：封著的那一張輕輕浮動，主持人按下去才拆開。
+    letter: function () {
+      if (!S.letterOpen) {
+        return '<h2>' + esc(S.grace.title) + '</h2>' +
+          '<div class="letterbox">' +
+            '<img class="env shut" id="env" src="/happiness/shared/art/letter.svg" alt="">' +
+            '<p class="sealed">' + esc(S.grace.sealed) + '</p>' +
+          '</div>';
+      }
       return '<h2>' + esc(S.grace.title) + '</h2>' +
-        '<div class="verse"><blockquote>「' + esc(S.grace.half) + '」' +
-          '<span class="ref">' + esc(S.verse.ref) + '</span></blockquote></div>' +
-        '<div class="rules">' + S.grace.rules.map(function (r) {
-          return '<div class="rule"><b>' + esc(r.k) + '</b><span>' + esc(r.v) + '</span></div>';
-        }).join('') + '</div>' +
+        '<div class="letteropen">' +
+          '<img class="env" src="/happiness/shared/art/letter-open.svg" alt="">' +
+          '<div class="sheet">' +
+            '<blockquote>「' + esc(S.grace.half) + '」</blockquote>' +
+            '<span class="ref">' + esc(S.verse.ref) + '</span>' +
+            '<span class="from">' + esc(S.grace.from) + '</span>' +
+          '</div>' +
+        '</div>' +
         '<div class="keepline">' + esc(S.grace.keep) + '</div>';
-    },
-
-    // **這不是決志禱告文。** 全場一起念，不加「願意的人舉手」。
-    closing: function () {
-      return '<h2>' + esc(S.closing.title) + '</h2>' +
-        '<p class="closetext">' + esc(S.closing.text) + '</p>' +
-        '<div class="closeline">' + esc(S.closing.close) + '</div>';
     },
 
     card: function () {
@@ -267,6 +305,7 @@
         fromLabel: '上週',
         week: '當上帝來敲門',
         lines: [
+          '今天晚上幸福指數一分都沒動 —— 外面什麼都沒變。動的是底下那一條。',
           '今天這一通是你打的。下一關 —— 換他來敲你的門。',
           '那張恩典卡收好，下一關第一件事就是把它拿出來。',
         ],
@@ -283,6 +322,10 @@
     if (qr && ROOM) {
       try { QR.render(qr, joinUrl(), qrScale(7), '#161A18', '#ffffff'); } catch (err) {}
     }
+
+    // 封著的那封信也點得開 —— 第二關的寶箱是同一個做法。
+    var env = document.getElementById('env');
+    if (env) env.onclick = function () { post('openLetter'); };
   }
 
   function render() {
@@ -310,6 +353,13 @@
     };
     show('callctl', S.phase.id === 'calls');
     show('dialctl', S.phase.id === 'hotline');
+    show('letterctl', S.phase.id === 'letter');
+
+    if (S.phase.id === 'letter') {
+      var lb = document.getElementById('lopen');
+      lb.textContent = S.letterOpen ? '已經拆開了' : '拆開它';
+      lb.disabled = !!S.letterOpen;
+    }
 
     if (S.phase.id === 'calls') {
       // 一顆按鈕按到底：還沒撥就是「撥出去」，撥過了才變「下一通」。
@@ -318,8 +368,8 @@
       document.getElementById('cprev').disabled = c.idx <= 0;
       var fn = document.getElementById('cstep');
       fn.textContent = !c.revealed
-        ? '撥出去（' + (c.idx + 1) + '/' + c.total + '）'
-        : (last ? '打完了，按下一頁' : '下一通 →（' + (c.idx + 2) + '/' + c.total + '）');
+        ? '公布結果（' + (c.idx + 1) + '/' + c.total + '）'
+        : (last ? '都公布了，按下一頁' : '下一題 →（' + (c.idx + 2) + '/' + c.total + '）');
       fn.disabled = c.revealed && last;
     }
     if (S.phase.id === 'hotline') {

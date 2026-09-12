@@ -49,17 +49,21 @@
     box-shadow: 3px 3px 0 var(--hard); cursor: pointer; }
   .lotchk.on { border-color: var(--vol); background: #3A1E14; color: var(--vol); }
   .lotchk .sub { display: block; margin-top: 3px; font-size: 14px; font-weight: 500; color: var(--ink-3); }
-  /* 七支電話排成**兩欄**。單欄的話第七支（自己撐過去）會掉到畫面下面 ——
-     而那一支正好是現場最多人會選的，看不到就等於少了一個選項，
-     這一頁的分布就不是真的了。兩欄七格，最後一格自己佔滿一整列。 */
-  .lotgrid.lines { grid-template-columns: 1fr 1fr; gap: 8px; }
-  .lotgrid.lines .lotchk:last-child { grid-column: 1 / -1; }
-  .lotchk.line { border-color: var(--gold); flex-direction: column; align-items: flex-start;
-    gap: 2px; padding: 10px 12px; }
-  .lotchk.line b { font-size: 19px; line-height: 1.3; }
-  .lotchk.line i { font-style: normal; font-size: 13px; font-weight: 500;
-    line-height: 1.4; color: var(--ink-3); }
+  /* 一排一個。**這一題是複選**，所以每一格左邊要有一個看得出來的方框 ——
+     沒有方框全場會以為只能選一個。七格會超過一個畫面，那沒關係，手機本來就會捲。 */
+  .lotgrid.lines { gap: 8px; }
+  .lotchk.line { border-color: var(--gold); align-items: center; gap: 12px; padding: 10px 13px; }
+  .lotchk.line .box { width: 24px; height: 24px; border: 3px solid currentColor; flex: none; }
+  .lotchk.line.on .box { background: var(--vol); }
+  .lotchk.line .t { min-width: 0; }
+  .lotchk.line b { display: block; font-size: 19px; line-height: 1.3; }
+  .lotchk.line i { display: block; font-style: normal; font-size: 13px; font-weight: 500;
+    line-height: 1.4; color: var(--ink-3); margin-top: 2px; }
   .lotchk.line.on i { color: var(--vol); }
+  /* 「其他」那一格勾起來才長出輸入框。**寫的東西會上大螢幕**，所以底下要講清楚。 */
+  .otherbox { margin-top: 8px; }
+  .otherbox input { width: 100%; padding: 12px 13px; font-size: 19px; font-weight: 700; }
+  .otherbox .warn { margin-top: 6px; font-size: 14px; line-height: 1.6; color: var(--gold); }
 
   /* 那一頭回你什麼 */
   .reply { margin-top: 16px; padding: 18px; border: 3px solid var(--gold);
@@ -71,7 +75,7 @@
   .hit.up { border-color: var(--root-c); color: var(--root-c); }
 
   /* 第三通：一顆大按鈕，一按就接 */
-  .dialart { display: block; width: 70%; max-width: 240px; margin: 18px auto 0;
+  .dialart { display: block; width: 48%; max-width: 170px; margin: 18px auto 0;
     image-rendering: pixelated; }
   .dialconds { display: flex; flex-wrap: wrap; justify-content: center; gap: 7px; margin-top: 14px; }
   .dialconds span { border: 3px solid var(--root-c); color: var(--root-c); padding: 4px 10px;
@@ -91,7 +95,17 @@
   .prayscript p { margin: 0 0 12px; font-size: 21px; font-weight: 700; line-height: 1.7; }
   .prayscript p.dim { color: var(--ink-3); font-weight: 500; font-size: 18px; }
 
-  .closetext { margin-top: 16px; font-size: 20px; font-weight: 700; line-height: 1.9; }
+  .closetext { margin-top: 16px; font-size: 19px; font-weight: 700; line-height: 1.9;
+    border-left: 6px solid var(--root-c); padding-left: 14px; }
+
+  /* 天父的回信。**手機上沒有按鈕** —— 那一封是全場一起拆的。 */
+  .letterp { text-align: center; padding-top: 8px; animation: unsealp .5s ease-out; }
+  @keyframes unsealp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  .letterp img { display: block; width: 62%; max-width: 230px; margin: 0 auto 18px;
+    image-rendering: pixelated; }
+  .letterp blockquote { margin: 0; font-size: 27px; font-weight: 900; line-height: 1.7; color: var(--root-c); }
+  .letterp .ref { display: block; margin-top: 12px; font-family: var(--pixel); font-size: 13px; color: var(--gold); }
+  .letterp .from { display: block; margin-top: 18px; font-size: 20px; font-weight: 900; }
 
   .howlist { margin-top: 14px; }
   .howrow { padding: 11px 0; border-bottom: 2px dashed var(--edge-soft); }
