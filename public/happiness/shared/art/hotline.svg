@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 20" shape-rendering="crispEdges" role="img" aria-label="專線電話">
+<!-- 教會第四週 PPT 第 2 頁那支藍色話筒。**不要做「響了很多聲才接」的動畫** ——
+     那會變成「上帝讓你等」，跟這一關要講的完全相反。所以訊號是靜的，不閃。 -->
+<!-- 橫桿 -->
+<rect x="9" y="4" width="14" height="4" fill="#3A6FD8"/>
+<rect x="9" y="4" width="14" height="1" fill="#6E9BF0"/>
+<rect x="9" y="7" width="14" height="1" fill="#27509E"/>
+<!-- 左邊聽筒 -->
+<rect x="2" y="3" width="8" height="6" fill="#3A6FD8"/>
+<rect x="2" y="3" width="8" height="1" fill="#6E9BF0"/>
+<rect x="3" y="9" width="6" height="3" fill="#3A6FD8"/>
+<rect x="9" y="3" width="1" height="9" fill="#27509E"/>
+<rect x="4" y="12" width="4" height="2" fill="#27509E"/>
+<rect x="5" y="13" width="2" height="1" fill="#16305E"/>
+<!-- 右邊聽筒 -->
+<rect x="22" y="3" width="8" height="6" fill="#3A6FD8"/>
+<rect x="22" y="3" width="8" height="1" fill="#6E9BF0"/>
+<rect x="23" y="9" width="6" height="3" fill="#3A6FD8"/>
+<rect x="22" y="3" width="1" height="9" fill="#27509E"/>
+<rect x="24" y="12" width="4" height="2" fill="#27509E"/>
+<rect x="25" y="13" width="2" height="1" fill="#16305E"/>
+<!-- 訊號：右上角三道。24 小時都在，所以它不閃、不跑、不等。 -->
+<rect x="31" y="6" width="1" height="2" fill="#54D6AF"/>
+<rect x="32" y="4" width="1" height="5" fill="#54D6AF"/>
+<rect x="33" y="2" width="1" height="8" fill="#54D6AF"/>
+<rect x="34" y="0" width="1" height="11" fill="#54D6AF"/>
+</svg>

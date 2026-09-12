@@ -90,6 +90,34 @@
       }
     }
 
+    // 第四關的求助熱線：大家選完你才撥出去，撥完再打下一通。
+    var callc = el('callctl');
+    if (callc) {
+      callc.hidden = S.phase.id !== 'calls' || !S.callsNow;
+      if (!callc.hidden) {
+        // 一顆按鈕按到底：還沒撥就是「撥出去」，撥過了才變「下一通」。
+        var lastCall = S.callsNow.idx >= S.callsNow.total - 1;
+        el('callprev').disabled = S.callsNow.idx <= 0;
+        el('callstep').textContent = !S.callsNow.revealed
+          ? '撥出去（' + S.stats.callPicked + '/' + S.stats.count + ' 已選）'
+          : (lastCall ? '打完了，按下一頁' : '下一通 →（' + (S.callsNow.idx + 2) + '/' + S.callsNow.total + '）');
+        el('callstep').disabled = S.callsNow.revealed && lastCall;
+      }
+    }
+
+    // 第四關的第三通：有人手機掛了、或者就是不按，讓大螢幕接通。
+    // **每個人自己的 +20 還是要他自己按** —— 這顆只動大螢幕。
+    var dialc = el('dialctl');
+    if (dialc) {
+      dialc.hidden = S.phase.id !== 'hotline' || !S.hotlineNow;
+      if (!dialc.hidden) {
+        el('connectnow').textContent = S.hotlineNow.connected
+          ? '已接通'
+          : '全場接通（' + S.hotlineNow.dialed + '/' + S.hotlineNow.total + ' 已撥）';
+        el('connectnow').disabled = S.hotlineNow.connected;
+      }
+    }
+
     // 第二關的寶箱：主持人拿著手機也能打開它。
     var giftc = el('giftctl');
     if (giftc) {
@@ -154,6 +182,9 @@
     on('flipall', function () {
       if (confirm('剩下的全部翻開？')) post('flipAll');
     });
+    on('callprev', function () { post('callPrev'); });
+    on('callstep', function () { post('callStep'); });
+    on('connectnow', function () { post('connect'); });
     on('opengift', function () { post('openGift'); });
   }
 

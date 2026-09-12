@@ -77,7 +77,7 @@ var GROUP_NAME = '幸福小組';
   };
 
   // data: { week, name, outer, outerPrev, inner, innerLabel, verseRef, verseText,
-  //         burden, bought, listLabel, path: { label, steps: [] } }
+  //         burden, burdenLabel, burdenAsk, bought, listLabel, path: { label, steps: [] } }
   function drawWeekCard(canvas, data) {
     var W = 1080, H = 1560, M = 96, CW = W - M * 2;
     canvas.width = W; canvas.height = H;
@@ -199,7 +199,16 @@ var GROUP_NAME = '幸福小組';
       ctx.fillStyle = GREEN;
       ctx.fillRect(M, y - 34, 10, 44);
       ctx.font = '400 18px ' + PIXEL;
-      ctx.fillText('MY LINE', M + 28, y);
+      ctx.fillText(data.burdenLabel || 'MY LINE', M + 28, y);
+      // 有指定題目的那幾關（第四關「我現在最需要他幫我的是」），
+      // 把題目也印上去 —— 隔一週再看，光一句「」他想不起來自己在回答什麼。
+      if (data.burdenAsk) {
+        y += 40;
+        ctx.fillStyle = '#5C706A';
+        ctx.font = '500 26px ' + SANS;
+        ctx.fillText(data.burdenAsk, M, y);
+        y += 8;
+      }
       y += 52;
       var size = data.burden.length <= 24 ? 42 : data.burden.length <= 60 ? 34 : 28;
       ctx.fillStyle = INK;

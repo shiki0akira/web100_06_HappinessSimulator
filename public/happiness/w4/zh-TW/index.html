@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="/happiness/shared/logo.svg">
+<title>幸福模擬器 · 第四關 幸福連線 · 主畫面</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Press+Start+2P&display=swap">
+<link rel="stylesheet" href="/happiness/shared/pixel.css">
+<script src="/happiness/shared/theme.js"></script>
+<style>
+  /* 主畫面會用 HDMI 接 43–75 吋電視，觀看距離 2–4 公尺。
+     字級隨畫面寬度整體放大，--u 是縮放係數。 */
+  :root { --u: 1; }
+  @media (min-width: 1500px) { :root { --u: 1.22; } }
+  @media (min-width: 1900px) { :root { --u: 1.5; } }
+  @media (min-width: 2560px) { :root { --u: 2; } }
+
+  body { overflow: hidden; }
+  .app { display: grid; grid-template-rows: auto 1fr auto auto; height: 100vh; }
+
+  .top {
+    display: flex; align-items: center; gap: 16px;
+    padding: 12px 24px; border-bottom: 4px solid var(--edge); background: var(--surface);
+  }
+  .top h1 { font-size: calc(19px * var(--u)); font-weight: 900; }
+  .top h1 a { color: inherit; text-decoration: none; border-bottom: 3px solid transparent; }
+  .top h1 a:hover, .top h1 a:focus-visible { color: var(--root-c); border-bottom-color: var(--root-c); }
+  .top .spacer { flex: 1; }
+  .top .count { font-family: var(--pixel); font-size: calc(15px * var(--u)); color: var(--ink-2); }
+  .notesbtn { font-family: var(--sans); font-size: calc(13px * var(--u)); font-weight: 700;
+    padding: calc(7px * var(--u)) calc(12px * var(--u));
+    border: 3px solid var(--gold); background: transparent; color: var(--gold); }
+  .notesbtn:hover { background: var(--gold); color: var(--surface); }
+  .top .themebtn { font-size: calc(13px * var(--u)); padding: calc(7px * var(--u)) calc(10px * var(--u)); }
+
+  .body { display: grid; grid-template-columns: calc(272px * var(--u)) 1fr; min-height: 0; }
+
+  .side { border-right: 4px solid var(--edge); background: var(--surface); overflow-y: auto; padding: calc(10px * var(--u)); }
+  .side h4 { font-family: var(--pixel); font-size: calc(15px * var(--u)); letter-spacing: .06em; color: var(--ink-3); margin: 0 0 calc(8px * var(--u)); text-transform: uppercase; }
+  .prow { padding: calc(5px * var(--u)) 0; border-bottom: 2px dashed var(--edge-soft); }
+  .prow .nm { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; line-height: 1.25;
+    font-size: calc(14px * var(--u)); font-weight: 700; }
+  .prow .nm .up { font-family: var(--pixel); font-size: calc(13px * var(--u)); color: var(--root-c); }
+  .prow .nm .down { font-family: var(--pixel); font-size: calc(13px * var(--u)); color: var(--vol); }
+  .prow .g { display: flex; align-items: center; gap: 8px; margin-top: calc(3px * var(--u)); line-height: 1.15;
+    font-family: var(--pixel); font-size: calc(13px * var(--u)); color: var(--ink-3); }
+  .prow .g .lbl { flex: none; width: 4.4em; }
+  .prow .g .bar { flex: 1; min-width: 0; height: calc(10px * var(--u)); }
+  .prow .g b { flex: none; width: 2.6em; text-align: right; font-size: calc(14px * var(--u)); }
+  .prow .meta { margin-top: calc(3px * var(--u)); line-height: 1.2;
+    font-size: calc(13px * var(--u)); color: var(--ink-3); font-family: var(--pixel); }
+  .prow .meta.keep { font-family: var(--sans); font-weight: 700; color: var(--ink-2);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chip { font-family: var(--sans); font-size: calc(13px * var(--u)); font-weight: 700; padding: 1px 6px; border: 2px solid var(--edge-soft); background: var(--surface-2); color: var(--ink-2); }
+  .chip.on { border-color: var(--root-c); background: var(--root-soft); color: var(--root-c); }
+
+  /* 每一頁都要在一個畫面裡看完 —— overflow 只是保險，不是排版手段 */
+  .stage { padding: calc(22px * var(--u)) calc(40px * var(--u)); overflow-y: auto; display: flex; flex-direction: column; }
+  .stage h2 { font-size: min(calc(40px * var(--u)), 5.6vh); font-weight: 900; letter-spacing: .02em; }
+  .stage .kicker, .col3 .kicker { font-size: calc(20px * var(--u)); color: var(--ink-2); margin-bottom: 10px; }
+  .stage .lede { font-size: calc(17px * var(--u)); color: var(--ink-2); max-width: 62ch; margin: 10px 0 0; }
+  .big { font-size: min(calc(76px * var(--u)), 10vh); font-family: var(--pixel); line-height: 1.1; }
+  .mono { font-family: var(--pixel); }
+  .muted { color: var(--ink-3); }
+
+  .receive { display: flex; align-items: center; gap: calc(24px * var(--u)); margin-top: calc(22px * var(--u)); }
+  .receive .stageart { margin: 0; }
+  .receive .stageart img { width: min(calc(200px * var(--u)), 22vh); }
+  .counter { margin-top: calc(18px * var(--u)); }
+  .receive .counter { margin-top: 0; }
+
+  .qrbox { display: flex; gap: 34px; align-items: center; margin-top: 22px; flex-wrap: wrap; }
+  .qrbox > div { flex: 1 1 280px; min-width: 0; }
+  .qrbox canvas { border: 4px solid var(--edge); background: #fff; padding: 6px;
+    image-rendering: pixelated; box-shadow: 8px 8px 0 var(--hard); position: relative; z-index: 95; }
+  .roomcode { font-family: var(--pixel); font-size: calc(64px * var(--u)); color: var(--gold); letter-spacing: .14em; margin-top: 8px; }
+  .url { font-family: var(--pixel); font-size: calc(24px * var(--u)); line-height: 1.8; color: var(--root-c); word-break: break-all; }
+  .names { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+  .names span { padding: 6px 12px; background: var(--surface); border: 3px solid var(--edge); box-shadow: 3px 3px 0 var(--hard); font-size: calc(15px * var(--u)); font-weight: 700; }
+
+  /* 「幾人已…」是給主持人等人的一行小字，不是這一頁的主角 */
+  .qcount { margin-top: calc(6px * var(--u)); font-family: var(--pixel);
+    font-size: calc(15px * var(--u)); color: var(--ink-3); }
+  .qcount.all { color: var(--root-c); }
+  .qcount b { font-family: var(--sans); font-size: calc(15px * var(--u)); }
+
+  /* ── 標題頁：幸福連線 ─────────────────────────────────────────────── */
+  .teaser { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .teaser .big-title { font-size: min(calc(72px * var(--u)), 9vh); letter-spacing: .14em; }
+  .teaseart img { display: block; width: min(calc(200px * var(--u)), 30vh); height: auto;
+    image-rendering: pixelated; margin: min(calc(14px * var(--u)), 2vh) auto 0; }
+  /* **這一句不准斷行。** 一斷行「可以直達天聽」會自己掉到第二行，那一句就散了。 */
+  .teaser .teaseline { margin-top: min(calc(20px * var(--u)), 2.8vh);
+    font-size: min(calc(28px * var(--u)), 3.6vh, 2.1vw); font-weight: 700;
+    color: var(--ink-2); white-space: nowrap; }
+
+  /* ── 求助熱線：七支電話 ───────────────────────────────────────────── */
+  /* 情境那一句是這一頁的主角。**把人放進那個場景裡**，光寫「第一輪」太乾。 */
+  .callhd { display: flex; align-items: baseline; gap: calc(20px * var(--u)); flex-wrap: wrap; }
+  .callhd h2 { font-size: min(calc(34px * var(--u)), 3.8vh); }
+  .callhd .rn { font-family: var(--pixel); font-size: calc(19px * var(--u)); color: var(--gold); }
+  .callhd .rn small { color: var(--ink-3); font-size: calc(14px * var(--u)); }
+  .callwhen { margin-top: min(calc(5px * var(--u)), .8vh); line-height: 1.4;
+    font-size: min(calc(30px * var(--u)), 2.7vh, 2.3vw); font-weight: 900; white-space: nowrap; }
+  .callsub { margin-top: calc(3px * var(--u)); line-height: 1.5;
+    font-size: min(calc(18px * var(--u)), 2vh); color: var(--ink-2); }
+
+  /* 七支電話排成**兩欄四列＝八格**，第八格放「幾人已選」／「都一樣 −3」。
+     這一頁揭曉之後每一格會長出一句回應，八格塞不下就會掉出畫面下緣 ——
+     而架構第八節說每一頁都要在一個畫面裡看完。所以：
+       ① 第八格拿來放那一行，底下就不用再多一條，省掉整整一行的高度
+       ② 字級全部改吃 vh 上限 —— 16:9 的電視寬度大、高度沒跟著大，
+          只吃 --u（跟著寬度放大）的話一定會溢出。 */
+  .callgrid { display: grid; grid-template-columns: 1fr 1fr;
+    gap: min(calc(7px * var(--u)), .8vh) calc(18px * var(--u));
+    margin-top: min(calc(10px * var(--u)), 1.4vh); }
+  .cl { background: var(--surface); border: 4px solid var(--edge); box-shadow: 5px 5px 0 var(--hard);
+    padding: min(calc(9px * var(--u)), 1.1vh) calc(14px * var(--u)); min-width: 0; }
+  .cl .clhd { display: flex; align-items: baseline; gap: calc(12px * var(--u)); }
+  .cl b { flex: none; font-size: min(calc(22px * var(--u)), 2.6vh); line-height: 1.3; }
+  /* 條件。**只寫條件，不寫評價。** */
+  .cl .cond { flex: 1; min-width: 0; text-align: right; font-size: min(calc(14px * var(--u)), 1.8vh);
+    color: var(--gold); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* 選了就馬上出現在這裡 —— 這一行就是「大家選完了沒」 */
+  .cl .who { margin-top: min(calc(3px * var(--u)), .4vh); min-height: 1.15em; line-height: 1.35;
+    font-size: min(calc(16px * var(--u)), 2vh); font-weight: 700; color: var(--vol); }
+  .cl .reply { margin-top: min(calc(4px * var(--u)), .6vh); padding-top: min(calc(4px * var(--u)), .6vh);
+    border-top: 2px dashed var(--edge-soft);
+    font-size: min(calc(16px * var(--u)), 2vh); line-height: 1.5; color: var(--ink-2); }
+  /* 揭曉之後七格長得一模一樣 —— **螢幕不替任何人的信仰打分數。** */
+  .cl.done { border-color: var(--edge-soft); }
+  /* 第八格。沒有外框 —— 它不是第八支電話。 */
+  .callend { display: flex; flex-direction: column; justify-content: center;
+    padding: 0 calc(14px * var(--u)); min-width: 0; }
+  .callend .qcount { margin-top: 0; }
+  .callcost { font-size: min(calc(22px * var(--u)), 2.6vh); font-weight: 900; line-height: 1.5; }
+  .callcost i { display: block; margin-top: calc(4px * var(--u));
+    font-style: normal; font-family: var(--pixel);
+    font-size: min(calc(24px * var(--u)), 2.8vh); color: var(--vol); }
+
+  /* ── 偶像 ─────────────────────────────────────────────────────────── */
+  .idolquote { margin-top: min(calc(10px * var(--u)), 1.5vh); border-left: 10px solid var(--gold);
+    padding: min(calc(10px * var(--u)), 1.5vh) 0 min(calc(10px * var(--u)), 1.5vh) calc(20px * var(--u)); }
+  .idolquote .ref { font-family: var(--pixel); font-size: calc(17px * var(--u)); color: var(--gold); }
+  .idolquote p { margin: calc(10px * var(--u)) 0 0; max-width: 30em;
+    font-size: min(calc(24px * var(--u)), 3.2vh); line-height: 1.7; font-weight: 700; }
+  /* **這一句不准斷行。** 五個字掉到第二行，那個問句就沒力了。 */
+  .idolask { margin-top: min(calc(12px * var(--u)), 1.8vh);
+    font-size: min(calc(46px * var(--u)), 6vh, 3.4vw); font-weight: 900;
+    color: var(--vol); white-space: nowrap; letter-spacing: .04em; }
+  .costhd { margin-top: min(calc(16px * var(--u)), 2.4vh); font-family: var(--pixel);
+    font-size: calc(18px * var(--u)); color: var(--ink-3); }
+  /* 三格都是「再一次」—— 這一段的重量在於它沒有盡頭，不在於它可怕。 */
+  .costs { display: grid; grid-template-columns: repeat(3, 1fr); gap: calc(14px * var(--u));
+    margin-top: min(calc(8px * var(--u)), 1.2vh); }
+  .cost { background: var(--surface); border: 4px solid var(--edge); box-shadow: 5px 5px 0 var(--hard);
+    padding: min(calc(10px * var(--u)), 1.5vh) calc(16px * var(--u)); }
+  .cost b { display: block; font-size: min(calc(26px * var(--u)), 3.4vh); line-height: 1.3; }
+  .cost span { display: block; margin-top: calc(4px * var(--u));
+    font-size: min(calc(16px * var(--u)), 2.2vh); color: var(--gold); }
+  .costline { margin-top: min(calc(12px * var(--u)), 1.8vh);
+    font-size: min(calc(24px * var(--u)), 3.2vh, 1.8vw); font-weight: 900; white-space: nowrap; }
+
+  /* ── 整頁只有一句話的版型 ─────────────────────────────────────────── */
+  .solo { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  /* **這一句不准斷行。** 一斷行「條件的？」會自己掉到第二行，問句就散了。 */
+  .solo h2 { font-size: min(calc(64px * var(--u)), 9vh, 4.2vw); line-height: 1.45;
+    letter-spacing: .04em; max-width: none; white-space: nowrap; }
+
+  /* ── 第三通電話 ───────────────────────────────────────────────────── */
+  .dialwrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .dialcard { border: 5px solid var(--edge); background: var(--surface); box-shadow: 9px 9px 0 var(--hard);
+    padding: min(calc(24px * var(--u)), 3.4vh) calc(48px * var(--u)); }
+  .dialcard img { display: block; margin: 0 auto; width: min(calc(280px * var(--u)), 26vh);
+    height: auto; image-rendering: pixelated; }
+  /* 沒有名字。條件那一行才是這一頁的內容。 */
+  .dialno { margin-top: min(calc(10px * var(--u)), 1.5vh); font-family: var(--pixel);
+    font-size: min(calc(52px * var(--u)), 7vh); letter-spacing: .2em; color: var(--ink-3); }
+  .dialconds { display: flex; flex-wrap: wrap; justify-content: center; gap: calc(10px * var(--u));
+    margin-top: min(calc(14px * var(--u)), 2vh); }
+  .dialconds span { border: 3px solid var(--root-c); color: var(--root-c);
+    padding: calc(5px * var(--u)) calc(14px * var(--u));
+    font-size: min(calc(20px * var(--u)), 2.7vh); font-weight: 700; }
+  .dialknows { margin-top: min(calc(12px * var(--u)), 1.8vh);
+    font-size: min(calc(28px * var(--u)), 3.6vh); font-weight: 900; }
+  /* 接通。**一按就接**，不要動畫、不要鈴聲、不要語音信箱。 */
+  .dialcard.on { border-color: var(--root-c); background: var(--root-soft); }
+  .dialcard.on .dialno { color: var(--root-c); }
+  .connected { font-family: var(--pixel); font-size: min(calc(78px * var(--u)), 10.5vh);
+    color: var(--root-c); letter-spacing: .18em; line-height: 1.2; }
+  .halfverse { margin-top: min(calc(18px * var(--u)), 2.6vh);
+    font-size: min(calc(38px * var(--u)), 5vh, 2.8vw); font-weight: 900;
+    color: var(--gold); white-space: nowrap; letter-spacing: .03em; }
+
+  /* ── 我們要如何禱告呢 ─────────────────────────────────────────────── */
+  .howlist { margin-top: min(calc(14px * var(--u)), 2vh); display: grid;
+    gap: min(calc(10px * var(--u)), 1.5vh); }
+  .how { display: flex; align-items: baseline; gap: calc(20px * var(--u));
+    background: var(--surface); border: 4px solid var(--edge); box-shadow: 5px 5px 0 var(--hard);
+    padding: min(calc(12px * var(--u)), 1.8vh) calc(22px * var(--u)); }
+  .how .n { flex: none; font-family: var(--pixel); font-size: min(calc(24px * var(--u)), 3.2vh); color: var(--gold); }
+  .how b { flex: none; font-size: min(calc(29px * var(--u)), 3.8vh); line-height: 1.3; }
+  .how span { flex: 1; min-width: 0; text-align: right;
+    font-size: min(calc(18px * var(--u)), 2.4vh); color: var(--ink-2); }
+
+  /* ── 我們開始來禱告 ───────────────────────────────────────────────── */
+  /* 三行。中間那一行是留白 —— 那 30 秒的安靜就是他們人生第一次禱告。 */
+  .prayscript { flex: 1; display: flex; flex-direction: column; justify-content: center;
+    gap: min(calc(22px * var(--u)), 3vh); }
+  .prayscript .l1, .prayscript .l3 { font-size: min(calc(50px * var(--u)), 6.4vh); font-weight: 900; }
+  .prayscript .l1 { color: var(--root-c); }
+  .prayscript .l3 { color: var(--root-c); }
+  .prayscript .l2 { border: 4px dashed var(--edge-soft); padding: min(calc(26px * var(--u)), 4vh) calc(26px * var(--u));
+    font-size: min(calc(26px * var(--u)), 3.4vh); color: var(--ink-3); }
+
+  /* ── 恩典卡 ───────────────────────────────────────────────────────── */
+  /* 三條護欄**印在大螢幕上**，不是只放在備忘錄裡 ——
+     這三句要全場都看到，不能只靠主持人記得講。 */
+  .rules { display: grid; grid-template-columns: repeat(3, 1fr); gap: calc(16px * var(--u));
+    margin-top: min(calc(14px * var(--u)), 2vh); }
+  .rule { background: var(--surface); border: 4px solid var(--root-c); box-shadow: 6px 6px 0 var(--hard);
+    padding: min(calc(14px * var(--u)), 2vh) calc(18px * var(--u)); }
+  .rule b { display: block; font-size: min(calc(27px * var(--u)), 3.6vh); line-height: 1.35; color: var(--root-c); }
+  .rule span { display: block; margin-top: calc(8px * var(--u));
+    font-size: min(calc(17px * var(--u)), 2.3vh); line-height: 1.6; color: var(--ink-2); }
+  .keepline { margin-top: auto; padding-top: min(calc(14px * var(--u)), 2vh);
+    font-size: min(calc(28px * var(--u)), 3.8vh); font-weight: 900; color: var(--gold); }
+
+  /* ── 結尾禱告文 ───────────────────────────────────────────────────── */
+  .closetext { margin-top: min(calc(14px * var(--u)), 2vh); max-width: 26em;
+    font-size: min(calc(32px * var(--u)), 4.2vh); font-weight: 700; line-height: 1.85; }
+  .closeline { margin-top: auto; padding-top: min(calc(12px * var(--u)), 1.8vh);
+    font-size: min(calc(32px * var(--u)), 4.4vh); font-weight: 900; color: var(--root-c); letter-spacing: .04em; }
+
+  .cols3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 18px; }
+  .col3 { background: var(--surface); border: 4px solid var(--edge); box-shadow: 6px 6px 0 var(--hard); padding: min(18px, 2.4vh) 18px; }
+  .col3 h3 { display: flex; align-items: baseline; gap: 10px; font-size: calc(22px * var(--u)); margin-bottom: 8px; }
+  .col3 h3.next { font-size: calc(26px * var(--u)); }
+  .col3 .who { font-size: calc(28px * var(--u)); font-weight: 900; display: block; margin: 0; }
+  .col3 .delta { margin: calc(6px * var(--u)) 0 0; font-family: var(--pixel);
+    font-size: calc(15px * var(--u)); color: var(--ink-3); }
+  .col3 .delta b { margin-left: 10px; font-size: calc(17px * var(--u)); }
+  .nextbox { margin-top: calc(16px * var(--u)); }
+
+  /* 經文。用 em 限行長：ch 在中文字體上量的是數字寬度，會把整段擠成一條 */
+  .verse { margin-top: calc(10px * var(--u)); }
+  .verse blockquote { font-size: min(calc(44px * var(--u)), 4.8vh); font-weight: 900; line-height: 1.6;
+    margin: 18px 0 0; max-width: 20em; }
+  .verse .ref { font-family: var(--pixel); color: var(--gold); font-size: calc(20px * var(--u)); }
+  .verse blockquote .ref { display: block; margin-top: calc(14px * var(--u)); }
+
+  .note { background: var(--surface); border: 3px solid var(--edge); border-left-width: 10px; border-left-color: var(--gold);
+    padding: 14px 16px; margin-top: calc(16px * var(--u)); max-width: 70ch; font-size: calc(14px * var(--u)); color: var(--ink-2); box-shadow: 5px 5px 0 var(--hard); }
+  .note b { color: var(--ink); }
+
+  /* HUD 控制列：固定深底淺字，不隨主題翻轉 */
+  .controls { display: flex; gap: 10px; align-items: center; padding: 12px 20px;
+    background: var(--bar-bg); border-top: 4px solid var(--bar-edge); flex-wrap: wrap; }
+  .controls .btn { padding: 9px 14px; font-size: calc(13px * var(--u)); background: #1D2A2C; border: 3px solid var(--bar-edge);
+    color: var(--bar-ink); box-shadow: 3px 3px 0 #000; }
+  .controls .btn:active { transform: translate(3px, 3px); box-shadow: none; }
+  .controls .btn.primary { background: var(--root-c); border-color: #9CF0D6; color: var(--on-primary); }
+  .controls select { background: #1D2A2C; color: var(--bar-ink); border: 3px solid var(--bar-edge);
+    padding: 9px 10px; font-family: var(--sans); font-weight: 700; font-size: calc(13px * var(--u)); }
+  .controls .sp { flex: 1; }
+  .controls .hint { color: #8FA8A1; font-size: calc(13px * var(--u)); font-family: var(--pixel); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <h1><a href="/happiness/zh-TW/" id="home" title="回系列頁">幸福模擬器</a> · 第四關 <b>幸福連線</b></h1>
+    <span class="tag" id="ptag">入場</span>
+    <span class="spacer"></span>
+    <button class="notesbtn" id="notesbtn" title="用手機掃，備忘錄會跟著大螢幕走">📱 主持人備忘錄</button>
+    <button class="themebtn" data-theme-toggle></button>
+    <span class="count" id="pcount">0 人在場</span>
+  </div>
+
+  <div class="body">
+    <aside class="side">
+      <h4>玩家狀態</h4>
+      <div id="plist"></div>
+    </aside>
+    <main class="stage" id="stage"></main>
+  </div>
+
+  <div class="controls">
+    <button class="btn" data-cmd="prev">← 上一頁</button>
+    <button class="btn primary" data-cmd="next">下一頁 →</button>
+    <select id="jump"></select>
+    <!-- 每一頁該有的控制鈕。照第一關拍賣控制列的做法 —— 現場不要靠鍵盤。 -->
+    <span id="callctl" style="display:none;gap:8px;">
+      <button class="btn" data-cmd="callPrev" id="cprev">← 上一通</button>
+      <button class="btn primary" data-cmd="callStep" id="cstep">撥出去</button>
+    </span>
+    <!-- 有人手機掛了、或者就是不按的時候，讓大螢幕接通。
+         每個人自己的 +20 還是要他自己按 —— 這顆只動大螢幕。 -->
+    <span id="dialctl" style="display:none;gap:8px;">
+      <button class="btn primary" data-cmd="connect" id="cnow">全場接通</button>
+    </span>
+    <span class="sp"></span>
+    <span class="hint" id="hint"></span>
+    <button class="btn" data-cmd="reset" id="resetbtn">全部重置</button>
+  </div>
+</div>
+
+<!-- 主持人備忘錄的 QR：按 N 叫出來，平常收著 -->
+<div class="notesqr" id="notesqr">
+  <canvas id="notesqrc"></canvas>
+  <div class="t">
+    <h3>主持人備忘錄</h3>
+    <p>用你自己的手機掃。這一頁會跟著大螢幕走，每一頁該念什麼、該做什麼、不要做什麼都在上面，也可以直接翻頁。</p>
+    <div class="u" id="notesurl"></div>
+    <div class="esc">再按一次 N 或 Esc 收起來</div>
+  </div>
+</div>
+
+<script src="/happiness/shared/qr.js"></script>
+<script src="/happiness/shared/room-client.js"></script>
+<script src="/happiness/shared/stage-parts.js"></script>
+<script src="/happiness/w4/host.js"></script>
+</body>
+</html>
