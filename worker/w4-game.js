@@ -264,7 +264,6 @@ function callsView(s) {
     // 勾了就馬上出現在大螢幕上 —— 誰站在哪一格，全場看得到。
     lines: LINES.map((l, k) => ({
       name: l.name,
-      cond: l.cond,
       other: !!l.other,
       who: ps.filter((p) => picksOf(p, i).indexOf(k) >= 0)
         .map((p) => (l.other && otherOf(p, i)
