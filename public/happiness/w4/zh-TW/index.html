@@ -243,24 +243,17 @@
     font-size: min(calc(26px * var(--u)), 3.4vh); color: var(--ink-3); }
 
   /* ── 天父的回信 ───────────────────────────────────────────────────── */
-  /* 第二關的寶箱是同一個做法：封著的那一張輕輕浮動、點得開，
-     **主持人按下去才拆**。不要自己跑、不要倒數。 */
-  .letterbox { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-  .env.shut { width: min(calc(320px * var(--u)), 36vh); cursor: pointer;
-    image-rendering: pixelated; animation: envbob 2.4s ease-in-out infinite; }
-  .env.shut:hover { filter: brightness(1.12); }
-  @keyframes envbob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
-  .sealed { margin-top: min(calc(18px * var(--u)), 2.6vh);
-    font-size: min(calc(26px * var(--u)), 3.4vh); font-weight: 700; color: var(--ink-2); }
-  /* 拆開：信封在左，信紙在右。整塊從下面浮上來一次，**只跑一次**。 */
+  /* 翻到這一頁信就已經是打開的（**沒有「拆開它」這一步**）。
+     信封在左，信紙在右，整塊從下面浮上來一次，**只跑一次**。 */
   .letteropen { flex: 1; display: grid; grid-template-columns: auto 1fr;
     align-items: center; gap: calc(40px * var(--u));
     animation: unseal .5s ease-out; }
   @keyframes unseal { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
   .letteropen .env { width: min(calc(300px * var(--u)), 34vh); height: auto; image-rendering: pixelated; }
   .letteropen .sheet { min-width: 0; }
-  .letteropen blockquote { margin: 0; font-size: min(calc(52px * var(--u)), 6.6vh);
-    font-weight: 900; line-height: 1.55; color: var(--root-c); }
+  /* 整節經文比原本那半句長一倍多，字級降一級，讓它排三行內 */
+  .letteropen blockquote { margin: 0; max-width: 18em; font-size: min(calc(40px * var(--u)), 4.8vh);
+    font-weight: 900; line-height: 1.6; color: var(--root-c); }
   .letteropen .ref { display: block; margin-top: calc(14px * var(--u));
     font-family: var(--pixel); font-size: calc(20px * var(--u)); color: var(--gold); }
   .letteropen .from { display: block; margin-top: min(calc(20px * var(--u)), 3vh);
@@ -334,10 +327,6 @@
          每個人自己的 +20 還是要他自己按 —— 這顆只動大螢幕。 -->
     <span id="dialctl" style="display:none;gap:8px;">
       <button class="btn primary" data-cmd="connect" id="cnow">全場接通</button>
-    </span>
-    <!-- 天父的回信：**那一下要由人按**，不要讓它自己跑。 -->
-    <span id="letterctl" style="display:none;gap:8px;">
-      <button class="btn primary" data-cmd="openLetter" id="lopen">拆開它</button>
     </span>
     <span class="sp"></span>
     <span class="hint" id="hint"></span>

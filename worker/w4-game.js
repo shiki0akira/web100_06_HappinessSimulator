@@ -59,7 +59,6 @@ export function createState() {
     roundIdx: 0,         // 現在跑到第幾輪（0–1）
     roundOpen: [],       // 哪幾輪已經公布了
     forceConnect: false, // 有人手機掛了的時候，主持人手動讓大螢幕接通
-    letterOpen: false,   // 天父的回信拆了沒（跟第二關的寶箱一樣，主持人按）
     seq: 0,
   };
 }
@@ -232,8 +231,6 @@ export function applyHost(s, msg) {
     // 有人手機掛了、或者有人就是不按的時候，讓大螢幕接通。
     // **每個人自己的 +20 還是要他自己按** —— 這顆只動大螢幕。
     case 'connect': s.forceConnect = true; return null;
-    // 拆信。跟第二關的寶箱一樣 —— **那一下要由人按，不要自己跑。**
-    case 'openLetter': s.letterOpen = true; return null;
     case 'adjust': {
       const p = s.players[msg.pid];
       if (p && p.outer !== null) {
@@ -343,7 +340,6 @@ function common(s) {
     how: HOW,
     pray: PRAY,
     grace: GRACE,
-    letterOpen: !!s.letterOpen,
   };
 }
 

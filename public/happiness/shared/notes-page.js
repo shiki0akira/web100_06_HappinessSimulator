@@ -118,16 +118,6 @@
       }
     }
 
-    // 第四關的天父回信：主持人拿著手機也能拆開它（跟第二關的寶箱一樣）。
-    var letterc = el('letterctl');
-    if (letterc) {
-      letterc.hidden = S.phase.id !== 'letter';
-      if (!letterc.hidden) {
-        el('openletter').textContent = S.letterOpen ? '已經拆開了' : '拆開它';
-        el('openletter').disabled = !!S.letterOpen;
-      }
-    }
-
     // 第二關的寶箱：主持人拿著手機也能打開它。
     var giftc = el('giftctl');
     if (giftc) {
@@ -195,7 +185,6 @@
     on('callprev', function () { post('callPrev'); });
     on('callstep', function () { post('callStep'); });
     on('connectnow', function () { post('connect'); });
-    on('openletter', function () { post('openLetter'); });
     on('opengift', function () { post('openGift'); });
   }
 

@@ -199,13 +199,11 @@
         '<p class="privacy">心裡講也可以。</p>';
     },
 
-    // 天父的回信。**手機不做第二顆按鈕** —— 那一封是全場一起拆的，
-    // 每個人自己點一次就變成七支手機各拆各的，那個時刻就散了。
+    // 天父的回信。翻到這一頁就是打開的，**手機上沒有任何按鈕**。
     letter: function () {
-      if (!S.letterOpen) return '<h2>' + esc(S.grace.title) + '</h2>' + wait('看大螢幕', esc(S.grace.sealed));
       return '<div class="letterp">' +
           '<img src="/happiness/shared/art/letter-open.svg" alt="">' +
-          '<blockquote>「' + esc(S.grace.half) + '」</blockquote>' +
+          '<blockquote>「' + esc(S.grace.text) + '」</blockquote>' +
           '<span class="ref">' + esc(S.verse.ref) + '</span>' +
           '<span class="from">' + esc(S.grace.from) + '</span>' +
         '</div>';
@@ -382,7 +380,7 @@
     // 而他正在那個輸入框裡打字 —— 打一個字焦點就被踢掉一次。
     // 勾選（picks）要進來，因為「其他」那一格勾了才長出輸入框。
     var next = [
-      S.phase.id, S.callsNow.idx, S.callsNow.revealed, S.letterOpen,
+      S.phase.id, S.callsNow.idx, S.callsNow.revealed,
       me.outer, me.inner, me.visits, (me.picks || []).join(','), me.called,
       me.receivedVerse, me.cardDone, me.hasNeed, me.prayed,
       draft.byVisits,

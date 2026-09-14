@@ -268,20 +268,13 @@
 
     // 天父的回信。**信是回的，籤是抽的** —— 前面剛講完算命，
     // 這一頁改成一封信就不會被聽成抽籤了。
-    // 做法跟第二關的寶箱一樣：封著的那一張輕輕浮動，主持人按下去才拆開。
+    // **沒有「拆開它」這一步** —— 翻到這一頁信就已經是打開的，上面是整節經文。
     letter: function () {
-      if (!S.letterOpen) {
-        return '<h2>' + esc(S.grace.title) + '</h2>' +
-          '<div class="letterbox">' +
-            '<img class="env shut" id="env" src="/happiness/shared/art/letter.svg" alt="">' +
-            '<p class="sealed">' + esc(S.grace.sealed) + '</p>' +
-          '</div>';
-      }
       return '<h2>' + esc(S.grace.title) + '</h2>' +
         '<div class="letteropen">' +
           '<img class="env" src="/happiness/shared/art/letter-open.svg" alt="">' +
           '<div class="sheet">' +
-            '<blockquote>「' + esc(S.grace.half) + '」</blockquote>' +
+            '<blockquote>「' + esc(S.grace.text) + '」</blockquote>' +
             '<span class="ref">' + esc(S.verse.ref) + '</span>' +
             '<span class="from">' + esc(S.grace.from) + '</span>' +
           '</div>' +
@@ -322,12 +315,7 @@
     var qr = document.getElementById('qr');
     if (qr && ROOM) {
       try { QR.render(qr, joinUrl(), qrScale(7), '#161A18', '#ffffff'); } catch (err) {}
-    }
-
-    // 封著的那封信也點得開 —— 第二關的寶箱是同一個做法。
-    var env = document.getElementById('env');
-    if (env) env.onclick = function () { post('openLetter'); };
-  }
+    }  }
 
   function render() {
     if (!S) return;
@@ -354,13 +342,6 @@
     };
     show('callctl', S.phase.id === 'calls');
     show('dialctl', S.phase.id === 'hotline');
-    show('letterctl', S.phase.id === 'letter');
-
-    if (S.phase.id === 'letter') {
-      var lb = document.getElementById('lopen');
-      lb.textContent = S.letterOpen ? '已經拆開了' : '拆開它';
-      lb.disabled = !!S.letterOpen;
-    }
 
     if (S.phase.id === 'calls') {
       // 一顆按鈕按到底：還沒撥就是「撥出去」，撥過了才變「下一通」。
