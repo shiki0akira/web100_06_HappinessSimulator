@@ -7,9 +7,9 @@
 // 拿得走那件事；隔三頁之後你打第三通 —— 那一支不限時間、不需要金錢，
 // **第一聲就接了**。然後教他怎麼禱告，一起禱告，最後抽實體的恩典卡。
 //
-// ⚠️ **這一關的幸福指數一分都不動**（CALL_COST 和 ANSWER_GAIN 都是 0）。
-// 七關裡只有這一關整晚不碰那條線 —— 今天外面什麼都沒變，
-// 真正動的是另外那一條：幸福根基 +15。
+// ⚠️ **這一關的幸福指數整晚只動一次：接通 +10**（ANSWER_GAIN）。
+// 前面兩題一分都不動（CALL_COST 是 0）—— 只有這一通讓那條線往上。
+// 幸福根基另外 +15。
 import {
   INTRO, LINES, ROUNDS, CALL_COST, ANSWER_GAIN,
   TALLY, IDOL, ASK, HOTLINE, VERSE, NEED, HOW, PRAY, GRACE,
@@ -191,8 +191,8 @@ export function applyAction(s, pid, msg) {
       p.others = rows;
       break;
     }
-    // 第三通。**一按就接**，而且不花任何條件、也不加任何分數 ——
-    // 那一刻的重量在畫面和那半句經文上。一給分全場就開始算「我按了有沒有賺到」。
+    // 第三通。**一按就接**，不花任何條件，幸福指數 +10。
+    // 只加一次 —— 重複按不會再加。還沒接關（outer 是 null）的人不加。
     case 'dial':
       if (phaseId(s) !== 'hotline') break;
       if (!p.called) {
@@ -229,7 +229,7 @@ export function applyHost(s, msg) {
     case 'callStep': callStep(s); return null;
     case 'callPrev': callPrev(s); return null;
     // 有人手機掛了、或者有人就是不按的時候，讓大螢幕接通。
-    // **每個人自己的 +20 還是要他自己按** —— 這顆只動大螢幕。
+    // **每個人自己的 +10 還是要他自己按** —— 這顆只動大螢幕。
     case 'connect': s.forceConnect = true; return null;
     case 'adjust': {
       const p = s.players[msg.pid];
@@ -264,6 +264,7 @@ function callsView(s) {
     // 勾了就馬上出現在大螢幕上 —— 誰站在哪一格，全場看得到。
     lines: LINES.map((l, k) => ({
       name: l.name,
+      art: l.art,
       other: !!l.other,
       who: ps.filter((p) => picksOf(p, i).indexOf(k) >= 0)
         .map((p) => (l.other && otherOf(p, i)
@@ -363,7 +364,7 @@ export function hostView(s, roomCode) {
         .filter((n, i, all) => n && all.indexOf(n) === i),
       picked: picksOf(p, s.roundIdx).length > 0,
       called: !!p.called,
-      // 這一關幸福指數不動，所以側欄不會出現任何加減號
+      // 接通之後側欄名字旁邊出現 +10
       gain: p.called ? ANSWER_GAIN : 0,
       hasNeed: !!p.hasNeed, prayed: !!p.prayed,
       receivedVerse: !!p.receivedVerse, cardDone: !!p.cardDone, adjust: p.adjust || 0,
@@ -397,6 +398,7 @@ export function playerView(s, pid, roomCode) {
     reconnected: alive(s).filter((x) => x.outer !== null).length,
     callPicked: alive(s).filter((x) => picksOf(x, s.roundIdx).length).length,
     otherIdx,
+    answerGain: ANSWER_GAIN,
   };
   if (!p) return { ...base, me: null };
   return {

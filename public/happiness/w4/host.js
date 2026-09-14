@@ -58,8 +58,7 @@
       var meta = p.callNames.length
         ? '<div class="meta keep">' + p.callNames.map(esc).join(' · ') + '</div>'
         : '';
-      // **這一關幸福指數一分都不動**，所以這裡永遠是空的。
-      // 留著是因為主持人手動加減（adjust）還是走這條路。
+      // 接通之後這裡出現 +10（這一關幸福指數唯一動的一次）。
       var delta = p.gain
         ? '<span class="' + (p.gain > 0 ? 'up' : 'down') + '">' +
             (p.gain > 0 ? '+' : '') + p.gain + '</span>'
@@ -99,7 +98,8 @@
       '<div class="callgrid">' + c.lines.map(function (l) {
         return '<div class="cl' + (c.revealed ? ' done' : '') + (l.other ? ' other' : '') + '">' +
           // 條件那行小字不上牆 —— 格子只留名字，條件由主持人口頭帶。
-          '<div class="clhd"><b>' + esc(l.name) + '</b></div>' +
+          '<div class="clhd"><img class="clart" src="/happiness/shared/art/line-' + esc(l.art) + '.svg" alt="">' +
+            '<b>' + esc(l.name) + '</b></div>' +
           '<div class="who">' + (l.who.length ? l.who.map(esc).join('・') : '　') + '</div>' +
           (c.revealed ? '<div class="reply">' + esc(l.reply) + '</div>' : '') +
         '</div>';
@@ -276,10 +276,8 @@
           '<div class="sheet">' +
             '<blockquote>「' + esc(S.grace.text) + '」</blockquote>' +
             '<span class="ref">' + esc(S.verse.ref) + '</span>' +
-            '<span class="from">' + esc(S.grace.from) + '</span>' +
           '</div>' +
-        '</div>' +
-        '<div class="keepline">' + esc(S.grace.keep) + '</div>';
+        '</div>';
     },
 
     card: function () {
@@ -299,7 +297,7 @@
         fromLabel: '上週',
         week: '當上帝來敲門',
         lines: [
-          '今天晚上幸福指數一分都沒動 —— 外面什麼都沒變。動的是底下那一條。',
+          '今天外面什麼都沒變 —— 是接通那一通，讓幸福指數多了 10。底下那一條也長了。',
           '今天這一通是你打的。下一關 —— 換他來敲你的門。',
           '那張恩典卡收好，下一關第一件事就是把它拿出來。',
         ],

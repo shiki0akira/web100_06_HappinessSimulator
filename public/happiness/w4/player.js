@@ -112,6 +112,7 @@
         '<div class="lotgrid lines">' + c.lines.map(function (l, i) {
           return '<div class="lotchk line' + (picks.indexOf(i) >= 0 ? ' on' : '') + '" data-call="' + i + '">' +
             '<span class="box"></span>' +
+            '<img class="chkart" src="/happiness/shared/art/line-' + esc(l.art) + '.svg" alt="">' +
             '<span class="t"><b>' + esc(l.name) + '</b></span></div>';
         }).join('') + '</div>' +
         // 勾了「其他」才長出輸入框。**這一格會上大螢幕**，所以底下那句警語不能省。
@@ -135,11 +136,14 @@
     },
 
     // 第三通。**一按就接** —— 不要鈴聲、不要等待、不要語音信箱。
-    // **不加分。** 那一刻的重量在「接通」和那半句經文上，不在數字上。
+    // 接通之後幸福指數 +10。還沒接關的人（outer 是 null）伺服器沒有加，這裡也不印。
     hotline: function (me) {
       if (me.called) {
         return '<div class="connected">' + esc(S.hotline.connected) + '</div>' +
           '<div class="halfverse">「' + esc(S.hotline.half) + '」</div>' +
+          (S.answerGain && me.outer !== null
+            ? '<div class="hit up">幸福指數 +' + S.answerGain + '</div>'
+            : '') +
           wait('看大螢幕');
       }
       return '<h2>' + esc(S.hotline.title) + '</h2>' +
@@ -195,8 +199,7 @@
           '<p>' + esc(S.pray.open) + '</p>' +
           '<p class="dim">' + esc(S.pray.middle) + '</p>' +
           '<p>' + esc(S.pray.close) + '</p>' +
-        '</div>' +
-        '<p class="privacy">心裡講也可以。</p>';
+        '</div>';
     },
 
     // 天父的回信。翻到這一頁就是打開的，**手機上沒有任何按鈕**。
@@ -205,7 +208,6 @@
           '<img src="/happiness/shared/art/letter-open.svg" alt="">' +
           '<blockquote>「' + esc(S.grace.text) + '」</blockquote>' +
           '<span class="ref">' + esc(S.verse.ref) + '</span>' +
-          '<span class="from">' + esc(S.grace.from) + '</span>' +
         '</div>';
     },
 
