@@ -207,15 +207,15 @@
     // 這一關最會出事的一頁。
     // **以賽亞書那一段不印在牆上** —— 整段引上去，這一頁就變成一塊要讀的長文，
     // 全場會低頭讀完，主持人就沒有戲了。那是他講的故事，台詞在備忘錄裡。
-    // 牆上只留兩樣：標題，和那個問句。
+    // 牆上只留兩樣：標題，和三張卡（越算越怕／要挑日子、要去對的地方／求了還要還）。
     idol: function () {
       return '<h2>' + esc(S.idol.title) + '</h2>' +
-        '<div class="idolask">' + esc(S.idol.ask) + '</div>' +
-        '<div class="costhd">' + esc(S.idol.costTitle) + '</div>' +
-        '<div class="costs">' + S.idol.costs.map(function (c) {
-          return '<div class="cost"><b>' + esc(c.k) + '</b><span>' + esc(c.v) + '</span></div>';
-        }).join('') + '</div>' +
-        '<div class="costline">' + esc(S.idol.costLine) + '</div>';
+        '<div class="costwrap"><div class="costs">' + S.idol.costs.map(function (c) {
+          // 小字在「，」後面切段，每段不准斷行 —— 放不下時只會在逗號後面換行，
+          // 不會把「香油錢」拆成「香油／錢」。
+          var v = c.v.split(/(?<=，)/).map(function (seg) { return '<i>' + esc(seg) + '</i>'; }).join('');
+          return '<div class="cost"><b>' + esc(c.k) + '</b><span>' + v + '</span></div>';
+        }).join('') + '</div></div>';
     },
 
     // **畫面上只有這一句問句。** 答案在下一頁 —— 先印出來他們就不會自己想了。
