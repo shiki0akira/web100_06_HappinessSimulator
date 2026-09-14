@@ -135,8 +135,8 @@
           '<span class="bn">' + r.n + ' 人</span>' +
           '<span class="bwho">' + tail + '</span>' +
         '</div>';
-      }).join('') + '</div>' +
-      '<div class="callcost" style="margin-top:auto">' + esc(S.tally.line) + '</div>';
+      }).join('') + '</div>';
+      // 底下不下結論。長條自己會講，要收口由主持人講。
   }
 
   // ── 第三通電話 ───────────────────────────────────────────────────────
