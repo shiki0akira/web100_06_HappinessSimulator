@@ -58,14 +58,11 @@
       var meta = p.callNames.length
         ? '<div class="meta keep">' + p.callNames.map(esc).join(' · ') + '</div>'
         : '';
-      // 接通之後這裡出現 +10（這一關幸福指數唯一動的一次）。
-      var delta = p.gain
-        ? '<span class="' + (p.gain > 0 ? 'up' : 'down') + '">' +
-            (p.gain > 0 ? '+' : '') + p.gain + '</span>'
-        : '';
+      // **名字旁邊不印 +10。** 接通加的分數在他自己的手機上看得到，
+      // 大螢幕的側欄只放「已接通」，不替任何人標加減號。
       return '' +
         '<div class="prow">' +
-          '<div class="nm">' + esc(p.name) + delta + chips.join('') + '</div>' +
+          '<div class="nm">' + esc(p.name) + chips.join('') + '</div>' +
           gauge('幸福指數', p.outer == null ? '—' : p.outer, outer, 'var(--vol)') +
           gauge('幸福根基', p.inner ? p.inner : '—', p.inner || 0, 'var(--root-c)') +
           meta +

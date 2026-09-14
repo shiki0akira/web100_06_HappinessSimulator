@@ -364,8 +364,6 @@ export function hostView(s, roomCode) {
         .filter((n, i, all) => n && all.indexOf(n) === i),
       picked: picksOf(p, s.roundIdx).length > 0,
       called: !!p.called,
-      // 接通之後側欄名字旁邊出現 +10
-      gain: p.called ? ANSWER_GAIN : 0,
       hasNeed: !!p.hasNeed, prayed: !!p.prayed,
       receivedVerse: !!p.receivedVerse, cardDone: !!p.cardDone, adjust: p.adjust || 0,
     })),
