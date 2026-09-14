@@ -122,10 +122,19 @@
   .cl { background: var(--surface); border: 4px solid var(--edge); box-shadow: 5px 5px 0 var(--hard);
     padding: min(calc(9px * var(--u)), 1.1vh) calc(14px * var(--u)); min-width: 0; }
   .cl .clhd { display: flex; align-items: center; gap: calc(12px * var(--u)); }
-  /* 名字左邊那張小圖。**圖跟字一起放大** —— 圖的像素只佔 16 格裡的 12–14 格，
-     框要比字大一截，看起來才一樣高。兩個都吃 vh 上限，揭曉之後八格才不會掉出畫面。 */
-  .cl .clart { flex: none; width: min(calc(36px * var(--u)), 4.1vh); height: min(calc(36px * var(--u)), 4.1vh);
+  /* 名字左邊那張小圖。**48×48** —— 16 格像素剛好放大 3 倍，最銳利。
+     矮的螢幕（投影機 768 高）跟著 vh 縮，揭曉之後八格才不會掉出畫面。 */
+  .cl .clart { flex: none; width: min(48px, 5vh); height: min(48px, 5vh);
     image-rendering: pixelated; }
+  /* **小圖和名字在整格裡上下置中。** 底下那一行「誰選了」是固定佔位的（空的也留著，
+     有人勾選時格子才不會跳），所以名字上面補一塊跟它一樣高的空白，名字就落在正中間。
+     揭曉之後底下多了回應，這塊空白就拿掉 —— 省下來的高度留給回應。 */
+  .cl:not(.done) .clhd { margin-top: calc(min(calc(3px * var(--u)), .4vh) + 1.35 * min(calc(16px * var(--u)), 2vh)); }
+  /* 揭曉之後小圖**不准比名字那一行高**（1.3 × 字級）—— 一高就把四列都撐高，
+     1920×998 會溢出 14px、1366×768 溢出 4px。跟字一樣高的話，揭曉後的高度跟沒有小圖時一模一樣。
+     1080 高大約 45px，只比揭曉前的 48 小一點，揭曉那一刻整排回應長出來，不會被注意到。 */
+  .cl.done .clart { width: min(48px, calc(1.3 * min(calc(28px * var(--u)), 3.2vh)));
+    height: min(48px, calc(1.3 * min(calc(28px * var(--u)), 3.2vh))); }
   .cl b { flex: none; font-size: min(calc(28px * var(--u)), 3.2vh); line-height: 1.3; }
   /* 選了就馬上出現在這裡 —— 這一行就是「大家選完了沒」 */
   .cl .who { margin-top: min(calc(3px * var(--u)), .4vh); min-height: 1.15em; line-height: 1.35;
