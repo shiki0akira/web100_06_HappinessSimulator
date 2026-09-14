@@ -103,7 +103,7 @@
             return '<div class="reply"><span class="replyfrom">' + esc(l.name) + '</span><br>' +
               esc(l.reply) + '</div>';
           }).join('') +
-          '<p class="privacy">每一件都陪了你。沒有一件把那件事拿走。</p>' +
+          // 不替這一頁下結論 —— 「每一件都陪了你」是下一頁統計圖的收口。
           wait('看大螢幕');
       }
 
@@ -112,7 +112,7 @@
         '<div class="lotgrid lines">' + c.lines.map(function (l, i) {
           return '<div class="lotchk line' + (picks.indexOf(i) >= 0 ? ' on' : '') + '" data-call="' + i + '">' +
             '<span class="box"></span>' +
-            '<span class="t"><b>' + esc(l.name) + '</b><i>' + esc(l.cond) + '</i></span></div>';
+            '<span class="t"><b>' + esc(l.name) + '</b></span></div>';
         }).join('') + '</div>' +
         // 勾了「其他」才長出輸入框。**這一格會上大螢幕**，所以底下那句警語不能省。
         (otherOn

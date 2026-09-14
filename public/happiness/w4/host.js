@@ -98,18 +98,19 @@
       '<div class="callwhen">' + esc(c.text) + '</div>' +
       '<div class="callgrid">' + c.lines.map(function (l) {
         return '<div class="cl' + (c.revealed ? ' done' : '') + (l.other ? ' other' : '') + '">' +
-          '<div class="clhd"><b>' + esc(l.name) + '</b>' +
-            '<span class="cond">' + esc(l.cond) + '</span></div>' +
+          // 條件那行小字不上牆 —— 格子只留名字，條件由主持人口頭帶。
+          '<div class="clhd"><b>' + esc(l.name) + '</b></div>' +
           '<div class="who">' + (l.who.length ? l.who.map(esc).join('・') : '　') + '</div>' +
           (c.revealed ? '<div class="reply">' + esc(l.reply) + '</div>' : '') +
         '</div>';
       }).join('') +
-        // 七格排兩欄就是四列八格，第八格空著。那一格拿來放這一行 ——
+        // 七格排兩欄就是四列八格，第八格放「幾人已選」——
         // 擺在格子底下會多吃掉一整行的高度，這一頁就掉出畫面了。
-        '<div class="callend">' + (c.revealed
-          ? '<div class="callcost">每一件都陪了你。<i>沒有一件把那件事拿走。</i></div>'
-          : counter(S.stats.callPicked, '人已選')) +
-        '</div>' +
+        //
+        // **公布之後第八格是空的。** 原本放「每一件都陪了你。沒有一件把那件事拿走。」，
+        // 但那是下一頁（統計圖）的收口 —— 這裡先講出來，下一頁就沒有戲了，
+        // 而且七句回應自己已經在講這件事，牆上不用再替它下結論。
+        '<div class="callend">' + (c.revealed ? '' : counter(S.stats.callPicked, '人已選')) + '</div>' +
       '</div>';
   }
 
