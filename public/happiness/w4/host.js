@@ -160,7 +160,6 @@
         '<div class="dialconds">' + S.hotline.conds.map(function (x) {
           return '<span>' + esc(x) + '</span>';
         }).join('') + '</div>' +
-        '<div class="dialknows">' + esc(S.hotline.knows) + '</div>' +
       '</div>' +
       counter(h.dialed, '人已撥出') +
     '</div>';
@@ -210,6 +209,8 @@
     // 牆上只留兩樣：標題，和三張卡（越算越怕／要挑日子、要去對的地方／求了還要還）。
     idol: function () {
       return '<h2>' + esc(S.idol.title) + '</h2>' +
+        // 副標把原本「人雕刻了偶像」的概念留著，但涵蓋像、牌、命
+        '<div class="idolsub">' + esc(S.idol.sub) + '</div>' +
         '<div class="costwrap"><div class="costs">' + S.idol.costs.map(function (c) {
           // 小字在「，」後面切段，每段不准斷行 —— 放不下時只會在逗號後面換行，
           // 不會把「香油錢」拆成「香油／錢」。

@@ -29,7 +29,7 @@ export const PHASES = [
   { id: 'intro',     tag: '標題',     title: '幸福連線' },
   { id: 'calls',     tag: '互動點 1', title: '深夜兩點，你會怎麼做' },
   { id: 'tally',     tag: '結算頁',   title: '今天晚上，我們都去了哪裡' },
-  { id: 'idol',      tag: '信息',     title: '人雕刻了偶像，又向偶像祈求？' },
+  { id: 'idol',      tag: '信息',     title: '我們把盼望交給了誰？' },
   { id: 'ask',       tag: '信息',     title: '有沒有一支專線，是不用條件的？' },
   { id: 'hotline',   tag: '互動點 1', title: '上帝會接我電話嗎' },
   // 順序：經文先發下去，見證接著替它作證，然後才教怎麼做、一起做、

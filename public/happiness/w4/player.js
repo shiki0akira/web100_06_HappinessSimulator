@@ -128,7 +128,9 @@
     },
 
     idol: function () {
-      return '<h2>' + esc(S.idol.title) + '</h2>' + wait('聽主持人說');
+      return '<h2>' + esc(S.idol.title) + '</h2>' +
+        '<p>' + esc(S.idol.sub) + '</p>' +
+        wait('聽主持人說');
     },
 
     ask: function () {
@@ -153,7 +155,6 @@
         '<div class="dialconds">' + S.hotline.conds.map(function (x) {
           return '<span>' + esc(x) + '</span>';
         }).join('') + '</div>' +
-        '<div class="dialknows">' + esc(S.hotline.knows) + '</div>' +
         '<button class="btn primary fullbtn" id="dial">' + esc(S.hotline.dial) + '</button>';
     },
 

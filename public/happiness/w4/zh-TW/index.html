@@ -180,6 +180,10 @@
   /* ── 偶像 ─────────────────────────────────────────────────────────── */
   /* 以賽亞書那一段**不印在牆上**（整段引上去這一頁就變成一塊要讀的長文）。
      牆上只留標題和三張卡，所以三張卡放大、在剩下的空間裡上下置中。 */
+  /* 副標：「刻出來的像、畫出來的牌、算出來的命，救得了做它的人嗎？」
+     **不准斷行** —— 一斷行「救得了做它的人嗎？」會自己掉下去，問句就散了。 */
+  .idolsub { margin-top: min(calc(12px * var(--u)), 1.6vh); white-space: nowrap;
+    font-size: min(calc(30px * var(--u)), 3.8vh, 1.9vw); font-weight: 900; color: var(--vol); }
   .costwrap { flex: 1; display: flex; align-items: center; }
   .costs { width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); gap: calc(18px * var(--u)); }
   .cost { background: var(--surface); border: 4px solid var(--edge); box-shadow: 5px 5px 0 var(--hard);
@@ -214,8 +218,6 @@
   .dialconds span { border: 3px solid var(--root-c); color: var(--root-c);
     padding: calc(5px * var(--u)) calc(14px * var(--u));
     font-size: min(calc(20px * var(--u)), 2.7vh); font-weight: 700; }
-  .dialknows { margin-top: min(calc(12px * var(--u)), 1.8vh);
-    font-size: min(calc(28px * var(--u)), 3.6vh); font-weight: 900; }
   /* 接通。**一按就接**，不要動畫、不要鈴聲、不要語音信箱。 */
   .dialcard.on .dialno { color: var(--root-c); }
   .connected { font-family: var(--pixel); font-size: min(calc(78px * var(--u)), 10.5vh);
