@@ -118,6 +118,32 @@
       }
     }
 
+    // 第五關的敲門人生：大家選完你才公布，公布完再開下一次敲門。
+    var knockc = el('knockctl');
+    if (knockc) {
+      knockc.hidden = S.phase.id !== 'knocks' || !S.knockNow;
+      if (!knockc.hidden) {
+        var lastKnock = S.knockNow.idx >= S.knockNow.total - 1;
+        el('knockprev').disabled = S.knockNow.idx <= 0;
+        el('knockstep').textContent = !S.knockNow.revealed
+          ? '公布結果（' + S.stats.knockPicked + '/' + S.stats.count + ' 已選）'
+          : (lastKnock ? '都公布了，按下一頁' : '下一次敲門 →（' + (S.knockNow.idx + 2) + '/' + S.knockNow.total + '）');
+        el('knockstep').disabled = S.knockNow.revealed && lastKnock;
+      }
+    }
+
+    // 第五關的彩蛋：有人手機沒電，讓大螢幕翻過去。**這顆只動大螢幕。**
+    var eggc = el('eggctl');
+    if (eggc) {
+      eggc.hidden = S.phase.id !== 'egg' || !S.eggNow;
+      if (!eggc.hidden) {
+        el('opennow').textContent = S.eggNow.done
+          ? '已經翻過去了'
+          : '全場開門（' + S.eggNow.opened + '/' + S.eggNow.total + ' 已開）';
+        el('opennow').disabled = S.eggNow.done;
+      }
+    }
+
     // 第二關的寶箱：主持人拿著手機也能打開它。
     var giftc = el('giftctl');
     if (giftc) {
@@ -185,6 +211,9 @@
     on('callprev', function () { post('callPrev'); });
     on('callstep', function () { post('callStep'); });
     on('connectnow', function () { post('connect'); });
+    on('knockprev', function () { post('knockPrev'); });
+    on('knockstep', function () { post('knockStep'); });
+    on('opennow', function () { post('openAll'); });
     on('opengift', function () { post('openGift'); });
   }
 

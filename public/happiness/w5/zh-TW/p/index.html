@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="icon" type="image/svg+xml" href="/happiness/shared/logo.svg">
+<title>幸福模擬器 · 當上帝來敲門</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Press+Start+2P&display=swap">
+<link rel="stylesheet" href="/happiness/shared/pixel.css">
+<script src="/happiness/shared/theme.js"></script>
+<style>
+  body { padding: 0 0 28px; }
+  .wrap { max-width: 520px; margin: 0 auto; padding: 0 16px; }
+
+  .status { position: sticky; top: 0; z-index: 5; background: var(--surface); border-bottom: 4px solid var(--edge); padding: 10px 16px 12px; }
+  .status .row1 { display: flex; align-items: center; gap: 8px; font-size: 15px; color: var(--ink-3); }
+  .status .row1 b { color: var(--ink); font-size: 20px; font-weight: 900; }
+  .gauge { margin-top: 9px; }
+  .gauge .lbl { display: flex; justify-content: space-between; font-family: var(--pixel); font-size: 13px; color: var(--ink-3); margin-bottom: 4px; }
+  .gauge .lbl b { font-size: 13px; color: var(--vol); }
+  .gauge + .gauge { margin-top: 7px; }
+  .gauge + .gauge .lbl b { color: var(--root-c); }
+
+  .screen { padding-top: 22px; }
+  .screen h2 { font-size: 28px; font-weight: 900; letter-spacing: .03em; }
+  .screen p { color: var(--ink-2); font-size: 18px; }
+  .wait { text-align: center; padding: 44px 0; color: var(--ink-3); }
+  .wait .dot { font-family: var(--pixel); font-size: 27px; letter-spacing: .3em; color: var(--root-c); }
+
+  .fullbtn { width: 100%; margin-top: 20px; padding: 18px; font-size: 21px; }
+  .numin { width: 100%; padding: 16px; font-size: 40px; font-weight: 700; text-align: center;
+    letter-spacing: .1em; font-family: var(--pixel); }
+
+  /* 接關那兩格 */
+  .screen p .sub { font-size: 16px; color: var(--ink-3); line-height: 1.7; font-weight: 500; }
+  .fieldlbl { margin: 22px 0 8px; font-size: 19px; font-weight: 900; color: var(--ink); }
+  .fieldlbl .sub { display: block; font-size: 15px; font-weight: 500; color: var(--ink-3); }
+
+  .qn { font-family: var(--pixel); font-size: 14px; color: var(--gold); }
+
+  /* 選項：一排一個大按鈕。選到的那一個變橘色。 */
+  .opts { display: grid; gap: 10px; margin-top: 18px; }
+  .opt { display: block; width: 100%; text-align: left; padding: 16px 18px; cursor: pointer;
+    border: 3px solid var(--edge); background: var(--surface); color: var(--ink);
+    font-family: var(--sans); font-size: 22px; font-weight: 900; box-shadow: 3px 3px 0 var(--hard); }
+  .opt:active { transform: translate(3px, 3px); box-shadow: none; }
+  .opt.on { border-color: var(--vol); background: var(--vol-soft); color: var(--vol); }
+
+  /* 敲門人生：貓眼裡的人 ＋ 門外那一句 */
+  .kcal { margin-top: 6px; font-family: var(--pixel); font-size: 14px; color: var(--gold); }
+  .kscene { display: flex; gap: 14px; align-items: center; margin-top: 12px; }
+  .peep { flex: none; width: 96px; height: 96px; border: 5px solid var(--edge); background: var(--surface-2);
+    display: flex; align-items: center; justify-content: center; }
+  .peep img { width: 80%; height: auto; image-rendering: pixelated; }
+  .kwho { font-size: 16px; font-weight: 700; color: var(--ink-3); }
+  .ksays { margin-top: 2px; font-size: 23px; font-weight: 900; line-height: 1.5; }
+
+  .reply { margin-top: 16px; padding: 18px; border: 3px solid var(--gold);
+    font-size: 20px; font-weight: 700; line-height: 1.8; }
+  .replyfrom { font-family: var(--pixel); font-size: 13px; color: var(--gold); }
+
+  .hit { margin-top: 16px; padding: 14px; border: 3px dashed var(--vol); color: var(--vol);
+    font-family: var(--pixel); font-size: 20px; text-align: center; }
+  .hit.up { border-color: var(--root-c); color: var(--root-c); }
+  .hit.zero { border-color: var(--edge-soft); color: var(--ink-3); }
+
+  .monthme { display: flex; align-items: baseline; justify-content: center; gap: 12px; flex-wrap: wrap;
+    margin-top: 18px; padding: 16px; border: 3px solid var(--edge); background: var(--surface);
+    font-size: 18px; font-weight: 700; color: var(--ink-3); }
+  .monthme b { font-family: var(--pixel); font-size: 30px; color: var(--vol); }
+
+  /* 彩蛋：門 ＋ 現在真實的時間 */
+  .doorart { display: block; width: 56%; max-width: 210px; margin: 16px auto 0; image-rendering: pixelated; }
+  .clock { margin-top: 4px; text-align: center; font-family: var(--pixel); font-size: 15px; color: var(--gold); }
+  .eggsays { margin-top: 14px; text-align: center; font-size: 23px; font-weight: 900; }
+  /* 「隔著門問」「假裝不在家」換的就是這一行。高度先留好，按下去畫面才不會跳。 */
+  .eggmsg { min-height: 3.6em; margin-top: 12px; padding: 12px 14px; border: 3px dashed var(--edge-soft);
+    font-size: 18px; line-height: 1.7; color: var(--ink-2); text-align: center; }
+  .opened { margin-top: 16px; padding: 18px; border: 3px solid var(--root-c); background: var(--root-soft);
+    color: var(--root-c); text-align: center; font-size: 24px; font-weight: 900; line-height: 1.6; }
+  .eggnote { margin-top: 10px; text-align: center; font-size: 16px !important; color: var(--ink-3) !important; }
+  .eggreveal { margin-top: 18px; text-align: center; font-size: 30px; font-weight: 900;
+    letter-spacing: .1em; color: var(--root-c); }
+
+  .bigline { margin-top: 18px; font-size: 24px !important; font-weight: 900; line-height: 1.7; color: var(--gold) !important; }
+
+  .howlist { margin-top: 14px; }
+  .howrow { padding: 12px 0; border-bottom: 2px dashed var(--edge-soft); }
+  .howrow b { font-size: 21px; font-weight: 900; line-height: 1.6; }
+
+  .verse-p { text-align: center; padding: 10px 0; }
+  .verse-p .ref { font-family: var(--pixel); font-size: 13px; color: var(--gold); }
+  .verse-p blockquote { font-size: 26px; font-weight: 700; line-height: 1.95; margin: 16px 0 0; letter-spacing: .02em; }
+
+  textarea { width: 100%; min-height: 108px; padding: 14px; font-size: 21px; font-weight: 500; resize: vertical; }
+
+  /* 領受／禱告之後那個「長出來了」的畫面 */
+  .grew { display: flex; align-items: center; gap: 14px; margin-top: 22px;
+    border: 3px solid var(--root-c); background: var(--root-soft); padding: 12px 14px; }
+  .grew img { width: 96px; height: auto; image-rendering: pixelated; flex: none; }
+  .grew p { margin: 0; font-size: 18px; line-height: 1.7; }
+  .grew b { font-family: var(--pixel); font-size: 20px; }
+  .privacy { margin-top: 12px; font-size: 16px; color: var(--ink-3); line-height: 1.8; }
+
+  .weekcard { width: 100%; border: 4px solid var(--edge); box-shadow: 6px 6px 0 var(--hard); display: block;
+    margin-top: 16px; position: relative; z-index: 95; }
+
+  .ok { color: var(--root-c); font-weight: 700; }
+  .mono { font-family: var(--pixel); }
+</style>
+</head>
+<body>
+  <div class="status" id="status" hidden>
+    <div class="row1"><b id="myname">—</b><span id="mystate"></span></div>
+    <div class="gauge">
+      <div class="lbl"><span>幸福指數</span><b id="outerv">—</b></div>
+      <span class="bar"><i id="outerbar" style="width:0%;background:var(--vol)"></i></span>
+    </div>
+    <div class="gauge">
+      <div class="lbl"><span>幸福根基</span><b id="innerv">0</b></div>
+      <span class="bar"><i id="innerbar" style="width:0%;background:var(--root-c)"></i></span>
+    </div>
+  </div>
+
+  <div class="wrap"><div class="screen" id="screen"></div></div>
+
+  <button class="themebtn floating" data-theme-toggle></button>
+
+<script src="/happiness/shared/card.js"></script>
+<script src="/happiness/shared/room-client.js"></script>
+<script src="/happiness/w5/player.js"></script>
+</body>
+</html>

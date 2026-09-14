@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="/happiness/shared/logo.svg">
+<title>幸福模擬器 · 第五關 當上帝來敲門 · 主畫面</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Press+Start+2P&display=swap">
+<link rel="stylesheet" href="/happiness/shared/pixel.css">
+<script src="/happiness/shared/theme.js"></script>
+<style>
+  /* 主畫面會用 HDMI 接 43–75 吋電視，觀看距離 2–4 公尺。
+     字級隨畫面寬度整體放大，--u 是縮放係數。 */
+  :root { --u: 1; }
+  @media (min-width: 1500px) { :root { --u: 1.22; } }
+  @media (min-width: 1900px) { :root { --u: 1.5; } }
+  @media (min-width: 2560px) { :root { --u: 2; } }
+
+  body { overflow: hidden; }
+  .app { display: grid; grid-template-rows: auto 1fr auto auto; height: 100vh; }
+
+  .top {
+    display: flex; align-items: center; gap: 16px;
+    padding: 12px 24px; border-bottom: 4px solid var(--edge); background: var(--surface);
+  }
+  .top h1 { font-size: calc(19px * var(--u)); font-weight: 900; }
+  .top h1 a { color: inherit; text-decoration: none; border-bottom: 3px solid transparent; }
+  .top h1 a:hover, .top h1 a:focus-visible { color: var(--root-c); border-bottom-color: var(--root-c); }
+  .top .spacer { flex: 1; }
+  .top .count { font-family: var(--pixel); font-size: calc(15px * var(--u)); color: var(--ink-2); }
+  .notesbtn { font-family: var(--sans); font-size: calc(13px * var(--u)); font-weight: 700;
+    padding: calc(7px * var(--u)) calc(12px * var(--u));
+    border: 3px solid var(--gold); background: transparent; color: var(--gold); }
+  .notesbtn:hover { background: var(--gold); color: var(--surface); }
+  .top .themebtn { font-size: calc(13px * var(--u)); padding: calc(7px * var(--u)) calc(10px * var(--u)); }
+
+  .body { display: grid; grid-template-columns: calc(272px * var(--u)) 1fr; min-height: 0; }
+
+  .side { border-right: 4px solid var(--edge); background: var(--surface); overflow-y: auto; padding: calc(10px * var(--u)); }
+  .side h4 { font-family: var(--pixel); font-size: calc(15px * var(--u)); letter-spacing: .06em; color: var(--ink-3); margin: 0 0 calc(8px * var(--u)); text-transform: uppercase; }
+  .prow { padding: calc(5px * var(--u)) 0; border-bottom: 2px dashed var(--edge-soft); }
+  .prow .nm { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; line-height: 1.25;
+    font-size: calc(14px * var(--u)); font-weight: 700; }
+  .prow .nm .up { font-family: var(--pixel); font-size: calc(13px * var(--u)); color: var(--root-c); }
+  .prow .nm .down { font-family: var(--pixel); font-size: calc(13px * var(--u)); color: var(--vol); }
+  .prow .g { display: flex; align-items: center; gap: 8px; margin-top: calc(3px * var(--u)); line-height: 1.15;
+    font-family: var(--pixel); font-size: calc(13px * var(--u)); color: var(--ink-3); }
+  .prow .g .lbl { flex: none; width: 4.4em; }
+  .prow .g .bar { flex: 1; min-width: 0; height: calc(10px * var(--u)); }
+  .prow .g b { flex: none; width: 2.6em; text-align: right; font-size: calc(14px * var(--u)); }
+  .prow .meta { margin-top: calc(3px * var(--u)); line-height: 1.2;
+    font-size: calc(13px * var(--u)); color: var(--ink-3); font-family: var(--pixel); }
+  .prow .meta.keep { font-family: var(--sans); font-weight: 700; color: var(--ink-2);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chip { font-family: var(--sans); font-size: calc(13px * var(--u)); font-weight: 700; padding: 1px 6px; border: 2px solid var(--edge-soft); background: var(--surface-2); color: var(--ink-2); }
+  .chip.on { border-color: var(--root-c); background: var(--root-soft); color: var(--root-c); }
+
+  /* 每一頁都要在一個畫面裡看完 —— overflow 只是保險，不是排版手段 */
+  .stage { padding: calc(22px * var(--u)) calc(40px * var(--u)); overflow-y: auto; display: flex; flex-direction: column; }
+  .stage h2 { font-size: min(calc(40px * var(--u)), 5.6vh); font-weight: 900; letter-spacing: .02em; }
+  .stage .kicker, .col3 .kicker { font-size: calc(20px * var(--u)); color: var(--ink-2); margin-bottom: 10px; }
+  .stage .lede { font-size: calc(17px * var(--u)); color: var(--ink-2); max-width: 62ch; margin: 10px 0 0; }
+  .big { font-size: min(calc(76px * var(--u)), 10vh); font-family: var(--pixel); line-height: 1.1; }
+  .mono { font-family: var(--pixel); }
+  .muted { color: var(--ink-3); }
+
+  .receive { display: flex; align-items: center; gap: calc(24px * var(--u)); margin-top: calc(22px * var(--u)); }
+  .receive .stageart { margin: 0; }
+  .receive .stageart img { width: min(calc(200px * var(--u)), 22vh); }
+  .counter { margin-top: calc(18px * var(--u)); }
+  .receive .counter { margin-top: 0; }
+
+  .qrbox { display: flex; gap: 34px; align-items: center; margin-top: 22px; flex-wrap: wrap; }
+  .qrbox > div { flex: 1 1 280px; min-width: 0; }
+  .qrbox canvas { border: 4px solid var(--edge); background: #fff; padding: 6px;
+    image-rendering: pixelated; box-shadow: 8px 8px 0 var(--hard); position: relative; z-index: 95; }
+  .roomcode { font-family: var(--pixel); font-size: calc(64px * var(--u)); color: var(--gold); letter-spacing: .14em; margin-top: 8px; }
+  .url { font-family: var(--pixel); font-size: calc(24px * var(--u)); line-height: 1.8; color: var(--root-c); word-break: break-all; }
+  .names { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+  .names span { padding: 6px 12px; background: var(--surface); border: 3px solid var(--edge); box-shadow: 3px 3px 0 var(--hard); font-size: calc(15px * var(--u)); font-weight: 700; }
+
+  /* 「幾人已…」是給主持人等人的一行小字，不是這一頁的主角 */
+  .qcount { margin-top: calc(6px * var(--u)); font-family: var(--pixel);
+    font-size: calc(15px * var(--u)); color: var(--ink-3); }
+  .qcount.all { color: var(--root-c); }
+  .qcount b { font-family: var(--sans); font-size: calc(15px * var(--u)); }
+
+  /* ── 標題頁：當上帝來敲門 ─────────────────────────────────────────── */
+  .teaser { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .teaser .big-title { font-size: min(calc(72px * var(--u)), 9vh, 6vw); letter-spacing: .12em; white-space: nowrap; }
+  /* 門是方的（viewBox 30×30），寬度給太大整張圖會把這一頁頂出去 */
+  .teaseart img { display: block; width: min(calc(170px * var(--u)), 26vh); height: auto;
+    image-rendering: pixelated; margin: min(calc(14px * var(--u)), 2vh) auto 0; }
+  /* **副標不准斷行。** 一句話的答案，斷成兩行就散了。 */
+  .teaser .teaseline { margin-top: min(calc(20px * var(--u)), 2.8vh);
+    font-size: min(calc(30px * var(--u)), 3.8vh, 2.3vw); font-weight: 700;
+    color: var(--ink-2); white-space: nowrap; }
+
+  /* 頁首：標題 ＋ 右邊一小行（第幾次／模擬結束） */
+  .callhd { display: flex; align-items: baseline; gap: calc(20px * var(--u)); flex-wrap: wrap; }
+  .callhd h2 { font-size: min(calc(34px * var(--u)), 3.8vh); }
+  .callhd .rn { font-family: var(--pixel); font-size: calc(19px * var(--u)); color: var(--gold); }
+  .callhd .rn small { color: var(--ink-3); font-size: calc(14px * var(--u)); }
+
+  /* ── 整頁只有一句話的版型（問句、翻卡片、想不想收禮物）───────────── */
+  .solo { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .solo h2 { font-size: min(calc(64px * var(--u)), 9vh, 4.6vw); line-height: 1.45;
+    letter-spacing: .04em; max-width: none; white-space: nowrap; }
+  .solo .sololine { margin-top: min(calc(22px * var(--u)), 3vh); white-space: nowrap;
+    font-size: min(calc(38px * var(--u)), 5vh, 2.9vw); font-weight: 900; color: var(--gold); }
+
+  /* ── 你想不想收到一份禮物 ─────────────────────────────────────────── */
+  .solo.gift h2 { font-size: min(calc(56px * var(--u)), 7.5vh, 4.2vw); }
+  .bars { width: min(100%, calc(900px * var(--u))); display: flex; flex-direction: column;
+    gap: min(calc(12px * var(--u)), 1.8vh); margin: min(calc(26px * var(--u)), 3.4vh) auto min(calc(10px * var(--u)), 1.4vh); }
+  .barrow { display: grid; grid-template-columns: calc(210px * var(--u)) minmax(0, 1fr) calc(96px * var(--u));
+    align-items: center; gap: calc(16px * var(--u)); text-align: left; }
+  .barrow .blbl { font-size: min(calc(30px * var(--u)), 3.8vh); font-weight: 900; white-space: nowrap; }
+  .barrow .btrack { height: min(calc(34px * var(--u)), 4.2vh);
+    border: 3px solid var(--edge); background: var(--surface-2); }
+  .barrow .btrack i { display: block; height: 100%; background: var(--gold); transition: width .3s;
+    -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 8px, transparent 8px 10px);
+    mask-image: repeating-linear-gradient(90deg, #000 0 8px, transparent 8px 10px); }
+  .barrow .bn { font-family: var(--pixel); font-size: min(calc(20px * var(--u)), 2.6vh); color: var(--ink-2); }
+  .barrow.zero { opacity: .45; }
+
+  /* ── 敲門人生 ─────────────────────────────────────────────────────── */
+  /* 上半：貓眼看出去的那個人。**門外那一句話是這一頁的主角。** */
+  .kscene { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: calc(30px * var(--u));
+    align-items: center; margin-top: min(calc(14px * var(--u)), 1.8vh); }
+  .peep { width: min(calc(176px * var(--u)), 22vh); height: min(calc(176px * var(--u)), 22vh);
+    border: 6px solid var(--edge); background: var(--surface-2); box-shadow: 6px 6px 0 var(--hard);
+    display: flex; align-items: center; justify-content: center; }
+  .peep img { width: 82%; height: auto; image-rendering: pixelated; }
+  .kcal { font-family: var(--pixel); font-size: min(calc(24px * var(--u)), 3vh); color: var(--gold); }
+  .kcal small { color: var(--ink-3); font-family: var(--sans); font-weight: 700;
+    font-size: min(calc(22px * var(--u)), 2.8vh); margin-left: .8em; }
+  .kwho { margin-top: min(calc(10px * var(--u)), 1.2vh); font-size: min(calc(24px * var(--u)), 3vh);
+    font-weight: 900; color: var(--ink-2); }
+  .ksays { margin-top: min(calc(4px * var(--u)), .6vh); font-size: min(calc(46px * var(--u)), 5.8vh, 3.3vw);
+    font-weight: 900; line-height: 1.35; }
+  /* 下半：三個選項。揭曉前只有名字，揭曉後長出人數、分數和那一句 */
+  .kcols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: calc(18px * var(--u));
+    margin-top: min(calc(22px * var(--u)), 2.8vh); }
+  .kc { background: var(--surface); border: 4px solid var(--edge); box-shadow: 5px 5px 0 var(--hard);
+    padding: min(calc(14px * var(--u)), 1.8vh) calc(18px * var(--u)); min-width: 0; }
+  .kc .kl { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .kc .kl b { font-size: min(calc(30px * var(--u)), 3.6vh); white-space: nowrap; }
+  .kc .kn { font-family: var(--pixel); font-size: min(calc(17px * var(--u)), 2.2vh); color: var(--ink-3); white-space: nowrap; }
+  .kd { font-family: var(--pixel); font-size: min(calc(22px * var(--u)), 2.8vh); font-style: normal; }
+  .kc .kd { display: inline-block; margin-top: min(calc(8px * var(--u)), 1vh); }
+  .kd.up { color: var(--root-c); }
+  .kd.down { color: var(--vol); }
+  .kd.zero { color: var(--ink-3); }
+  .kc .kt { margin-top: min(calc(6px * var(--u)), .8vh); font-size: min(calc(19px * var(--u)), 2.4vh);
+    line-height: 1.5; color: var(--ink-2); }
+  /* 房東：兩種結果各幾人，不印誰抽到哪個 */
+  .kluck { margin-top: min(calc(14px * var(--u)), 1.8vh); display: flex; gap: calc(14px * var(--u)); flex-wrap: wrap; }
+  .kluck span { border: 3px solid var(--gold); padding: calc(4px * var(--u)) calc(14px * var(--u));
+    font-size: min(calc(20px * var(--u)), 2.5vh); font-weight: 700; }
+  .kluck span i { margin-left: .8em; font-size: .9em; }
+  .kfoot { margin-top: min(calc(12px * var(--u)), 1.6vh); }
+
+  /* ── 三十天的折線 ─────────────────────────────────────────────────── */
+  .monthsum { margin-top: min(calc(8px * var(--u)), 1vh); font-family: var(--pixel);
+    font-size: min(calc(22px * var(--u)), 2.8vh); color: var(--ink-2); }
+  .monthsum b { color: var(--vol); }
+  .chart { flex: 1; min-height: 0; margin-top: min(calc(10px * var(--u)), 1.4vh); }
+  .chart svg { display: block; width: 100%; height: 100%; }
+
+  /* ── 彩蛋 · 有人在敲門 ────────────────────────────────────────────── */
+  /* **不在模擬裡。** 日曆收掉，換成現在真實的時間。 */
+  .eggwrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .eggwrap img { display: block; width: min(calc(230px * var(--u)), 34vh); height: auto; image-rendering: pixelated; }
+  .eggclock { font-family: var(--pixel); font-size: min(calc(30px * var(--u)), 4vh); color: var(--gold);
+    margin-bottom: min(calc(16px * var(--u)), 2vh); }
+  .eggsays { margin-top: min(calc(20px * var(--u)), 2.6vh); font-size: min(calc(42px * var(--u)), 5.4vh, 3.2vw);
+    font-weight: 900; white-space: nowrap; }
+  /* 只有人數，不顯示是誰還沒開，不倒數 */
+  .eggcount { margin-top: min(calc(12px * var(--u)), 1.6vh); font-family: var(--pixel);
+    font-size: min(calc(18px * var(--u)), 2.4vh); color: var(--ink-3); }
+  .eggreveal { margin-top: min(calc(20px * var(--u)), 2.6vh); font-size: min(calc(84px * var(--u)), 10.5vh, 6vw);
+    font-weight: 900; letter-spacing: .12em; color: var(--root-c); white-space: nowrap;
+    animation: unseal .6s ease-out; }
+  @keyframes unseal { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+
+  /* ── 三點的信息頁（上帝是誰／主動尋找／如何回應）──────────────────── */
+  .howlist { margin-top: min(calc(22px * var(--u)), 3vh); display: grid;
+    gap: min(calc(16px * var(--u)), 2.2vh); }
+  .how { display: flex; align-items: baseline; gap: calc(22px * var(--u));
+    background: var(--surface); border: 4px solid var(--edge); box-shadow: 5px 5px 0 var(--hard);
+    padding: min(calc(18px * var(--u)), 2.6vh) calc(26px * var(--u)); }
+  .how .n { flex: none; font-family: var(--pixel); font-size: min(calc(26px * var(--u)), 3.4vh); color: var(--gold); }
+  .how b { font-size: min(calc(38px * var(--u)), 5vh, 2.9vw); line-height: 1.35; }
+
+  .cols3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 18px; }
+  .col3 { background: var(--surface); border: 4px solid var(--edge); box-shadow: 6px 6px 0 var(--hard); padding: min(18px, 2.4vh) 18px; }
+  .col3 h3 { display: flex; align-items: baseline; gap: 10px; font-size: calc(22px * var(--u)); margin-bottom: 8px; }
+  .col3 h3.next { font-size: calc(26px * var(--u)); }
+  .col3 .who { font-size: calc(28px * var(--u)); font-weight: 900; display: block; margin: 0; }
+  .col3 .delta { margin: calc(6px * var(--u)) 0 0; font-family: var(--pixel);
+    font-size: calc(15px * var(--u)); color: var(--ink-3); }
+  .col3 .delta b { margin-left: 10px; font-size: calc(17px * var(--u)); }
+  .nextbox { margin-top: calc(16px * var(--u)); }
+
+  /* 經文。用 em 限行長：ch 在中文字體上量的是數字寬度，會把整段擠成一條 */
+  .verse { margin-top: calc(10px * var(--u)); }
+  .verse blockquote { font-size: min(calc(44px * var(--u)), 4.8vh); font-weight: 900; line-height: 1.6;
+    margin: 18px 0 0; max-width: 20em; }
+  .verse .ref { font-family: var(--pixel); color: var(--gold); font-size: calc(20px * var(--u)); }
+  .verse blockquote .ref { display: block; margin-top: calc(14px * var(--u)); }
+
+  .note { background: var(--surface); border: 3px solid var(--edge); border-left-width: 10px; border-left-color: var(--gold);
+    padding: 14px 16px; margin-top: calc(16px * var(--u)); max-width: 70ch; font-size: calc(14px * var(--u)); color: var(--ink-2); box-shadow: 5px 5px 0 var(--hard); }
+  .note b { color: var(--ink); }
+
+  /* HUD 控制列：固定深底淺字，不隨主題翻轉 */
+  .controls { display: flex; gap: 10px; align-items: center; padding: 12px 20px;
+    background: var(--bar-bg); border-top: 4px solid var(--bar-edge); flex-wrap: wrap; }
+  .controls .btn { padding: 9px 14px; font-size: calc(13px * var(--u)); background: #1D2A2C; border: 3px solid var(--bar-edge);
+    color: var(--bar-ink); box-shadow: 3px 3px 0 #000; }
+  .controls .btn:active { transform: translate(3px, 3px); box-shadow: none; }
+  .controls .btn.primary { background: var(--root-c); border-color: #9CF0D6; color: var(--on-primary); }
+  .controls select { background: #1D2A2C; color: var(--bar-ink); border: 3px solid var(--bar-edge);
+    padding: 9px 10px; font-family: var(--sans); font-weight: 700; font-size: calc(13px * var(--u)); }
+  .controls .sp { flex: 1; }
+  .controls .hint { color: #8FA8A1; font-size: calc(13px * var(--u)); font-family: var(--pixel); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <h1><a href="/happiness/zh-TW/" id="home" title="回系列頁">幸福模擬器</a> · 第五關 <b>當上帝來敲門</b></h1>
+    <span class="tag" id="ptag">入場</span>
+    <span class="spacer"></span>
+    <button class="notesbtn" id="notesbtn" title="用手機掃，備忘錄會跟著大螢幕走">📱 主持人備忘錄</button>
+    <button class="themebtn" data-theme-toggle></button>
+    <span class="count" id="pcount">0 人在場</span>
+  </div>
+
+  <div class="body">
+    <aside class="side">
+      <h4>玩家狀態</h4>
+      <div id="plist"></div>
+    </aside>
+    <main class="stage" id="stage"></main>
+  </div>
+
+  <div class="controls">
+    <button class="btn" data-cmd="prev">← 上一頁</button>
+    <button class="btn primary" data-cmd="next">下一頁 →</button>
+    <select id="jump"></select>
+    <!-- 每一頁該有的控制鈕。現場不要靠鍵盤。 -->
+    <span id="knockctl" style="display:none;gap:8px;">
+      <button class="btn" data-cmd="knockPrev" id="kprev">← 上一次</button>
+      <button class="btn primary" data-cmd="knockStep" id="kstep">公布結果</button>
+      <button class="btn" data-cmd="knockRestart">重跑敲門</button>
+    </span>
+    <!-- 有人手機沒電的時候，讓大螢幕翻過去。這顆只動大螢幕，不替任何人按手機。 -->
+    <span id="eggctl" style="display:none;gap:8px;">
+      <button class="btn primary" data-cmd="openAll" id="eggnow">全場開門</button>
+    </span>
+    <span class="sp"></span>
+    <span class="hint" id="hint"></span>
+    <button class="btn" data-cmd="reset" id="resetbtn">全部重置</button>
+  </div>
+</div>
+
+<!-- 主持人備忘錄的 QR：按 N 叫出來，平常收著 -->
+<div class="notesqr" id="notesqr">
+  <canvas id="notesqrc"></canvas>
+  <div class="t">
+    <h3>主持人備忘錄</h3>
+    <p>用你自己的手機掃。這一頁會跟著大螢幕走，每一頁該念什麼、該做什麼、不要做什麼都在上面，也可以直接翻頁。</p>
+    <div class="u" id="notesurl"></div>
+    <div class="esc">再按一次 N 或 Esc 收起來</div>
+  </div>
+</div>
+
+<script src="/happiness/shared/qr.js"></script>
+<script src="/happiness/shared/room-client.js"></script>
+<script src="/happiness/shared/stage-parts.js"></script>
+<script src="/happiness/w5/host.js"></script>
+</body>
+</html>
