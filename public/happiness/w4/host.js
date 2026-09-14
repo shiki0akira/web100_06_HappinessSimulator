@@ -249,7 +249,8 @@
       return '<h2>' + esc(S.how.title) + '</h2>' +
         '<div class="howlist">' + S.how.items.map(function (it, i) {
           return '<div class="how"><span class="n">' + (i + 1) + '</span>' +
-            '<b>' + esc(it.k) + '</b><span>' + esc(it.v) + '</span></div>';
+            // 小字不上牆。每一點的翻譯由主持人講（備忘錄裡有）。
+            '<b>' + esc(it.k) + '</b></div>';
         }).join('') + '</div>';
     },
 

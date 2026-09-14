@@ -183,8 +183,7 @@
     how: function () {
       return '<h2>' + esc(S.how.title) + '</h2>' +
         '<div class="howlist">' + S.how.items.map(function (it, i) {
-          return '<div class="howrow"><b>' + (i + 1) + '. ' + esc(it.k) + '</b>' +
-            '<span>' + esc(it.v) + '</span></div>';
+          return '<div class="howrow"><b>' + (i + 1) + '. ' + esc(it.k) + '</b></div>';
         }).join('') + '</div>';
     },
 
