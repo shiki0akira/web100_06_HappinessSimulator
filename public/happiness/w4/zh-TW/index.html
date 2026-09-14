@@ -198,8 +198,9 @@
 
   /* ── 第三通電話 ───────────────────────────────────────────────────── */
   .dialwrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-  .dialcard { border: 5px solid var(--edge); background: var(--surface); box-shadow: 9px 9px 0 var(--hard);
-    padding: min(calc(24px * var(--u)), 3.4vh) calc(48px * var(--u)); }
+  /* **不要白色底。** 圖和標籤直接放在頁面上 —— 包一張白卡片會變成一張「廣告」，
+     而且那一圈外框和陰影把這一頁頂出畫面。 */
+  .dialcard { padding: 0; }
   .dialcard img { display: block; margin: 0 auto; width: min(calc(180px * var(--u)), 24vh);
     height: auto; image-rendering: pixelated; }
   /* 沒有名字。條件那一行才是這一頁的內容。 */
@@ -213,7 +214,6 @@
   .dialknows { margin-top: min(calc(12px * var(--u)), 1.8vh);
     font-size: min(calc(28px * var(--u)), 3.6vh); font-weight: 900; }
   /* 接通。**一按就接**，不要動畫、不要鈴聲、不要語音信箱。 */
-  .dialcard.on { border-color: var(--root-c); background: var(--root-soft); }
   .dialcard.on .dialno { color: var(--root-c); }
   .connected { font-family: var(--pixel); font-size: min(calc(78px * var(--u)), 10.5vh);
     color: var(--root-c); letter-spacing: .18em; line-height: 1.2; }
