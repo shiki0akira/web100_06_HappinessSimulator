@@ -2,6 +2,8 @@
 (function () {
   'use strict';
   var S = null, pid = null, src = null, sig = '', cardURL = null, cardBlob = null;
+  // 祝福禱告那顆按鈕：按下去之後 3 秒內寫「已更新」，不然按了看起來沒反應
+  var bdSaved = false, bdSavedTimer = null;
   var screen = document.getElementById('screen');
   var statusEl = document.getElementById('status');
 
@@ -220,7 +222,7 @@
       return '<h2>祝福禱告</h2>' +
         '<p>今天有哪一樣的折舊，讓你心裡動了一下？寫下來，等一下一起禱告。</p>' +
         '<textarea id="bd" maxlength="120" placeholder="一句話就好">' + esc(mine) + '</textarea>' +
-        '<button class="btn primary fullbtn" id="savebd">' + (me.prayed ? '更新' : '寫好了') + '</button>' +
+        '<button class="btn primary fullbtn" id="savebd">' + (bdSaved ? '已更新' : (me.prayed ? '更新' : '寫好了')) + '</button>' +
         (me.prayed
           ? '<div class="grew"><img src="/happiness/shared/art/prayer.svg" alt="">' +
             '<p class="ok">已存下<br><b>幸福根基 +5</b></p></div>'
@@ -329,6 +331,16 @@
       writeBurden(text);
       // 只送「有寫」這件事上去。那句話留在這支手機裡，一個字都不會離開。
       act('burden', { has: !!text.trim() });
+      // 按鈕先變「已更新」，3 秒後變回來。
+      // ⚠️ 變回來的時候**只改按鈕上的字，不重畫整頁** —— 重畫會把輸入框換掉，
+      // 他要是正在補字，打到一半的東西就不見了。
+      bdSaved = true;
+      clearTimeout(bdSavedTimer);
+      bdSavedTimer = setTimeout(function () {
+        bdSaved = false;
+        var b = document.getElementById('savebd');
+        if (b) b.textContent = S && S.me && S.me.prayed ? '更新' : '寫好了';
+      }, 3000);
       sig = '';
       render();
     };
