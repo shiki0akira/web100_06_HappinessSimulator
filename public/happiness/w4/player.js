@@ -139,7 +139,9 @@
     // 接通之後幸福指數 +10。還沒接關的人（outer 是 null）伺服器沒有加，這裡也不印。
     hotline: function (me) {
       if (me.called) {
-        return '<div class="connected">' + esc(S.hotline.connected) + '</div>' +
+        // 接通之後換成會動的那一張（心在跳、星在閃，訊號照樣不閃）
+        return '<img class="dialart" src="/happiness/shared/art/hotline-on.svg" alt="">' +
+          '<div class="connected">' + esc(S.hotline.connected) + '</div>' +
           '<div class="halfverse">「' + esc(S.hotline.half) + '」</div>' +
           (S.answerGain && me.outer !== null
             ? '<div class="hit up">幸福指數 +' + S.answerGain + '</div>'

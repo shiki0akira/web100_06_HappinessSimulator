@@ -146,7 +146,8 @@
     if (h.connected) {
       return '<div class="dialwrap">' +
         '<div class="dialcard on">' +
-          '<img src="/happiness/shared/art/hotline.svg" alt="">' +
+          // 接通之後換成會動的那一張：心在跳、星在閃，**訊號照樣不閃**
+          '<img src="/happiness/shared/art/hotline-on.svg" alt="">' +
           '<div class="connected">' + esc(S.hotline.connected) + '</div>' +
         '</div>' +
         '<div class="halfverse">「' + esc(S.hotline.half) + '」</div>' +

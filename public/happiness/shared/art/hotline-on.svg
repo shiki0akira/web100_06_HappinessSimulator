@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 30" shape-rendering="crispEdges" role="img" aria-label="接通的手機">
+<!-- hotline.svg 接通之後的樣子：同一隻手、同一支手機，螢幕上多一顆心，旁邊有幾顆星在閃。
+
+     ⚠️ **會動的只有心和星。訊號那三道照樣不閃** —— 這是「已經接通」，不是「正在響」。
+     不要把訊號做成一圈一圈往外跑，那一看就是鈴聲，變成「上帝讓你等」。
+
+     ⚠️ 動畫一律 steps(1)，一次跳一格，跟整套像素圖同一個手感；不要做平滑縮放（像素會糊）。
+     系統開了「減少動態效果」就全部停下來。 -->
+<style>
+  .beat { animation: bt 1.8s steps(1) infinite; }
+  @keyframes bt { 0%, 60% { transform: translateY(0); } 65%, 80% { transform: translateY(-1px); } 100% { transform: translateY(0); } }
+  .sp { animation: tw 2.4s steps(1) infinite; }
+  @keyframes tw { 0%, 45% { opacity: .15; } 50%, 95% { opacity: 1; } 100% { opacity: .15; } }
+  @media (prefers-reduced-motion: reduce) { .beat, .sp { animation: none; } }
+</style>
+
+<!-- 右上角三道訊號。接通了，還是不閃。 -->
+<rect x="21" y="4" width="1" height="1" fill="#54D6AF"/>
+<rect x="22" y="3" width="1" height="1" fill="#54D6AF"/>
+<rect x="23" y="2" width="1" height="1" fill="#54D6AF"/>
+<rect x="22" y="7" width="3" height="1" fill="#54D6AF"/>
+<rect x="21" y="10" width="1" height="1" fill="#54D6AF"/>
+<rect x="22" y="11" width="1" height="1" fill="#54D6AF"/>
+<rect x="23" y="12" width="1" height="1" fill="#54D6AF"/>
+
+<!-- 手機 -->
+<rect x="5" y="1" width="15" height="25" fill="#3A6FD8"/>
+<rect x="5" y="1" width="15" height="1" fill="#6E9BF0"/>
+<rect x="19" y="1" width="1" height="25" fill="#27509E"/>
+<rect x="5" y="23" width="15" height="3" fill="#27509E"/>
+<rect x="11" y="2" width="3" height="1" fill="#27509E"/>
+<rect x="7" y="4" width="11" height="18" fill="#FBD531"/>
+<rect x="7" y="4" width="11" height="1" fill="#FFE885"/>
+
+<!-- 螢幕上那顆心，輕輕跳 -->
+<g class="beat">
+  <rect x="9" y="9" width="2" height="1" fill="#FF6F43"/>
+  <rect x="14" y="9" width="2" height="1" fill="#FF6F43"/>
+  <rect x="8" y="10" width="9" height="1" fill="#FF6F43"/>
+  <rect x="8" y="11" width="9" height="1" fill="#FF6F43"/>
+  <rect x="9" y="12" width="7" height="1" fill="#C4491A"/>
+  <rect x="10" y="13" width="5" height="1" fill="#C4491A"/>
+  <rect x="11" y="14" width="3" height="1" fill="#C4491A"/>
+  <rect x="12" y="15" width="1" height="1" fill="#C4491A"/>
+</g>
+
+<!-- 手 -->
+<rect x="2" y="15" width="5" height="7" fill="#E8B08A"/>
+<rect x="2" y="15" width="5" height="1" fill="#F5CBAE"/>
+<rect x="1" y="21" width="11" height="9" fill="#E8B08A"/>
+<rect x="7" y="21" width="5" height="1" fill="#B9754A"/>
+<rect x="11" y="22" width="1" height="8" fill="#B9754A"/>
+
+<!-- 三顆星，錯開時間閃 -->
+<g class="sp" style="animation-delay:0s">
+  <rect x="2" y="3" width="1" height="1" fill="#F0C64B"/>
+  <rect x="1" y="4" width="3" height="1" fill="#F0C64B"/>
+  <rect x="2" y="5" width="1" height="1" fill="#F0C64B"/>
+</g>
+<g class="sp" style="animation-delay:.8s">
+  <rect x="23" y="17" width="1" height="1" fill="#F0C64B"/>
+  <rect x="22" y="18" width="3" height="1" fill="#F0C64B"/>
+  <rect x="23" y="19" width="1" height="1" fill="#F0C64B"/>
+</g>
+<g class="sp" style="animation-delay:1.6s">
+  <rect x="2" y="10" width="1" height="1" fill="#F0C64B"/>
+</g>
+</svg>

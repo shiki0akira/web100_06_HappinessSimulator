@@ -121,11 +121,12 @@
     margin-top: min(calc(10px * var(--u)), 1.4vh); }
   .cl { background: var(--surface); border: 4px solid var(--edge); box-shadow: 5px 5px 0 var(--hard);
     padding: min(calc(9px * var(--u)), 1.1vh) calc(14px * var(--u)); min-width: 0; }
-  .cl .clhd { display: flex; align-items: center; gap: calc(10px * var(--u)); }
-  /* 名字左邊那張小圖。高度跟名字那一行一樣，這一格才不會變高 —— 八格多一點點就掉出畫面。 */
-  .cl .clart { flex: none; width: min(calc(28px * var(--u)), 3.3vh); height: min(calc(28px * var(--u)), 3.3vh);
+  .cl .clhd { display: flex; align-items: center; gap: calc(12px * var(--u)); }
+  /* 名字左邊那張小圖。**圖跟字一起放大** —— 圖的像素只佔 16 格裡的 12–14 格，
+     框要比字大一截，看起來才一樣高。兩個都吃 vh 上限，揭曉之後八格才不會掉出畫面。 */
+  .cl .clart { flex: none; width: min(calc(36px * var(--u)), 4.1vh); height: min(calc(36px * var(--u)), 4.1vh);
     image-rendering: pixelated; }
-  .cl b { flex: none; font-size: min(calc(22px * var(--u)), 2.6vh); line-height: 1.3; }
+  .cl b { flex: none; font-size: min(calc(28px * var(--u)), 3.2vh); line-height: 1.3; }
   /* 選了就馬上出現在這裡 —— 這一行就是「大家選完了沒」 */
   .cl .who { margin-top: min(calc(3px * var(--u)), .4vh); min-height: 1.15em; line-height: 1.35;
     font-size: min(calc(16px * var(--u)), 2vh); font-weight: 700; color: var(--vol); }
