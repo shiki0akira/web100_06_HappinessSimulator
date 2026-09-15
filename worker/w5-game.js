@@ -11,7 +11,7 @@
 // 只要有分數，全場就會開始算「給上帝開門加幾分」，那就是「信了就加分」。
 import {
   INTRO, CHOICES, KNOCKS, MONTH, EGG,
-  WHO, SEEK, VERSE, RESPOND, BLESS,
+  WHO, SEEK, VERSE, BLESS,
 } from './w5-data.js';
 
 // 幸福根基的規則七關都一樣。上限 95 不是 100 —— 你自己填不滿。
@@ -33,11 +33,10 @@ export const PHASES = [
   // 手冊「上帝是誰？」：先讓他們勾自己心裡的上帝，下一頁統計。手冊的三點由主持人講。
   { id: 'who',       tag: '互動點 2', title: '你覺得上帝是什麼？' },
   { id: 'whoTally',  tag: '統計',     title: '我們心中的上帝' },
-  { id: 'seek',      tag: '信息',     title: '上帝主動尋找、拯救罪人' },
-  // 經文排在第二段和第三段中間：禮物送到了 → 接待他的，就作兒女 → 那我們怎麼回應。
+  { id: 'seek',      tag: '信息',     title: '我認識的上帝' },
+  // 經文：禮物送到了 → 接待他的，就作兒女。
   { id: 'verse',     tag: '經文',     title: '領受經文' },
   { id: 'testimony', tag: '見證',     title: '見證分享' },
-  { id: 'respond',   tag: '信息',     title: '我們應該如何回應？' },
   { id: 'bless',     tag: '互動點 4', title: '祝福禱告' },
   { id: 'card',      tag: '週卡',     title: '儲存模擬回憶' },
   { id: 'end',       tag: '預告',     title: '下週預告' },
@@ -73,6 +72,8 @@ const choiceOf = (p, i) => {
 };
 // 你覺得上帝是什麼：**複選**，存的是勾了哪幾格。
 const godOf = (p) => arr(p.god);
+// 「其他」自己寫的字有長度上限 —— 它會上大螢幕，一行排得下才有用。
+const OTHER_MAX = 16;
 
 export function addPlayer(s, name) {
   s.seq += 1;
@@ -89,6 +90,8 @@ export function addPlayer(s, name) {
     newcomer: false,
     knocks: [],           // 五次敲門各選了什麼（0 開門／1 隔著門問／2 假裝不在家）
     god: [],              // 你覺得上帝是什麼（複選，存勾了哪幾格）
+    godOther: '',         // 「其他」自己寫的那一句（**會上大螢幕**）
+    godSent: false,       // 按過「送出」了沒
     gains: [],            // 每一次公布實際動了多少（夾 0–100 之後的真實變動）
     knockBase: null,      // 第一次公布之前的幸福指數 —— 手機統計頁的起點，也是重跑時要還原的值
     opened: false,        // 彩蛋那一扇門開了沒（**不算分**）
@@ -191,15 +194,17 @@ export function applyAction(s, pid, msg) {
       p.knocks = rows;
       break;
     }
-    // 你覺得上帝是什麼。**複選**，翻頁之前隨時可以改。不算分。
+    // 你覺得上帝是什麼。**手機上勾完按「送出」才送上來**，翻頁之前可以再送一次（整份覆蓋）。不算分。
+    // 「其他」自己寫的那一句**下一頁會上大螢幕**。
     case 'god': {
       if (phaseId(s) !== 'who') break;
-      const v = Math.floor(Number(msg.value));
-      if (!(v >= 0 && v < WHO.options.length)) break;
-      const cur = godOf(p).slice();
-      const at = cur.indexOf(v);
-      if (at >= 0) cur.splice(at, 1); else cur.push(v);
-      p.god = cur;
+      const picks = arr(msg.picks)
+        .map((v) => Math.floor(Number(v)))
+        .filter((v, i, all) => v >= 0 && v < WHO.options.length && all.indexOf(v) === i);
+      if (!picks.length) break;
+      p.god = picks;
+      p.godOther = picks.indexOf(WHO.otherIdx) >= 0 ? String(msg.other || '').trim().slice(0, OTHER_MAX) : '';
+      p.godSent = true;
       break;
     }
     // 彩蛋開門。**不算分。** 手機上只有這一顆鈕。
@@ -302,11 +307,19 @@ function monthView(s) {
 function whoTallyView(s) {
   const ps = alive(s);
   const rows = WHO.options.map((label, k) => {
-    const names = ps.filter((p) => godOf(p).indexOf(k) >= 0).map((p) => p.name);
-    return { label, k, n: names.length, names };
+    const who = ps.filter((p) => godOf(p).indexOf(k) >= 0);
+    const other = k === WHO.otherIdx;
+    return {
+      label, k, other,
+      n: who.length,
+      names: who.map((p) => p.name),
+      // 「其他」那一格印的是他們自己寫的字 —— 這一格是這一頁的壓軸
+      texts: other ? who.filter((p) => p.godOther).map((p) => ({ name: p.name, text: p.godOther })) : [],
+    };
   });
   const max = rows.reduce((m, r) => Math.max(m, r.n), 0);
-  rows.sort((a, b) => (b.n - a.n) || (a.k - b.k));
+  // 多的排前面，同數維持原本的順序；**「其他」永遠排最後**
+  rows.sort((a, b) => (a.other - b.other) || (b.n - a.n) || (a.k - b.k));
   return { rows, max: Math.max(max, 1), total: ps.length };
 }
 
@@ -338,7 +351,6 @@ function common(s) {
     whoTally: whoTallyView(s),
     seek: SEEK,
     verse: VERSE,
-    respond: RESPOND,
     bless: BLESS,
   };
 }
@@ -359,6 +371,7 @@ export function hostView(s, roomCode) {
       outer: p.outer, outerStart: p.outerStart, inner: p.inner || 0,
       visits: p.visits, newcomer: p.newcomer,
       knocked: choiceOf(p, s.knockIdx) >= 0,
+      godSent: !!p.godSent,
       opened: !!p.opened,
       hasBless: !!p.hasBless, prayed: !!p.prayed,
       receivedVerse: !!p.receivedVerse, cardDone: !!p.cardDone, adjust: p.adjust || 0,
@@ -368,7 +381,7 @@ export function hostView(s, roomCode) {
       reconnected: sc.length,
       newcomers: ps.filter((p) => p.newcomer).length,
       knockPicked: ps.filter((p) => choiceOf(p, s.knockIdx) >= 0).length,
-      godPicked: ps.filter((p) => godOf(p).length).length,
+      godPicked: ps.filter((p) => p.godSent).length,
       opened: ps.filter((p) => p.opened).length,
       outerAvg: outers.length ? Math.round(outers.reduce((a, b) => a + b, 0) / outers.length) : null,
       startAvg: starts.length ? Math.round(starts.reduce((a, b) => a + b, 0) / starts.length) : null,
@@ -404,6 +417,8 @@ export function playerView(s, pid, roomCode) {
       visits: p.visits, newcomer: p.newcomer,
       knock: c,
       god: godOf(p),
+      godOther: p.godOther || '',
+      godSent: !!p.godSent,
       // 五天的起點。還沒公布過就是現在的值。
       knockBase: p.knockBase === null || p.knockBase === undefined ? p.outer : p.knockBase,
       // 公布之後才有：他這一次實際動了多少

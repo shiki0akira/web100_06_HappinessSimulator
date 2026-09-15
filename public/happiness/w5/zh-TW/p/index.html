@@ -47,6 +47,11 @@
     font-family: var(--sans); font-size: 22px; font-weight: 900; box-shadow: 3px 3px 0 var(--hard); }
   .opt:active { transform: translate(3px, 3px); box-shadow: none; }
   .opt.on { border-color: var(--vol); background: var(--vol-soft); color: var(--vol); }
+  /* 「其他」勾起來才長出輸入框。**寫的東西會上大螢幕**，所以底下要講清楚。 */
+  .otherbox { margin-top: 8px; }
+  .otherbox input { width: 100%; padding: 12px 13px; font-size: 19px; font-weight: 700; }
+  .otherbox .warn { margin: 6px 0 0; font-size: 14px !important; line-height: 1.6; color: var(--gold) !important; }
+  .sentok { margin: 10px 0 0; text-align: center; font-weight: 900; color: var(--root-c) !important; }
 
   /* 人生模擬器：貓眼裡的人 ＋ 門外那一句 */
   .kcal { margin-top: 6px; font-family: var(--pixel); font-size: 14px; color: var(--gold); }

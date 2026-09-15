@@ -102,6 +102,7 @@
       // **彩蛋那一頁不掛「已開門／還沒開」** —— 大螢幕不准顯示是誰還沒開。
       var chips = [];
       if (onKnock) chips.push('<span class="chip' + (p.knocked ? ' on' : '') + '">' + (p.knocked ? '已選' : '還沒選') + '</span>');
+      if (S.phase.id === 'who') chips.push('<span class="chip' + (p.godSent ? ' on' : '') + '">' + (p.godSent ? '已送出' : '還沒送') + '</span>');
       if (p.prayed) chips.push('<span class="chip">已寫下</span>');
       if (p.receivedVerse) chips.push('<span class="chip on">已領受</span>');
       return '' +
@@ -240,28 +241,31 @@
 
     egg: function () { return eggBoard(); },
 
-    // 你覺得上帝是什麼。**只顯示幾人已選**，誰選了什麼下一頁才公布。
+    // 你覺得上帝是什麼。**只顯示幾人已送出**，誰選了什麼下一頁才公布。九格排三欄三列。
     who: function () {
       return '<h2>' + esc(S.who.title) + '</h2>' +
         '<div class="godsub">' + esc(S.who.sub) + '</div>' +
-        '<div class="godgrid">' + S.who.options.map(function (o) {
-          return '<div class="god">' + esc(o) + '</div>';
+        '<div class="godgrid">' + S.who.options.map(function (o, i) {
+          return '<div class="god' + (i === S.who.otherIdx ? ' other' : '') + '">' + esc(o) + '</div>';
         }).join('') + '</div>' +
-        '<div class="kfoot">' + counter(S.stats.godPicked, '人已選') + '</div>';
+        '<div class="kfoot">' + counter(S.stats.godPicked, '人已送出') + '</div>';
     },
 
     // 我們心中的上帝。跟第四關的統計圖一樣：長條、人數、名字。**主持人只念數字。**
+    // 「其他」永遠排最後，印的是他們自己寫的字。
     // 手冊的三點不上牆 —— 那是主持人接下去要講的（備忘錄裡有）。
     whoTally: function () {
       var t = S.whoTally;
-      return '<div class="callhd"><h2>' + esc(S.who.tallyTitle) + '</h2>' +
-          '<span class="rn"><small>' + esc(S.who.tallySub) + '</small></span></div>' +
+      return '<h2>' + esc(S.who.tallyTitle) + '</h2>' +
         '<div class="godbars">' + t.rows.map(function (r) {
-          return '<div class="gbar' + (r.n ? '' : ' zero') + '">' +
+          var tail = r.other && r.texts.length
+            ? r.texts.map(function (x) { return '<span class="ot">' + esc(x.text) + '<i>' + esc(x.name) + '</i></span>'; }).join('')
+            : r.names.map(esc).join('・');
+          return '<div class="gbar' + (r.n ? '' : ' zero') + (r.other ? ' other' : '') + '">' +
             '<span class="gl">' + esc(r.label) + '</span>' +
             '<span class="gt"><i style="width:' + Math.round(r.n / t.max * 100) + '%"></i></span>' +
             '<span class="gn">' + r.n + ' 人</span>' +
-            '<span class="gw">' + r.names.map(esc).join('・') + '</span>' +
+            '<span class="gw">' + tail + '</span>' +
           '</div>';
         }).join('') + '</div>';
     },
@@ -278,8 +282,6 @@
     testimony: function () {
       return StageParts.testimony();
     },
-
-    respond: function () { return listBoard(S.respond.title, S.respond.items); },
 
     // 這一關的祝福禱告有指定題目。**完全不上牆** —— 這裡只有「幾人已寫下」。
     bless: function () {

@@ -7,6 +7,8 @@
   var S = null, pid = null, src = null, sig = '', cardURL = null, cardBlob = null;
   // 祝福禱告那顆按鈕：按下去之後 3 秒內寫「已更新」，不然按了看起來沒反應
   var blessSaved = false, blessSavedTimer = null;
+  // 你覺得上帝是什麼：勾選先存在這支手機上，按「送出」才送上去
+  var godDraft = null, godOther = '', godSaved = false, godSavedTimer = null;
   var screen = document.getElementById('screen');
   var statusEl = document.getElementById('status');
 
@@ -155,19 +157,30 @@
         '<button class="btn primary fullbtn" id="opendoor">開門</button>';
     },
 
-    // 你覺得上帝是什麼。**複選**，翻頁之前都可以改。
+    // 你覺得上帝是什麼。**複選，勾完按「送出」**。翻頁之前可以再改、再送。
     who: function (me) {
-      var mine = me.god || [];
+      var d = godDraft || [];
+      var otherOn = d.indexOf(S.who.otherIdx) >= 0;
       return '<h2>' + esc(S.who.title) + '</h2>' +
         '<p>' + esc(S.who.sub) + '</p>' +
         '<div class="opts">' + S.who.options.map(function (o, i) {
-          return '<button class="opt' + (mine.indexOf(i) >= 0 ? ' on' : '') + '" data-god="' + i + '">' + esc(o) + '</button>';
+          return '<button class="opt' + (d.indexOf(i) >= 0 ? ' on' : '') + '" data-god="' + i + '">' + esc(o) + '</button>';
         }).join('') + '</div>' +
-        '<p class="privacy">大螢幕上現在只看得到幾人已選。下一頁會公布全場的統計。</p>';
+        // 勾了「其他」才長出輸入框。**這一格會上大螢幕**，底下那句警語不能省。
+        (otherOn
+          ? '<div class="otherbox"><input id="godother" maxlength="16" placeholder="' + esc(S.who.otherHint) + '" value="' + esc(godOther) + '">' +
+            '<p class="warn">⚠️ 這一格寫的字，下一頁全場都看得到。不想公開就不要勾「其他」。</p></div>'
+          : '') +
+        '<button class="btn primary fullbtn" id="godsend"' + (d.length ? '' : ' disabled') + '>' +
+          (godSaved ? '已更新' : (me.godSent ? '更新' : '送出')) + '</button>' +
+        (me.godSent ? '<p class="sentok">✓ 已送出</p>' : '') +
+        '<p class="privacy">' + (d.length ? '可以複選。主持人翻頁之前都可以再改、再送一次。' : '勾好之後按「送出」。') + '</p>';
     },
 
     whoTally: function (me) {
-      var mine = (me.god || []).map(function (i) { return S.who.options[i]; });
+      var mine = (me.god || []).map(function (i) {
+        return i === S.who.otherIdx && me.godOther ? '其他：' + me.godOther : S.who.options[i];
+      });
       return '<h2>' + esc(S.who.tallyTitle) + '</h2>' +
         (mine.length ? '<p>你勾的：' + mine.map(esc).join('、') + '</p>' : '') +
         wait('看大螢幕');
@@ -188,9 +201,6 @@
     testimony: function () {
       return '<h2>見證分享</h2>' + wait('把手機放下', '聽他講');
     },
-
-    // 回應。**第 1 點只印字** —— 手機上沒有任何按鈕。
-    respond: function () { return list(S.respond.title, S.respond.items); },
 
     // 祝福禱告。七關收尾的固定儀式，這一關有指定題目。**什麼都沒寫也按得下去。**
     bless: function (me) {
@@ -265,9 +275,34 @@
       b.onclick = function () { act('knock', { idx: S.knockNow.idx, value: Number(b.dataset.knock) }); };
     });
 
+    // 勾選只改這支手機上的暫存，按「送出」才送上去。
     document.querySelectorAll('[data-god]').forEach(function (b) {
-      b.onclick = function () { act('god', { value: Number(b.dataset.god) }); };
+      b.onclick = function () {
+        var v = Number(b.dataset.god);
+        var at = godDraft.indexOf(v);
+        if (at >= 0) godDraft.splice(at, 1); else godDraft.push(v);
+        sig = '';
+        render();
+      };
     });
+    // 「其他」邊打邊存在暫存裡 —— **不重畫整頁**，不然打一個字焦點就被踢掉。
+    var gother = document.getElementById('godother');
+    if (gother) gother.oninput = function () { godOther = gother.value; };
+    var gsend = document.getElementById('godsend');
+    if (gsend) gsend.onclick = function () {
+      if (!godDraft || !godDraft.length) return;
+      act('god', { picks: godDraft.slice(), other: godOther });
+      // 按鈕先變「已更新」，3 秒後變回來（只改字，不重畫整頁）
+      godSaved = true;
+      clearTimeout(godSavedTimer);
+      godSavedTimer = setTimeout(function () {
+        godSaved = false;
+        var bb = document.getElementById('godsend');
+        if (bb) bb.textContent = S && S.me && S.me.godSent ? '更新' : '送出';
+      }, 3000);
+      sig = '';
+      render();
+    };
 
     var od = document.getElementById('opendoor');
     if (od) od.onclick = function () { act('open'); };
@@ -370,10 +405,14 @@
     document.getElementById('innerv').textContent = me.inner ? me.inner : '—';
     document.getElementById('innerbar').style.width = me.inner + '%';
 
+    // 你覺得上帝是什麼：進到那一頁才從伺服器那份抄一份暫存，離開就丟掉。
+    if (S.phase.id === 'who' && godDraft === null) { godDraft = (me.god || []).slice(); godOther = me.godOther || ''; }
+    if (S.phase.id !== 'who') godDraft = null;
+
     // ⚠️ 祝福禱告那一格正在打的字不能進這一行 —— 一變就整頁重畫，焦點會被踢掉。
     var next = [
       S.phase.id, S.knockNow.idx, S.knockNow.revealed, S.eggNow.done,
-      me.outer, me.inner, me.visits, me.knock, (me.god || []).join(','), me.gain, me.opened,
+      me.outer, me.inner, me.visits, me.knock, (me.god || []).join(','), me.godSent, me.gain, me.opened,
       me.receivedVerse, me.cardDone, me.prayed,
       draft.byVisits,
     ].join('|');

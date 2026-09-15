@@ -188,11 +188,13 @@
   /* ── 你覺得上帝是什麼（複選）／我們心中的上帝（統計）───────────────── */
   .godsub { margin-top: min(calc(8px * var(--u)), 1vh); font-size: min(calc(22px * var(--u)), 2.8vh);
     font-weight: 700; color: var(--ink-2); }
-  .godgrid { display: grid; grid-template-columns: 1fr 1fr; gap: min(calc(12px * var(--u)), 1.6vh) calc(18px * var(--u));
+  .godgrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: min(calc(12px * var(--u)), 1.6vh) calc(18px * var(--u));
     margin-top: min(calc(18px * var(--u)), 2.4vh); }
   .god { background: var(--surface); border: 4px solid var(--edge); box-shadow: 5px 5px 0 var(--hard);
     padding: min(calc(14px * var(--u)), 1.9vh) calc(22px * var(--u));
-    font-size: min(calc(30px * var(--u)), 3.8vh); font-weight: 900; white-space: nowrap; }
+    font-size: min(calc(26px * var(--u)), 3.4vh, 1.7vw); font-weight: 900; white-space: nowrap; }
+  /* 「其他」那一格：虛線框，一看就知道是自己寫的 */
+  .god.other { border-style: dashed; color: var(--gold); }
   .godbars { flex: 1; display: flex; flex-direction: column; justify-content: center;
     gap: min(calc(9px * var(--u)), 1.2vh); margin-top: min(calc(14px * var(--u)), 2vh); }
   .gbar { display: grid; grid-template-columns: calc(290px * var(--u)) minmax(0, 1fr) calc(80px * var(--u)) calc(360px * var(--u));
@@ -207,6 +209,11 @@
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   /* 沒有人勾的那幾格淡下去，但留在畫面上 */
   .gbar.zero { opacity: .4; }
+  /* 「其他」排最後，印的是他們自己寫的字 */
+  .gbar.other .gl { color: var(--gold); }
+  .gbar .gw .ot { display: inline-block; margin: 0 calc(8px * var(--u)) 2px 0; padding: 1px calc(9px * var(--u));
+    border: 3px solid var(--gold); font-size: min(calc(17px * var(--u)), 2.1vh); font-weight: 700; color: var(--ink); }
+  .gbar .gw .ot i { font-style: normal; margin-left: calc(8px * var(--u)); font-size: min(calc(13px * var(--u)), 1.7vh); color: var(--ink-3); }
 
   /* ── 三點的信息頁（上帝是誰／主動尋找／如何回應）──────────────────── */
   .howlist { margin-top: min(calc(22px * var(--u)), 3vh); display: grid;
