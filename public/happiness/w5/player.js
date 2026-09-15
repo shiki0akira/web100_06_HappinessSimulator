@@ -179,13 +179,17 @@
         wait('看大螢幕');
     },
 
-    // 我認識的上帝。兩張並排，各一張小插圖。
+    // 我認識的上帝。兩張並排，**跟著大螢幕翻面**：正面只有插圖，背面是標題和說明。
     seek: function () {
+      var open = S.seekOpen || [];
       return '<h2>' + esc(S.seek.title) + '</h2>' +
-        '<div class="knowlist">' + S.seek.items.map(function (it) {
-          return '<div class="knowrow"><img src="/happiness/shared/art/' + esc(it.art) + '.svg" alt="">' +
-            '<b>' + esc(it.t) + '</b></div>';
-        }).join('') + '</div>';
+        '<div class="knowlist">' + S.seek.items.map(function (it, i) {
+          return '<div class="knowrow' + (open[i] ? ' open' : '') + '" data-pflip="' + i + '"><div class="kin">' +
+            '<div class="kf"><img src="/happiness/shared/art/' + esc(it.art) + '.svg" alt="' + esc(it.t) + '"></div>' +
+            '<div class="kb"><b>' + esc(it.t) + '</b><span>' + esc(it.d) + '</span></div>' +
+          '</div></div>';
+        }).join('') + '</div>' +
+        '<p class="privacy">看大螢幕，主持人會一張一張翻開。</p>';
     },
 
     verse: function (me) {
@@ -423,6 +427,13 @@
       me.receivedVerse, me.cardDone, me.prayed,
       draft.byVisits,
     ].join('|');
+    // 我認識的上帝：翻面不重畫整頁，只換 class（重畫就看不到翻過去的動畫）
+    if (S.phase.id === 'seek') {
+      var so = S.seekOpen || [];
+      document.querySelectorAll('[data-pflip]').forEach(function (el) {
+        el.classList.toggle('open', !!so[Number(el.dataset.pflip)]);
+      });
+    }
     if (next !== sig) {
       sig = next;
       screen.innerHTML = (views[S.phase.id] || function () { return wait('看大螢幕'); })(me);

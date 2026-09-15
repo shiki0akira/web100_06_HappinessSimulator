@@ -220,14 +220,23 @@
     border: 3px solid var(--gold); font-size: min(calc(17px * var(--u)), 2.1vh); font-weight: 700; color: var(--ink); }
   .gbar .gw .ot i { font-style: normal; margin-left: calc(8px * var(--u)); font-size: min(calc(13px * var(--u)), 1.7vh); color: var(--ink-3); }
 
-  /* ── 我認識的上帝：左右兩張，各一張像素小插圖 ─────────────────────── */
+  /* ── 我認識的上帝：翻面卡片。正面只有插圖，背面是標題和說明 ────────── */
   .knowgrid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: calc(32px * var(--u));
     align-items: center; margin-top: min(calc(18px * var(--u)), 2.4vh); }
-  .know { background: var(--surface); border: 4px solid var(--edge); box-shadow: 6px 6px 0 var(--hard);
-    padding: min(calc(30px * var(--u)), 4vh) calc(24px * var(--u)); text-align: center; }
-  .know img { display: block; width: min(calc(250px * var(--u)), 34vh); height: auto; margin: 0 auto; image-rendering: pixelated; }
-  .know b { display: block; margin-top: min(calc(20px * var(--u)), 2.6vh);
-    font-size: min(calc(54px * var(--u)), 6.8vh, 3.4vw); font-weight: 900; letter-spacing: .06em; white-space: nowrap; }
+  .know { position: relative; display: block; width: 100%; height: min(calc(440px * var(--u)), 58vh);
+    padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; perspective: 1600px; }
+  .knowin { position: absolute; inset: 0; display: block; transform-style: preserve-3d; transition: transform .7s ease; }
+  .know.open .knowin { transform: rotateY(180deg); }
+  .kf, .kb { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    -webkit-backface-visibility: hidden; backface-visibility: hidden;
+    background: var(--surface); border: 4px solid var(--edge); box-shadow: 6px 6px 0 var(--hard);
+    padding: min(calc(28px * var(--u)), 3.6vh) calc(34px * var(--u)); }
+  .kf img { display: block; width: min(calc(300px * var(--u)), 40vh); height: auto; image-rendering: pixelated; }
+  .kb { transform: rotateY(180deg); border-color: var(--gold); }
+  .kb b { font-size: min(calc(54px * var(--u)), 6.8vh, 3.4vw); font-weight: 900; letter-spacing: .06em; white-space: nowrap; }
+  .kb em { margin-top: min(calc(20px * var(--u)), 2.6vh); max-width: 15em; font-style: normal; text-align: center;
+    font-size: min(calc(30px * var(--u)), 3.8vh, 1.95vw); font-weight: 700; line-height: 1.6; color: var(--ink-2); }
+  @media (prefers-reduced-motion: reduce) { .knowin { transition: none; } }
 
   .cols3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 18px; }
   .col3 { background: var(--surface); border: 4px solid var(--edge); box-shadow: 6px 6px 0 var(--hard); padding: min(18px, 2.4vh) 18px; }
@@ -291,6 +300,10 @@
       <button class="btn" data-cmd="knockPrev" id="kprev">← 上一次</button>
       <button class="btn primary" data-cmd="knockStep" id="kstep">公布結果</button>
       <button class="btn" data-cmd="knockRestart">重跑敲門</button>
+    </span>
+    <!-- 我認識的上帝：翻卡片。也可以直接點大螢幕上的卡片。 -->
+    <span id="seekctl" style="display:none;gap:8px;">
+      <button class="btn primary" data-cmd="seekNext" id="snext">翻下一張</button>
     </span>
     <!-- 有人手機沒電的時候，讓大螢幕翻過去。這顆只動大螢幕，不替任何人按手機。 -->
     <span id="eggctl" style="display:none;gap:8px;">

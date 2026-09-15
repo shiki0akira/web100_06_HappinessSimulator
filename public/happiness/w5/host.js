@@ -263,12 +263,16 @@
         }).join('') + '</div>';
     },
 
-    // 我認識的上帝。左右兩張，各一張像素小插圖。
+    // 我認識的上帝。左右兩張卡片：**正面只有插圖，翻到背面才有標題和說明**。
+    // 點卡片翻那一張（再點一次蓋回）；控制列和備忘錄上有「翻下一張」。
     seek: function () {
+      var open = S.seekOpen || [];
       return '<h2>' + esc(S.seek.title) + '</h2>' +
-        '<div class="knowgrid">' + S.seek.items.map(function (it) {
-          return '<div class="know"><img src="/happiness/shared/art/' + esc(it.art) + '.svg" alt="">' +
-            '<b>' + esc(it.t) + '</b></div>';
+        '<div class="knowgrid">' + S.seek.items.map(function (it, i) {
+          return '<button class="know' + (open[i] ? ' open' : '') + '" data-flip="' + i + '" type="button"><span class="knowin">' +
+            '<span class="kf"><img src="/happiness/shared/art/' + esc(it.art) + '.svg" alt="' + esc(it.t) + '"></span>' +
+            '<span class="kb"><b>' + esc(it.t) + '</b><em>' + esc(it.d) + '</em></span>' +
+          '</span></button>';
         }).join('') + '</div>';
     },
 
@@ -327,6 +331,14 @@
 
   // ── 主渲染 ───────────────────────────────────────────────────────────
   function paint() {
+    // 我認識的上帝：已經在這一頁的話**只換翻面的 class，不重畫** —— 重畫就看不到翻過去的動畫。
+    if (S.phase.id === 'seek' && stage.className === 'stage phase-seek' && stage.querySelector('.knowgrid')) {
+      var so = S.seekOpen || [];
+      stage.querySelectorAll('[data-flip]').forEach(function (b) {
+        b.classList.toggle('open', !!so[Number(b.dataset.flip)]);
+      });
+      return;
+    }
     stage.className = 'stage phase-' + S.phase.id;
     stage.innerHTML = (views[S.phase.id] || function () { return ''; })();
 
@@ -360,6 +372,7 @@
     };
     show('knockctl', S.phase.id === 'knocks');
     show('eggctl', S.phase.id === 'egg');
+    show('seekctl', S.phase.id === 'seek');
 
     if (S.phase.id === 'knocks') {
       // 一顆按鈕按到底：還沒公布就是「公布結果」，公布過了才變「下一次敲門」。
@@ -377,6 +390,13 @@
       var on = document.getElementById('eggnow');
       on.textContent = e.done ? '已經翻過去了' : '全場開門（' + e.opened + '/' + e.total + ' 已開）';
       on.disabled = e.done;
+    }
+    if (S.phase.id === 'seek') {
+      var sOpen = (S.seekOpen || []).filter(Boolean).length;
+      var sTotal = (S.seekOpen || []).length;
+      var sn = document.getElementById('snext');
+      sn.textContent = sOpen >= sTotal ? '都翻開了' : '翻下一張（' + (sOpen + 1) + '/' + sTotal + '）';
+      sn.disabled = sOpen >= sTotal;
     }
     renderPlayers();
     paint();
@@ -399,6 +419,12 @@
       if (cmd === 'knockRestart' && !confirm('人生模擬器整個重跑？每個人的幸福指數會還原到第一次公布之前。')) return;
       post(cmd);
     };
+  });
+
+  // 我認識的上帝：直接點大螢幕上的卡片翻面（畫面會重畫，所以掛在 stage 上）
+  stage.addEventListener('click', function (e) {
+    var b = e.target.closest ? e.target.closest('[data-flip]') : null;
+    if (b) post('seekFlip', { idx: Number(b.dataset.flip) });
   });
 
   // 主持人備忘錄的 QR：按 N 叫出來，平常收著。

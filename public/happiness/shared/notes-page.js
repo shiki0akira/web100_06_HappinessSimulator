@@ -144,6 +144,19 @@
       }
     }
 
+    // 第五關的「我認識的上帝」：卡片一張一張翻到背面。
+    var seekc = el('seekctl');
+    if (seekc) {
+      seekc.hidden = S.phase.id !== 'seek' || !S.seekOpen;
+      if (!seekc.hidden) {
+        var sOpen = S.seekOpen.filter(Boolean).length;
+        el('seeknext').textContent = sOpen >= S.seekOpen.length
+          ? '都翻開了'
+          : '翻下一張（' + (sOpen + 1) + '/' + S.seekOpen.length + '）';
+        el('seeknext').disabled = sOpen >= S.seekOpen.length;
+      }
+    }
+
     // 第二關的寶箱：主持人拿著手機也能打開它。
     var giftc = el('giftctl');
     if (giftc) {
@@ -214,6 +227,7 @@
     on('knockprev', function () { post('knockPrev'); });
     on('knockstep', function () { post('knockStep'); });
     on('opennow', function () { post('openAll'); });
+    on('seeknext', function () { post('seekNext'); });
     on('opengift', function () { post('openGift'); });
   }
 

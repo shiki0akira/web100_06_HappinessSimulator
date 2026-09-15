@@ -89,12 +89,19 @@
   .screen .center { text-align: center; }
   .bigline { margin-top: 18px; font-size: 24px !important; font-weight: 900; line-height: 1.7; color: var(--gold) !important; }
 
-  /* 我認識的上帝：兩張並排 */
+  /* 我認識的上帝：兩張並排，跟著大螢幕翻面 */
   .knowlist { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
-  .knowrow { text-align: center; padding: 14px 8px; border: 3px solid var(--edge); background: var(--surface);
-    box-shadow: 3px 3px 0 var(--hard); }
-  .knowrow img { display: block; width: 72%; margin: 0 auto; image-rendering: pixelated; }
-  .knowrow b { display: block; margin-top: 8px; font-size: 20px; font-weight: 900; }
+  .knowrow { position: relative; height: 260px; perspective: 900px; }
+  .knowrow .kin { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform .7s ease; }
+  .knowrow.open .kin { transform: rotateY(180deg); }
+  .knowrow .kf, .knowrow .kb { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; -webkit-backface-visibility: hidden; backface-visibility: hidden; padding: 12px 10px;
+    border: 3px solid var(--edge); background: var(--surface); box-shadow: 3px 3px 0 var(--hard); }
+  .knowrow .kf img { display: block; width: 86%; image-rendering: pixelated; }
+  .knowrow .kb { transform: rotateY(180deg); border-color: var(--gold); }
+  .knowrow .kb b { font-size: 20px; font-weight: 900; }
+  .knowrow .kb span { margin-top: 8px; font-size: 15px; line-height: 1.6; color: var(--ink-2); text-align: center; }
+  @media (prefers-reduced-motion: reduce) { .knowrow .kin { transition: none; } }
 
   .verse-p { text-align: center; padding: 10px 0; }
   .verse-p .ref { font-family: var(--pixel); font-size: 13px; color: var(--gold); }

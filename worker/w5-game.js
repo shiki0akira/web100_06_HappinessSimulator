@@ -54,6 +54,7 @@ export function createState() {
     knockIdx: 0,         // 現在是第幾次敲門（0–4）
     knockOpen: [],       // 哪幾次已經公布了
     forceOpen: false,    // 有人手機沒電的時候，主持人手動讓大螢幕翻過去
+    seekOpen: [],        // 我認識的上帝：哪幾張卡片翻到背面了
     seq: 0,
   };
 }
@@ -73,6 +74,8 @@ const choiceOf = (p, i) => {
 };
 // 你覺得上帝是什麼：**複選**，存的是勾了哪幾格。
 const godOf = (p) => arr(p.god);
+// 我認識的上帝：每一張卡片翻開了沒（舊房間沒有這個欄位也不會壞）
+const seekOpenOf = (s) => SEEK.items.map((_, i) => !!arr(s.seekOpen)[i]);
 // 「其他」自己寫的字有長度上限 —— 它會上大螢幕，一行排得下才有用。
 const OTHER_MAX = 16;
 
@@ -244,6 +247,22 @@ export function applyHost(s, msg) {
     case 'knockRestart': knockRestart(s); return null;
     // 有人手機沒電的時候，讓大螢幕翻過去。**這一顆只動大螢幕**，不替任何人按手機。
     case 'openAll': s.forceOpen = true; return null;
+    // 我認識的上帝：翻卡片。大螢幕點卡片是翻那一張（再點一次蓋回），
+    // 「翻下一張」是從左到右翻還沒翻的那一張。
+    case 'seekFlip': {
+      const i = Math.floor(Number(msg.idx));
+      if (!(i >= 0 && i < SEEK.items.length)) return null;
+      const open = seekOpenOf(s);
+      open[i] = !open[i];
+      s.seekOpen = open;
+      return null;
+    }
+    case 'seekNext': {
+      const open = seekOpenOf(s);
+      const i = open.indexOf(false);
+      if (i >= 0) { open[i] = true; s.seekOpen = open; }
+      return null;
+    }
     case 'adjust': {
       const p = s.players[msg.pid];
       if (p && p.outer !== null) {
@@ -351,6 +370,7 @@ function common(s) {
     who: WHO,
     whoTally: whoTallyView(s),
     seek: SEEK,
+    seekOpen: seekOpenOf(s),
     verse: VERSE,
     child: CHILD,
     bless: BLESS,
