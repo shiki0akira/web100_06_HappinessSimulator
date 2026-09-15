@@ -185,6 +185,29 @@
     animation: unseal .6s ease-out; }
   @keyframes unseal { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
 
+  /* ── 你覺得上帝是什麼（複選）／我們心中的上帝（統計）───────────────── */
+  .godsub { margin-top: min(calc(8px * var(--u)), 1vh); font-size: min(calc(22px * var(--u)), 2.8vh);
+    font-weight: 700; color: var(--ink-2); }
+  .godgrid { display: grid; grid-template-columns: 1fr 1fr; gap: min(calc(12px * var(--u)), 1.6vh) calc(18px * var(--u));
+    margin-top: min(calc(18px * var(--u)), 2.4vh); }
+  .god { background: var(--surface); border: 4px solid var(--edge); box-shadow: 5px 5px 0 var(--hard);
+    padding: min(calc(14px * var(--u)), 1.9vh) calc(22px * var(--u));
+    font-size: min(calc(30px * var(--u)), 3.8vh); font-weight: 900; white-space: nowrap; }
+  .godbars { flex: 1; display: flex; flex-direction: column; justify-content: center;
+    gap: min(calc(9px * var(--u)), 1.2vh); margin-top: min(calc(14px * var(--u)), 2vh); }
+  .gbar { display: grid; grid-template-columns: calc(290px * var(--u)) minmax(0, 1fr) calc(80px * var(--u)) calc(360px * var(--u));
+    align-items: center; gap: calc(14px * var(--u)); }
+  .gbar .gl { font-size: min(calc(24px * var(--u)), 2.9vh); font-weight: 900; white-space: nowrap; }
+  .gbar .gt { height: min(calc(26px * var(--u)), 3.2vh); border: 3px solid var(--edge); background: var(--surface-2); }
+  .gbar .gt i { display: block; height: 100%; background: var(--gold); transition: width .3s;
+    -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 8px, transparent 8px 10px);
+    mask-image: repeating-linear-gradient(90deg, #000 0 8px, transparent 8px 10px); }
+  .gbar .gn { font-family: var(--pixel); font-size: min(calc(19px * var(--u)), 2.4vh); color: var(--ink-2); }
+  .gbar .gw { min-width: 0; font-size: min(calc(16px * var(--u)), 2vh); font-weight: 700; color: var(--ink-3);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* 沒有人勾的那幾格淡下去，但留在畫面上 */
+  .gbar.zero { opacity: .4; }
+
   /* ── 三點的信息頁（上帝是誰／主動尋找／如何回應）──────────────────── */
   .howlist { margin-top: min(calc(22px * var(--u)), 3vh); display: grid;
     gap: min(calc(16px * var(--u)), 2.2vh); }

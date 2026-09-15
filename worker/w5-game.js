@@ -30,13 +30,15 @@ export const PHASES = [
   { id: 'month',     tag: '結算頁',   title: '這五天，誰開了門？' },
   // 彩蛋放在結算之後：**它不在模擬裡**，所以日曆收掉了才出現。
   { id: 'egg',       tag: '彩蛋',     title: '有人在敲門' },
-  { id: 'who',       tag: '信息',     title: '上帝是誰？' },
+  // 手冊「上帝是誰？」：先讓他們勾自己心裡的上帝，下一頁統計。手冊的三點由主持人講。
+  { id: 'who',       tag: '互動點 2', title: '你覺得上帝是什麼？' },
+  { id: 'whoTally',  tag: '統計',     title: '我們心中的上帝' },
   { id: 'seek',      tag: '信息',     title: '上帝主動尋找、拯救罪人' },
   // 經文排在第二段和第三段中間：禮物送到了 → 接待他的，就作兒女 → 那我們怎麼回應。
   { id: 'verse',     tag: '經文',     title: '領受經文' },
   { id: 'testimony', tag: '見證',     title: '見證分享' },
   { id: 'respond',   tag: '信息',     title: '我們應該如何回應？' },
-  { id: 'bless',     tag: '互動點 3', title: '祝福禱告' },
+  { id: 'bless',     tag: '互動點 4', title: '祝福禱告' },
   { id: 'card',      tag: '週卡',     title: '儲存模擬回憶' },
   { id: 'end',       tag: '預告',     title: '下週預告' },
 ];
@@ -69,6 +71,8 @@ const choiceOf = (p, i) => {
   const v = arr(p.knocks)[i];
   return v === 0 || v === 1 || v === 2 ? v : -1;
 };
+// 你覺得上帝是什麼：**複選**，存的是勾了哪幾格。
+const godOf = (p) => arr(p.god);
 
 export function addPlayer(s, name) {
   s.seq += 1;
@@ -84,6 +88,7 @@ export function addPlayer(s, name) {
     visits: 0,
     newcomer: false,
     knocks: [],           // 五次敲門各選了什麼（0 開門／1 隔著門問／2 假裝不在家）
+    god: [],              // 你覺得上帝是什麼（複選，存勾了哪幾格）
     gains: [],            // 每一次公布實際動了多少（夾 0–100 之後的真實變動）
     knockBase: null,      // 第一次公布之前的幸福指數 —— 手機統計頁的起點，也是重跑時要還原的值
     opened: false,        // 彩蛋那一扇門開了沒（**不算分**）
@@ -186,6 +191,17 @@ export function applyAction(s, pid, msg) {
       p.knocks = rows;
       break;
     }
+    // 你覺得上帝是什麼。**複選**，翻頁之前隨時可以改。不算分。
+    case 'god': {
+      if (phaseId(s) !== 'who') break;
+      const v = Math.floor(Number(msg.value));
+      if (!(v >= 0 && v < WHO.options.length)) break;
+      const cur = godOf(p).slice();
+      const at = cur.indexOf(v);
+      if (at >= 0) cur.splice(at, 1); else cur.push(v);
+      p.god = cur;
+      break;
+    }
     // 彩蛋開門。**不算分。** 手機上只有這一顆鈕。
     case 'open':
       if (phaseId(s) !== 'egg') break;
@@ -281,6 +297,19 @@ function monthView(s) {
   };
 }
 
+// 我們心中的上帝：每一格至少勾過的人數和名字（跟第四關的統計圖一樣）。
+// 多的排前面；沒有人勾的留在畫面上（淡掉）。
+function whoTallyView(s) {
+  const ps = alive(s);
+  const rows = WHO.options.map((label, k) => {
+    const names = ps.filter((p) => godOf(p).indexOf(k) >= 0).map((p) => p.name);
+    return { label, k, n: names.length, names };
+  });
+  const max = rows.reduce((m, r) => Math.max(m, r.n), 0);
+  rows.sort((a, b) => (b.n - a.n) || (a.k - b.k));
+  return { rows, max: Math.max(max, 1), total: ps.length };
+}
+
 // 彩蛋：大螢幕等**全場都開了**才翻。大螢幕只顯示「幾人已開門」，不顯示是誰還沒開。
 function eggView(s) {
   const ps = alive(s);
@@ -306,6 +335,7 @@ function common(s) {
     egg: EGG,
     eggNow: eggView(s),
     who: WHO,
+    whoTally: whoTallyView(s),
     seek: SEEK,
     verse: VERSE,
     respond: RESPOND,
@@ -338,6 +368,7 @@ export function hostView(s, roomCode) {
       reconnected: sc.length,
       newcomers: ps.filter((p) => p.newcomer).length,
       knockPicked: ps.filter((p) => choiceOf(p, s.knockIdx) >= 0).length,
+      godPicked: ps.filter((p) => godOf(p).length).length,
       opened: ps.filter((p) => p.opened).length,
       outerAvg: outers.length ? Math.round(outers.reduce((a, b) => a + b, 0) / outers.length) : null,
       startAvg: starts.length ? Math.round(starts.reduce((a, b) => a + b, 0) / starts.length) : null,
@@ -372,6 +403,7 @@ export function playerView(s, pid, roomCode) {
       inner: p.inner || 0, innerCap: INNER_CAP,
       visits: p.visits, newcomer: p.newcomer,
       knock: c,
+      god: godOf(p),
       // 五天的起點。還沒公布過就是現在的值。
       knockBase: p.knockBase === null || p.knockBase === undefined ? p.outer : p.knockBase,
       // 公布之後才有：他這一次實際動了多少

@@ -1,7 +1,7 @@
 // 玩家手機 · 第五關「當上帝來敲門」
 //
-// ⚠️ 這一關手機會亮的：接關、五次敲門、彩蛋開門、領受、寫那個人（再加存卡）。
-// 其餘的頁手機都是安靜的 —— 上帝是誰、見證、翻卡片那十幾分鐘要他們抬頭看人。
+// ⚠️ 這一關手機會亮的：接關、五次敲門、彩蛋開門、勾「你覺得上帝是什麼」、領受、寫那個人（再加存卡）。
+// 其餘的頁手機都是安靜的 —— 統計、信息、見證那十幾分鐘要他們抬頭看人。
 (function () {
   'use strict';
   var S = null, pid = null, src = null, sig = '', cardURL = null, cardBlob = null;
@@ -155,7 +155,23 @@
         '<button class="btn primary fullbtn" id="opendoor">開門</button>';
     },
 
-    who: function () { return list(S.who.title, S.who.items); },
+    // 你覺得上帝是什麼。**複選**，翻頁之前都可以改。
+    who: function (me) {
+      var mine = me.god || [];
+      return '<h2>' + esc(S.who.title) + '</h2>' +
+        '<p>' + esc(S.who.sub) + '</p>' +
+        '<div class="opts">' + S.who.options.map(function (o, i) {
+          return '<button class="opt' + (mine.indexOf(i) >= 0 ? ' on' : '') + '" data-god="' + i + '">' + esc(o) + '</button>';
+        }).join('') + '</div>' +
+        '<p class="privacy">大螢幕上現在只看得到幾人已選。下一頁會公布全場的統計。</p>';
+    },
+
+    whoTally: function (me) {
+      var mine = (me.god || []).map(function (i) { return S.who.options[i]; });
+      return '<h2>' + esc(S.who.tallyTitle) + '</h2>' +
+        (mine.length ? '<p>你勾的：' + mine.map(esc).join('、') + '</p>' : '') +
+        wait('看大螢幕');
+    },
 
     seek: function () { return list(S.seek.title, S.seek.items); },
 
@@ -247,6 +263,10 @@
 
     document.querySelectorAll('[data-knock]').forEach(function (b) {
       b.onclick = function () { act('knock', { idx: S.knockNow.idx, value: Number(b.dataset.knock) }); };
+    });
+
+    document.querySelectorAll('[data-god]').forEach(function (b) {
+      b.onclick = function () { act('god', { value: Number(b.dataset.god) }); };
     });
 
     var od = document.getElementById('opendoor');
@@ -353,7 +373,7 @@
     // ⚠️ 祝福禱告那一格正在打的字不能進這一行 —— 一變就整頁重畫，焦點會被踢掉。
     var next = [
       S.phase.id, S.knockNow.idx, S.knockNow.revealed, S.eggNow.done,
-      me.outer, me.inner, me.visits, me.knock, me.gain, me.opened,
+      me.outer, me.inner, me.visits, me.knock, (me.god || []).join(','), me.gain, me.opened,
       me.receivedVerse, me.cardDone, me.prayed,
       draft.byVisits,
     ].join('|');

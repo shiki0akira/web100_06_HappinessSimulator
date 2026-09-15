@@ -240,7 +240,31 @@
 
     egg: function () { return eggBoard(); },
 
-    who: function () { return listBoard(S.who.title, S.who.items); },
+    // 你覺得上帝是什麼。**只顯示幾人已選**，誰選了什麼下一頁才公布。
+    who: function () {
+      return '<h2>' + esc(S.who.title) + '</h2>' +
+        '<div class="godsub">' + esc(S.who.sub) + '</div>' +
+        '<div class="godgrid">' + S.who.options.map(function (o) {
+          return '<div class="god">' + esc(o) + '</div>';
+        }).join('') + '</div>' +
+        '<div class="kfoot">' + counter(S.stats.godPicked, '人已選') + '</div>';
+    },
+
+    // 我們心中的上帝。跟第四關的統計圖一樣：長條、人數、名字。**主持人只念數字。**
+    // 手冊的三點不上牆 —— 那是主持人接下去要講的（備忘錄裡有）。
+    whoTally: function () {
+      var t = S.whoTally;
+      return '<div class="callhd"><h2>' + esc(S.who.tallyTitle) + '</h2>' +
+          '<span class="rn"><small>' + esc(S.who.tallySub) + '</small></span></div>' +
+        '<div class="godbars">' + t.rows.map(function (r) {
+          return '<div class="gbar' + (r.n ? '' : ' zero') + '">' +
+            '<span class="gl">' + esc(r.label) + '</span>' +
+            '<span class="gt"><i style="width:' + Math.round(r.n / t.max * 100) + '%"></i></span>' +
+            '<span class="gn">' + r.n + ' 人</span>' +
+            '<span class="gw">' + r.names.map(esc).join('・') + '</span>' +
+          '</div>';
+        }).join('') + '</div>';
+    },
 
     seek: function () { return listBoard(S.seek.title, S.seek.items); },
 
