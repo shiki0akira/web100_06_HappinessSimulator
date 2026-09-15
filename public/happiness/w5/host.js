@@ -279,6 +279,15 @@
       });
     },
 
+    // 成為上帝的兒女。一隻打開的手、手心上一顆發光的心，底下兩行。
+    child: function () {
+      return '<div class="teaser child">' +
+        '<div class="childart"><img src="/happiness/shared/art/hand-heart.svg" alt=""></div>' +
+        '<h2 class="big-title">' + esc(S.child.title) + '</h2>' +
+        '<p class="teaseline">' + esc(S.child.line) + '</p>' +
+      '</div>';
+    },
+
     testimony: function () {
       return StageParts.testimony();
     },

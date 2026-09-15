@@ -11,7 +11,7 @@
 // 只要有分數，全場就會開始算「給上帝開門加幾分」，那就是「信了就加分」。
 import {
   INTRO, CHOICES, KNOCKS, MONTH, EGG,
-  WHO, SEEK, VERSE, BLESS,
+  WHO, SEEK, VERSE, CHILD, BLESS,
 } from './w5-data.js';
 
 // 幸福根基的規則七關都一樣。上限 95 不是 100 —— 你自己填不滿。
@@ -36,6 +36,7 @@ export const PHASES = [
   { id: 'seek',      tag: '信息',     title: '我認識的上帝' },
   // 經文：禮物送到了 → 接待他的，就作兒女。
   { id: 'verse',     tag: '經文',     title: '領受經文' },
+  { id: 'child',     tag: '信息',     title: '成為上帝的兒女' },
   { id: 'testimony', tag: '見證',     title: '見證分享' },
   { id: 'bless',     tag: '互動點 4', title: '祝福禱告' },
   { id: 'card',      tag: '週卡',     title: '儲存模擬回憶' },
@@ -351,6 +352,7 @@ function common(s) {
     whoTally: whoTallyView(s),
     seek: SEEK,
     verse: VERSE,
+    child: CHILD,
     bless: BLESS,
   };
 }

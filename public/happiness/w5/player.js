@@ -197,6 +197,13 @@
           : '<button class="btn primary fullbtn" id="verse">領受</button>');
     },
 
+    // 成為上帝的兒女。同一張圖、同兩行，沒有按鈕。
+    child: function () {
+      return '<img class="doorart handheart" src="/happiness/shared/art/hand-heart.svg" alt="">' +
+        '<h2 class="center">' + esc(S.child.title) + '</h2>' +
+        '<p class="center">' + esc(S.child.line) + '</p>';
+    },
+
     // 見證那四分鐘手機要安靜。抬頭看講的那個人。
     testimony: function () {
       return '<h2>見證分享</h2>' + wait('把手機放下', '聽他講');
