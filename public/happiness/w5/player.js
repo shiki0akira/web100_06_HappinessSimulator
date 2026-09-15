@@ -1,6 +1,6 @@
 // 玩家手機 · 第五關「當上帝來敲門」
 //
-// ⚠️ 這一關手機會亮的：接關、想不想收禮物、五次敲門、彩蛋開門、領受、寫那個人（再加存卡）。
+// ⚠️ 這一關手機會亮的：接關、五次敲門、彩蛋開門、領受、寫那個人（再加存卡）。
 // 其餘的頁手機都是安靜的 —— 上帝是誰、見證、翻卡片那十幾分鐘要他們抬頭看人。
 (function () {
   'use strict';
@@ -50,18 +50,6 @@
 
   function fmt(d) { return d > 0 ? '+' + d : d < 0 ? '−' + Math.abs(d) : '±0'; }
 
-  // 彩蛋的時間：**現在真實的時間**
-  function nowText() {
-    var d = new Date();
-    var h = d.getHours(), m = d.getMinutes();
-    var part = h < 6 ? '凌晨' : h < 12 ? '早上' : h < 13 ? '中午' : h < 18 ? '下午' : '晚上';
-    var h12 = h % 12 === 0 ? 12 : h % 12;
-    return '今天 · ' + part + ' ' + h12 + ':' + (m < 10 ? '0' : '') + m;
-  }
-  setInterval(function () {
-    var c = document.getElementById('pclock');
-    if (c) c.textContent = nowText();
-  }, 10000);
 
   // 送出之前只活在這支手機上的暫存
   var draft = { byVisits: false };
@@ -113,20 +101,11 @@
         wait('看大螢幕');
     },
 
-    // 不算分，隨時可以改。
-    gift: function (me) {
-      return '<h2>' + esc(S.gift.title) + '</h2>' +
-        '<div class="opts">' + S.gift.options.map(function (o, i) {
-          return '<button class="opt' + (me.want === i ? ' on' : '') + '" data-want="' + i + '">' + esc(o) + '</button>';
-        }).join('') + '</div>' +
-        '<p class="privacy">' + (me.want >= 0 ? '選好了。隨時可以改。' : '選一個。') + '</p>';
-    },
-
-    // 敲門人生。公布之前可以改，公布之後看自己那一格發生了什麼。
+    // 人生模擬器。公布之前可以改，公布之後看自己那一格發生了什麼。
     knocks: function (me) {
       var k = S.knockNow;
       var head = '<div class="qn">' + (k.idx + 1) + ' / ' + k.total + '</div>' +
-        '<div class="kcal">第 ' + k.day + ' 天 · ' + esc(k.time) + '</div>' +
+        '<div class="kcal">第 ' + k.day + ' 天</div>' +
         '<div class="kscene">' +
           '<div class="peep"><img src="/happiness/shared/art/visitor-' + esc(k.art) + '.svg" alt=""></div>' +
           '<div><div class="kwho">' + esc(k.who) + '</div>' +
@@ -137,8 +116,7 @@
         if (me.knock < 0) return head + wait('看大螢幕', '這一次你沒有選');
         var col = k.cols[me.knock];
         var lines = [];
-        if (k.luck && me.luck >= 0) lines.push(k.luck[me.luck].t);
-        if (col.t && !(k.luck && me.knock === 0)) lines.push(col.t);
+        if (col.t) lines.push(col.t);
         var g = me.gain == null ? 0 : me.gain;
         return head +
           '<div class="reply"><span class="replyfrom">' + esc(col.label) + '</span><br>' +
@@ -175,7 +153,7 @@
             ? '<div class="eggreveal">' + esc(S.egg.reveal) + '</div>'
             : wait('看大螢幕'));
       }
-      return '<div class="clock" id="pclock">' + esc(nowText()) + '</div>' +
+      return '<div class="clock">' + esc(S.egg.now) + '</div>' +
         '<img class="doorart" src="/happiness/shared/art/door-knock.svg" alt="">' +
         '<div class="eggsays">「' + esc(S.egg.says) + '」</div>' +
         '<div class="eggmsg" id="eggmsg">' + esc(eggMsg) + '</div>' +
@@ -281,10 +259,6 @@
       var tm = document.getElementById('togglemode');
       if (tm) tm.onclick = function () { draft.byVisits = !draft.byVisits; sig = ''; render(); };
     }
-
-    document.querySelectorAll('[data-want]').forEach(function (b) {
-      b.onclick = function () { act('want', { value: Number(b.dataset.want) }); };
-    });
 
     document.querySelectorAll('[data-knock]').forEach(function (b) {
       b.onclick = function () { act('knock', { idx: S.knockNow.idx, value: Number(b.dataset.knock) }); };
@@ -411,7 +385,7 @@
     // ⚠️ 祝福禱告那一格正在打的字不能進這一行 —— 一變就整頁重畫，焦點會被踢掉。
     var next = [
       S.phase.id, S.knockNow.idx, S.knockNow.revealed, S.eggNow.done,
-      me.outer, me.inner, me.visits, me.want, me.knock, me.gain, me.luck, me.opened,
+      me.outer, me.inner, me.visits, me.knock, me.gain, me.opened,
       me.receivedVerse, me.cardDone, me.prayed,
       draft.byVisits,
     ].join('|');

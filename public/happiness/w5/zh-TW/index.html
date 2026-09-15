@@ -104,29 +104,14 @@
   .callhd .rn { font-family: var(--pixel); font-size: calc(19px * var(--u)); color: var(--gold); }
   .callhd .rn small { color: var(--ink-3); font-size: calc(14px * var(--u)); }
 
-  /* ── 整頁只有一句話的版型（問句、翻卡片、想不想收禮物）───────────── */
+  /* ── 整頁只有一句話的版型（問句、翻卡片）───────────── */
   .solo { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
   .solo h2 { font-size: min(calc(64px * var(--u)), 9vh, 4.6vw); line-height: 1.45;
     letter-spacing: .04em; max-width: none; white-space: nowrap; }
   .solo .sololine { margin-top: min(calc(22px * var(--u)), 3vh); white-space: nowrap;
     font-size: min(calc(38px * var(--u)), 5vh, 2.9vw); font-weight: 900; color: var(--gold); }
 
-  /* ── 你想不想收到一份禮物 ─────────────────────────────────────────── */
-  .solo.gift h2 { font-size: min(calc(56px * var(--u)), 7.5vh, 4.2vw); }
-  .bars { width: min(100%, calc(900px * var(--u))); display: flex; flex-direction: column;
-    gap: min(calc(12px * var(--u)), 1.8vh); margin: min(calc(26px * var(--u)), 3.4vh) auto min(calc(10px * var(--u)), 1.4vh); }
-  .barrow { display: grid; grid-template-columns: calc(210px * var(--u)) minmax(0, 1fr) calc(96px * var(--u));
-    align-items: center; gap: calc(16px * var(--u)); text-align: left; }
-  .barrow .blbl { font-size: min(calc(30px * var(--u)), 3.8vh); font-weight: 900; white-space: nowrap; }
-  .barrow .btrack { height: min(calc(34px * var(--u)), 4.2vh);
-    border: 3px solid var(--edge); background: var(--surface-2); }
-  .barrow .btrack i { display: block; height: 100%; background: var(--gold); transition: width .3s;
-    -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 8px, transparent 8px 10px);
-    mask-image: repeating-linear-gradient(90deg, #000 0 8px, transparent 8px 10px); }
-  .barrow .bn { font-family: var(--pixel); font-size: min(calc(20px * var(--u)), 2.6vh); color: var(--ink-2); }
-  .barrow.zero { opacity: .45; }
-
-  /* ── 敲門人生 ─────────────────────────────────────────────────────── */
+  /* ── 人生模擬器 ─────────────────────────────────────────────────────── */
   /* 上半：貓眼看出去的那個人。**門外那一句話是這一頁的主角。** */
   .kscene { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: calc(30px * var(--u));
     align-items: center; margin-top: min(calc(14px * var(--u)), 1.8vh); }
@@ -156,25 +141,35 @@
   .kd.zero { color: var(--ink-3); }
   .kc .kt { margin-top: min(calc(6px * var(--u)), .8vh); font-size: min(calc(19px * var(--u)), 2.4vh);
     line-height: 1.5; color: var(--ink-2); }
-  /* 房東：兩種結果各幾人，不印誰抽到哪個 */
-  .kluck { margin-top: min(calc(14px * var(--u)), 1.8vh); display: flex; gap: calc(14px * var(--u)); flex-wrap: wrap; }
-  .kluck span { border: 3px solid var(--gold); padding: calc(4px * var(--u)) calc(14px * var(--u));
-    font-size: min(calc(20px * var(--u)), 2.5vh); font-weight: 700; }
-  .kluck span i { margin-left: .8em; font-size: .9em; }
   .kfoot { margin-top: min(calc(12px * var(--u)), 1.6vh); }
 
-  /* ── 三十天的折線 ─────────────────────────────────────────────────── */
-  .monthsum { margin-top: min(calc(8px * var(--u)), 1vh); font-family: var(--pixel);
-    font-size: min(calc(22px * var(--u)), 2.8vh); color: var(--ink-2); }
-  .monthsum b { color: var(--vol); }
-  .chart { flex: 1; min-height: 0; margin-top: min(calc(10px * var(--u)), 1.4vh); }
-  .chart svg { display: block; width: 100%; height: 100%; }
+  /* ── 這五天，誰開了門（跟第四關的統計圖一樣）───────────────────────── */
+  .tally { flex: 1; min-height: 0; display: grid; grid-template-rows: auto repeat(5, minmax(0, 1fr));
+    gap: min(calc(8px * var(--u)), 1vh); margin-top: min(calc(14px * var(--u)), 1.8vh); }
+  .trow { display: grid; grid-template-columns: calc(240px * var(--u)) repeat(3, minmax(0, 1fr));
+    gap: calc(14px * var(--u)); min-height: 0; }
+  .trow.thead b { font-size: min(calc(26px * var(--u)), 3.2vh); padding: 0 calc(16px * var(--u)); }
+  .tday { display: flex; align-items: center; gap: calc(12px * var(--u)); min-width: 0; }
+  .tday img { flex: none; width: min(calc(56px * var(--u)), 6.5vh); height: auto; image-rendering: pixelated; }
+  .tday span { display: flex; flex-direction: column; font-size: min(calc(22px * var(--u)), 2.7vh);
+    font-weight: 900; line-height: 1.25; white-space: nowrap; }
+  .tday i { font-style: normal; font-family: var(--pixel); font-size: min(calc(14px * var(--u)), 1.8vh); color: var(--gold); }
+  .tcell { display: flex; align-items: center; gap: calc(12px * var(--u)); min-width: 0; overflow: hidden;
+    background: var(--surface); border: 4px solid var(--edge); box-shadow: 4px 4px 0 var(--hard);
+    padding: min(calc(6px * var(--u)), .8vh) calc(14px * var(--u)); }
+  .tcell em { flex: none; font-style: normal; font-family: var(--pixel);
+    font-size: min(calc(20px * var(--u)), 2.5vh); color: var(--vol); }
+  /* 名字太多就收在兩行 —— 這一格要的是「誰在這裡」的感覺，不是點名表 */
+  .tcell small { min-width: 0; font-size: min(calc(18px * var(--u)), 2.2vh); font-weight: 700; line-height: 1.35;
+    color: var(--ink-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .tcell.zero { opacity: .45; }
+  .trow.dim .tcell, .trow.dim .tday { opacity: .3; }
 
   /* ── 彩蛋 · 有人在敲門 ────────────────────────────────────────────── */
-  /* **不在模擬裡。** 日曆收掉，換成現在真實的時間。 */
+  /* **不在模擬裡。** 日曆收掉，換成一行大字「現在！」。 */
   .eggwrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
   .eggwrap img { display: block; width: min(calc(230px * var(--u)), 34vh); height: auto; image-rendering: pixelated; }
-  .eggclock { font-family: var(--pixel); font-size: min(calc(30px * var(--u)), 4vh); color: var(--gold);
+  .eggclock { font-family: var(--sans); font-weight: 900; letter-spacing: .08em; font-size: min(calc(48px * var(--u)), 6vh); color: var(--gold);
     margin-bottom: min(calc(16px * var(--u)), 2vh); }
   .eggsays { margin-top: min(calc(20px * var(--u)), 2.6vh); font-size: min(calc(42px * var(--u)), 5.4vh, 3.2vw);
     font-weight: 900; white-space: nowrap; }

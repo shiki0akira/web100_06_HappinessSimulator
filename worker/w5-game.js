@@ -7,10 +7,10 @@
 // 每一次選開門／隔著門問／假裝不在家，幸福指數跟著動。結算完之後
 // **門外又有人在敲 —— 這一次不在模擬裡、不算分**，全場都開了門，主持人發真的禮物。
 //
-// ⚠️ **幸福指數只在敲門人生那五次動。** 彩蛋那一次一分都不算 ——
+// ⚠️ **幸福指數只在人生模擬器那五次動。** 彩蛋那一次一分都不算 ——
 // 只要有分數，全場就會開始算「給上帝開門加幾分」，那就是「信了就加分」。
 import {
-  INTRO, GIFT, CHOICES, KNOCKS, MONTH, EGG,
+  INTRO, CHOICES, KNOCKS, MONTH, EGG,
   WHO, SEEK, VERSE, CARDS, RESPOND, BLESS,
 } from './w5-data.js';
 
@@ -26,9 +26,8 @@ export const PHASES = [
   { id: 'lobby',     tag: '入場',     title: '掃碼進場' },
   { id: 'reconnect', tag: '接關',     title: '輸入幸福指數' },
   { id: 'intro',     tag: '標題',     title: '當上帝來敲門' },
-  { id: 'gift',      tag: '互動點 1', title: '你想不想收到一份禮物？' },
-  { id: 'knocks',    tag: '互動點 2', title: '敲門人生 · 三十天' },
-  { id: 'month',     tag: '結算頁',   title: '這三十天，幸福指數怎麼走的？' },
+  { id: 'knocks',    tag: '互動點 1', title: '人生模擬器 · 有人來敲門' },
+  { id: 'month',     tag: '結算頁',   title: '這五天，誰開了門？' },
   // 彩蛋放在結算之後：**它不在模擬裡**，所以日曆收掉了才出現。
   { id: 'egg',       tag: '彩蛋',     title: '有人在敲門' },
   { id: 'who',       tag: '信息',     title: '上帝是誰？' },
@@ -40,7 +39,7 @@ export const PHASES = [
   // 「他回應了你嗎？→ 那你要怎麼回應他？」
   { id: 'cards',     tag: '回顧',     title: '翻開你上一次的卡片' },
   { id: 'respond',   tag: '信息',     title: '我們應該如何回應？' },
-  { id: 'bless',     tag: '互動點 4', title: '祝福禱告' },
+  { id: 'bless',     tag: '互動點 3', title: '祝福禱告' },
   { id: 'card',      tag: '週卡',     title: '儲存模擬回憶' },
   { id: 'end',       tag: '預告',     title: '下週預告' },
 ];
@@ -73,10 +72,6 @@ const choiceOf = (p, i) => {
   const v = arr(p.knocks)[i];
   return v === 0 || v === 1 || v === 2 ? v : -1;
 };
-const luckOf = (p, i) => {
-  const v = arr(p.luck)[i];
-  return v === 0 || v === 1 ? v : -1;
-};
 
 export function addPlayer(s, name) {
   s.seq += 1;
@@ -91,11 +86,9 @@ export function addPlayer(s, name) {
     innerStart: 0,
     visits: 0,
     newcomer: false,
-    want: -1,             // 想不想收到禮物（0 想／1 不想／2 要看是什麼）
     knocks: [],           // 五次敲門各選了什麼（0 開門／1 隔著門問／2 假裝不在家）
-    luck: [],             // 房東那一次抽到什麼（公布那一刻才抽）
     gains: [],            // 每一次公布實際動了多少（夾 0–100 之後的真實變動）
-    knockBase: null,      // 第一次公布之前的幸福指數 —— 折線的起點，也是重跑時要還原的值
+    knockBase: null,      // 第一次公布之前的幸福指數 —— 手機統計頁的起點，也是重跑時要還原的值
     opened: false,        // 彩蛋那一扇門開了沒（**不算分**）
     hasBless: false,      // 「我想把祝福帶給」留在他自己的手機上
     prayed: false,
@@ -107,7 +100,7 @@ export function addPlayer(s, name) {
   return pid;
 }
 
-// ── 敲門人生 ────────────────────────────────────────────────────────────
+// ── 人生模擬器 ────────────────────────────────────────────────────────────
 // 五次，每一次都是：大家選（公布前可以改）→ 主持人按「公布結果」→ 按「下一次敲門」。
 // **公布之後那一次就鎖住了**，同一次不會重複計分。
 export function revealKnock(s) {
@@ -121,15 +114,7 @@ export function revealKnock(s) {
     const c = choiceOf(p, i);
     const gains = arr(p.gains).slice();
     if (c < 0) { gains[i] = 0; p.gains = gains; return; }
-    let d = k.outcomes[c].d;
-    if (k.luck) {
-      // 房東：每個人各抽一次。**不管選哪一個，抽到的都會發生。**
-      const l = Math.random() < 0.5 ? 0 : 1;
-      const luck = arr(p.luck).slice();
-      luck[i] = l;
-      p.luck = luck;
-      d += k.luck[l].d;
-    }
+    const d = k.outcomes[c].d;
     const before = p.outer;
     p.outer = clamp(p.outer + d);
     gains[i] = p.outer - before;
@@ -152,13 +137,12 @@ export function knockPrev(s) {
   return true;
 }
 
-// 重跑整個敲門人生：每個人的幸福指數還原到第一次公布之前，房東重抽。
+// 重跑整個人生模擬器：每個人的幸福指數還原到第一次公布之前。
 export function knockRestart(s) {
   alive(s).forEach((p) => {
     if (p.knockBase !== null && p.knockBase !== undefined) p.outer = p.knockBase;
     p.knockBase = null;
     p.knocks = [];
-    p.luck = [];
     p.gains = [];
   });
   s.knockIdx = 0;
@@ -191,13 +175,6 @@ export function applyAction(s, pid, msg) {
       p.newcomer = p.inner === 0;
       if (p.newcomer) p.inner = NEWCOMER_INNER;
       p.innerStart = p.inner;
-      break;
-    }
-    // 想不想收到禮物。**不算分**，隨時可以改。
-    case 'want': {
-      if (phaseId(s) !== 'gift') break;
-      const v = Math.floor(Number(msg.value));
-      if (v >= 0 && v < GIFT.options.length) p.want = v;
       break;
     }
     // 敲門：只收現在這一次，公布之前隨時可以改。
@@ -267,16 +244,8 @@ export function applyHost(s, msg) {
 }
 
 // ── 對外視圖 ────────────────────────────────────────────────────────────
-function giftView(s) {
-  const ps = alive(s);
-  return {
-    counts: GIFT.options.map((_, k) => ps.filter((p) => p.want === k).length),
-    picked: ps.filter((p) => p.want >= 0).length,
-  };
-}
-
 // 還沒公布就**不送出那一次的結果** —— 送出去等於把答案印在手機上。
-// 大螢幕上**只有人數，沒有名字**：第 26 天那一次對某些人是真的。
+// 大螢幕上**只有人數，沒有名字**：第 5 天那一次對某些人是真的。
 function knockView(s) {
   const ps = alive(s);
   const i = s.knockIdx;
@@ -285,47 +254,35 @@ function knockView(s) {
   return {
     idx: i,
     total: KNOCKS.length,
-    day: k.day, time: k.time, who: k.who, art: k.art, says: k.says,
+    day: k.day, who: k.who, art: k.art, says: k.says,
     revealed: open,
-    hasLuck: !!k.luck,
     cols: CHOICES.map((label, c) => ({
       label,
       n: open ? ps.filter((p) => choiceOf(p, i) === c).length : null,
       d: open ? k.outcomes[c].d : null,
       t: open ? k.outcomes[c].t : '',
     })),
-    // 房東：兩種結果各幾人。**不印誰抽到哪個。**
-    luck: open && k.luck
-      ? k.luck.map((l, j) => ({
-          k: l.k, d: l.d, t: l.t,
-          n: ps.filter((p) => luckOf(p, i) === j).length,
-        }))
-      : null,
     picked: ps.filter((p) => choiceOf(p, i) >= 0).length,
   };
 }
 
-// 三十天的折線：起點（第一次公布之前）＋ 五次公布之後。
-// 還沒公布的那幾次是 null；晚到的人沒有起點，就從他進場的值開始畫。
+// 統計：五次敲門，每一次三格，印人數和名字（跟第四關的統計圖一樣）。
+// 還沒公布的那一次不送名字 —— 送出去等於把答案印在牆上。
 function monthView(s) {
-  const done = openList(s).length;
-  const labels = ['開始'].concat(KNOCKS.map((k) => '第 ' + k.day + ' 天'));
-  const series = scored(s).map((p) => {
-    const base = p.knockBase === null || p.knockBase === undefined ? p.outer : p.knockBase;
-    const pts = [base];
-    let v = base;
-    KNOCKS.forEach((_, i) => {
-      if (!shown(s, i)) { pts.push(null); return; }
-      v = clamp(v + (Number(arr(p.gains)[i]) || 0));
-      pts.push(v);
-    });
-    return pts;
-  });
-  const avg = labels.map((_, j) => {
-    const vals = series.map((pts) => pts[j]).filter((v) => v !== null);
-    return vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : null;
-  });
-  return { labels, series, avg, done, total: KNOCKS.length };
+  const ps = alive(s);
+  return {
+    rows: KNOCKS.map((k, i) => {
+      const open = shown(s, i);
+      return {
+        day: k.day, who: k.who, art: k.art, shown: open,
+        cols: CHOICES.map((label, c) => {
+          const names = open ? ps.filter((p) => choiceOf(p, i) === c).map((p) => p.name) : [];
+          return { label, n: names.length, names };
+        }),
+      };
+    }),
+    total: ps.length,
+  };
 }
 
 // 彩蛋：大螢幕等**全場都開了**才翻。大螢幕只顯示「幾人已開門」，不顯示是誰還沒開。
@@ -345,8 +302,6 @@ function common(s) {
     phase: PHASES[s.phaseIdx],
     phaseIdx: s.phaseIdx,
     intro: INTRO,
-    gift: GIFT,
-    giftNow: giftView(s),
     choices: CHOICES,
     knockNow: knockView(s),
     knocksDone: openList(s).length >= KNOCKS.length,
@@ -387,7 +342,6 @@ export function hostView(s, roomCode) {
       count: ps.length,
       reconnected: sc.length,
       newcomers: ps.filter((p) => p.newcomer).length,
-      giftPicked: ps.filter((p) => p.want >= 0).length,
       knockPicked: ps.filter((p) => choiceOf(p, s.knockIdx) >= 0).length,
       opened: ps.filter((p) => p.opened).length,
       outerAvg: outers.length ? Math.round(outers.reduce((a, b) => a + b, 0) / outers.length) : null,
@@ -415,7 +369,6 @@ export function playerView(s, pid, roomCode) {
   };
   if (!p) return { ...base, me: null };
   const c = choiceOf(p, i);
-  const l = luckOf(p, i);
   return {
     ...base,
     me: {
@@ -423,13 +376,11 @@ export function playerView(s, pid, roomCode) {
       outer: p.outer, outerStart: p.outerStart,
       inner: p.inner || 0, innerCap: INNER_CAP,
       visits: p.visits, newcomer: p.newcomer,
-      want: p.want,
       knock: c,
-      // 三十天的起點。還沒公布過就是現在的值。
+      // 五天的起點。還沒公布過就是現在的值。
       knockBase: p.knockBase === null || p.knockBase === undefined ? p.outer : p.knockBase,
-      // 公布之後才有：他這一次實際動了多少、房東抽到哪一個
+      // 公布之後才有：他這一次實際動了多少
       gain: shown(s, i) && c >= 0 ? (Number(arr(p.gains)[i]) || 0) : null,
-      luck: shown(s, i) ? l : -1,
       opened: !!p.opened,
       hasBless: !!p.hasBless, prayed: !!p.prayed,
       receivedVerse: !!p.receivedVerse, cardDone: !!p.cardDone,

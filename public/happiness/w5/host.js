@@ -29,18 +29,6 @@
   function fmt(d) { return d > 0 ? '+' + d : d < 0 ? '−' + Math.abs(d) : '±0'; }
   function tone(d) { return d > 0 ? 'up' : d < 0 ? 'down' : 'zero'; }
 
-  // 彩蛋那一頁的時間：**現在真實的時間**，不是模擬裡的日曆。
-  function nowText() {
-    var d = new Date();
-    var h = d.getHours(), m = d.getMinutes();
-    var part = h < 6 ? '凌晨' : h < 12 ? '早上' : h < 13 ? '中午' : h < 18 ? '下午' : '晚上';
-    var h12 = h % 12 === 0 ? 12 : h % 12;
-    return '今天 · ' + part + ' ' + h12 + ':' + (m < 10 ? '0' : '') + m;
-  }
-  setInterval(function () {
-    var c = document.getElementById('eggclock');
-    if (c) c.textContent = nowText();
-  }, 10000);
 
   // ── 敲門聲 ───────────────────────────────────────────────────────────
   // 大螢幕自己出聲（電視喇叭），手機不出聲 —— 十幾支手機一起敲會變成一團噪音。
@@ -81,7 +69,7 @@
   var lastKnock = '';
   var eggTimer = null;
   function sound() {
-    // 敲門人生：每換一個人來敲門，敲一次（兩下）
+    // 人生模擬器：每換一個人來敲門，敲一次（兩下）
     var k = S.phase.id === 'knocks' && !S.knockNow.revealed ? 'k' + S.knockNow.idx : '';
     if (k && k !== lastKnock) knock();
     lastKnock = k;
@@ -139,19 +127,19 @@
       }).join('') + '</div>';
   }
 
-  // ── 敲門人生 ─────────────────────────────────────────────────────────
+  // ── 人生模擬器 ─────────────────────────────────────────────────────────
   // 上面是貓眼看出去的那個人，下面是三個選項。
-  // **大螢幕上只有人數，沒有名字** —— 第 26 天那一次對某些人是真的。
+  // **大螢幕上只有人數，沒有名字** —— 第 5 天那一次對某些人是真的。
   function knockBoard() {
     var k = S.knockNow;
     return '<div class="callhd">' +
-        '<h2>敲門人生 · 三十天</h2>' +
+        '<h2>人生模擬器 · 有人來敲門</h2>' +
         '<span class="rn">' + (k.idx + 1) + ' <small>/ ' + k.total + '</small></span>' +
       '</div>' +
       '<div class="kscene">' +
         '<div class="peep"><img src="/happiness/shared/art/visitor-' + esc(k.art) + '.svg" alt=""></div>' +
         '<div>' +
-          '<div class="kcal">第 ' + k.day + ' 天<small>' + esc(k.time) + '</small></div>' +
+          '<div class="kcal">第 ' + k.day + ' 天</div>' +
           '<div class="kwho">' + esc(k.who) + '</div>' +
           '<div class="ksays">「' + esc(k.says) + '」</div>' +
         '</div>' +
@@ -161,80 +149,40 @@
           '<div class="kl"><b>' + esc(c.label) + '</b>' +
             (k.revealed ? '<span class="kn">' + c.n + ' 人</span>' : '') + '</div>' +
           (k.revealed
-            ? (k.hasLuck && c.d === 0 ? '' : '<span class="kd ' + tone(c.d) + '">' + (k.hasLuck ? '再 ' : '') + fmt(c.d) + '</span>') +
+            ? '<span class="kd ' + tone(c.d) + '">' + fmt(c.d) + '</span>' +
               '<div class="kt">' + esc(c.t) + '</div>'
             : '') +
         '</div>';
       }).join('') + '</div>' +
-      // 房東：兩種結果各幾人。**不印誰抽到哪個。**
-      (k.luck
-        ? '<div class="kluck">' + k.luck.map(function (l) {
-            return '<span>' + esc(l.k) + '　' + l.n + ' 人<i class="kd ' + tone(l.d) + '">' + fmt(l.d) + '</i></span>';
-          }).join('') + '</div>'
-        : '') +
       (k.revealed ? '' : '<div class="kfoot">' + counter(S.stats.knockPicked, '人已選') + '</div>');
   }
 
-  // ── 三十天的折線 ─────────────────────────────────────────────────────
-  // 每個人一條淡淡的線，加一條粗的全場平均。**不排名、不標名字。**
-  function monthChart() {
-    var m = S.monthNow;
-    var W = 1000, H = 420, L = 70, R = 60, T = 40, B = 56;
-    var all = [];
-    m.series.forEach(function (pts) { pts.forEach(function (v) { if (v != null) all.push(v); }); });
-    var lo = all.length ? Math.min.apply(null, all) : 0;
-    var hi = all.length ? Math.max.apply(null, all) : 100;
-    lo = Math.max(0, Math.floor((lo - 6) / 10) * 10);
-    hi = Math.min(100, Math.ceil((hi + 6) / 10) * 10);
-    if (hi - lo < 30) { hi = Math.min(100, lo + 30); lo = Math.max(0, hi - 30); }
-    var n = m.labels.length;
-    var x = function (j) { return L + (W - L - R) * j / (n - 1); };
-    var y = function (v) { return T + (H - T - B) * (1 - (v - lo) / (hi - lo)); };
-    var path = function (pts) {
-      var d = '';
-      pts.forEach(function (v, j) { if (v != null) d += (d ? ' L' : 'M') + x(j).toFixed(1) + ' ' + y(v).toFixed(1); });
-      return d;
-    };
-
-    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet">';
-    // 格線
-    for (var g = lo; g <= hi; g += 10) {
-      svg += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(g) + '" y2="' + y(g) + '" style="stroke:var(--edge-soft)" stroke-width="2" stroke-dasharray="4 6"/>' +
-        '<text x="' + (L - 14) + '" y="' + (y(g) + 6) + '" text-anchor="end" style="fill:var(--ink-3);font-family:var(--pixel);font-size:15px">' + g + '</text>';
-    }
-    m.labels.forEach(function (lab, j) {
-      svg += '<text x="' + x(j) + '" y="' + (H - 16) + '" text-anchor="middle" style="fill:var(--ink-2);font-family:var(--sans);font-weight:700;font-size:20px">' + esc(lab) + '</text>';
-    });
-    // 每個人
-    m.series.forEach(function (pts) {
-      svg += '<path d="' + path(pts) + '" fill="none" style="stroke:var(--vol)" stroke-width="3" opacity=".22"/>';
-    });
-    // 全場平均
-    svg += '<path d="' + path(m.avg) + '" fill="none" style="stroke:var(--vol)" stroke-width="7"/>';
-    m.avg.forEach(function (v, j) {
-      if (v == null) return;
-      svg += '<rect x="' + (x(j) - 8) + '" y="' + (y(v) - 8) + '" width="16" height="16" style="fill:var(--vol)"/>' +
-        '<text x="' + x(j) + '" y="' + (y(v) - 18) + '" text-anchor="middle" style="fill:var(--ink);font-family:var(--pixel);font-size:18px">' + v + '</text>';
-    });
-    svg += '</svg>';
-    return svg;
-  }
-
+  // ── 這五天，誰開了門 ─────────────────────────────────────────────────
+  // 跟第四關的統計圖一樣：誰選了什麼。五列（每一天）× 三格（開門／隔著門問／假裝不在家）。
+  // 還沒公布的那一次整列淡掉。**主持人只念數字，不點名追問。**
   function monthBoard() {
     var m = S.monthNow;
-    var first = m.avg[0], lastIdx = -1;
-    m.avg.forEach(function (v, j) { if (v != null) lastIdx = j; });
-    var last = lastIdx >= 0 ? m.avg[lastIdx] : null;
     return '<div class="callhd"><h2>' + esc(S.month.title) + '</h2>' +
         '<span class="rn">' + esc(S.month.end) + '</span></div>' +
-      (first != null && last != null
-        ? '<div class="monthsum">全場平均　' + first + ' → <b>' + last + '</b></div>'
-        : '') +
-      '<div class="chart">' + (m.series.length ? monthChart() : '<p class="lede">還沒有人接關。</p>') + '</div>';
+      '<div class="tally">' +
+        '<div class="trow thead"><span></span>' + S.choices.map(function (c) {
+          return '<b>' + esc(c) + '</b>';
+        }).join('') + '</div>' +
+        m.rows.map(function (r) {
+          return '<div class="trow' + (r.shown ? '' : ' dim') + '">' +
+            '<span class="tday"><img src="/happiness/shared/art/visitor-' + esc(r.art) + '.svg" alt="">' +
+              '<span><i>第 ' + r.day + ' 天</i>' + esc(r.who) + '</span></span>' +
+            r.cols.map(function (c) {
+              return '<span class="tcell' + (c.n ? '' : ' zero') + '"><em>' + c.n + ' 人</em>' +
+                '<small>' + c.names.map(esc).join('・') + '</small></span>';
+            }).join('') +
+          '</div>';
+        }).join('') +
+      '</div>';
   }
 
   // ── 彩蛋 ─────────────────────────────────────────────────────────────
-  // **不在模擬裡。** 日曆收掉，換成現在真實的時間。
+  // **不在模擬裡。** 日曆收掉，換成一行大字「現在！」。
   // 全場都開了門才翻過去 —— 大螢幕只顯示「幾人已開門」，不顯示是誰還沒開，不倒數。
   function eggBoard() {
     var e = S.eggNow;
@@ -245,7 +193,7 @@
       '</div>';
     }
     return '<div class="eggwrap">' +
-      '<div class="eggclock" id="eggclock">' + esc(nowText()) + '</div>' +
+      '<div class="eggclock">' + esc(S.egg.now) + '</div>' +
       '<img src="/happiness/shared/art/door-knock.svg" alt="">' +
       '<div class="eggsays">「' + esc(S.egg.says) + '」</div>' +
       '<div class="eggcount">' + e.opened + ' / ' + e.total + ' 人已開門</div>' +
@@ -283,23 +231,6 @@
         '<h2 class="big-title">' + esc(S.intro.title) + '</h2>' +
         '<div class="teaseart"><img src="/happiness/shared/art/door-knock.svg" alt=""></div>' +
         '<p class="teaseline">' + esc(S.intro.line) + '</p>' +
-      '</div>';
-    },
-
-    // 埋鉤子。**不算分**，也不講禮物是什麼。
-    gift: function () {
-      var g = S.giftNow;
-      var max = Math.max(1, Math.max.apply(null, g.counts));
-      return '<div class="solo gift"><h2>' + esc(S.gift.title) + '</h2>' +
-        '<div class="bars">' + S.gift.options.map(function (o, i) {
-          var n = g.counts[i];
-          return '<div class="barrow' + (n ? '' : ' zero') + '">' +
-            '<span class="blbl">' + esc(o) + '</span>' +
-            '<span class="btrack"><i style="width:' + Math.round(n / max * 100) + '%"></i></span>' +
-            '<span class="bn">' + n + ' 人</span>' +
-          '</div>';
-        }).join('') + '</div>' +
-        counter(S.stats.giftPicked, '人已選') +
       '</div>';
     },
 
@@ -357,7 +288,7 @@
         fromLabel: '上週',
         week: '十字架的勝利',
         lines: [
-          '今天幸福指數被這三十天推來推去。最後那一次敲門，一分都沒算 —— 但你手上多了一樣東西。',
+          '今天幸福指數被這五天推來推去。最後那一次敲門，一分都沒算 —— 但你手上多了一樣東西。',
           '他要來敲這扇門，付了一個代價。下一關 —— 十字架的勝利。',
           '你寫的那個人，這禮拜去敲他的門。',
         ],
@@ -436,7 +367,7 @@
     b.onclick = function () {
       var cmd = b.dataset.cmd;
       if (cmd === 'reset' && !confirm('把這個房間整個重置？所有人的分數和接關資料都會清掉。')) return;
-      if (cmd === 'knockRestart' && !confirm('敲門人生整個重跑？每個人的幸福指數會還原到第一次公布之前，房東重抽。')) return;
+      if (cmd === 'knockRestart' && !confirm('人生模擬器整個重跑？每個人的幸福指數會還原到第一次公布之前。')) return;
       post(cmd);
     };
   });
