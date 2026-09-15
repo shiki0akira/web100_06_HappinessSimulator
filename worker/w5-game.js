@@ -11,7 +11,7 @@
 // 只要有分數，全場就會開始算「給上帝開門加幾分」，那就是「信了就加分」。
 import {
   INTRO, CHOICES, KNOCKS, MONTH, EGG,
-  WHO, SEEK, VERSE, CARDS, RESPOND, BLESS,
+  WHO, SEEK, VERSE, RESPOND, BLESS,
 } from './w5-data.js';
 
 // 幸福根基的規則七關都一樣。上限 95 不是 100 —— 你自己填不滿。
@@ -35,9 +35,6 @@ export const PHASES = [
   // 經文排在第二段和第三段中間：禮物送到了 → 接待他的，就作兒女 → 那我們怎麼回應。
   { id: 'verse',     tag: '經文',     title: '領受經文' },
   { id: 'testimony', tag: '見證',     title: '見證分享' },
-  // 架構原本排在第五關開場的翻卡片，移到見證後面：
-  // 「他回應了你嗎？→ 那你要怎麼回應他？」
-  { id: 'cards',     tag: '回顧',     title: '翻開你上一次的卡片' },
   { id: 'respond',   tag: '信息',     title: '我們應該如何回應？' },
   { id: 'bless',     tag: '互動點 3', title: '祝福禱告' },
   { id: 'card',      tag: '週卡',     title: '儲存模擬回憶' },
@@ -90,7 +87,7 @@ export function addPlayer(s, name) {
     gains: [],            // 每一次公布實際動了多少（夾 0–100 之後的真實變動）
     knockBase: null,      // 第一次公布之前的幸福指數 —— 手機統計頁的起點，也是重跑時要還原的值
     opened: false,        // 彩蛋那一扇門開了沒（**不算分**）
-    hasBless: false,      // 「我想把祝福帶給」留在他自己的手機上
+    hasBless: false,      // 「我收到禮物後的感覺是」留在他自己的手機上
     prayed: false,
     receivedVerse: false,
     cardDone: false,
@@ -189,8 +186,7 @@ export function applyAction(s, pid, msg) {
       p.knocks = rows;
       break;
     }
-    // 彩蛋開門。**不算分。** 只收「開了」這件事 ——
-    // 「隔著門問」「假裝不在家」只在他自己手機上換字，不會送到這裡。
+    // 彩蛋開門。**不算分。** 手機上只有這一顆鈕。
     case 'open':
       if (phaseId(s) !== 'egg') break;
       p.opened = true;
@@ -198,7 +194,7 @@ export function applyAction(s, pid, msg) {
     case 'verse':
       if (!p.receivedVerse) { p.receivedVerse = true; grow(p, INNER_VERSE); }
       break;
-    // 「這個禮拜，我想把祝福帶給＿＿」。那句話留在玩家自己的手機上，
+    // 「我收到禮物後的感覺是＿＿」。那句話留在玩家自己的手機上，
     // 這裡只收「有沒有寫」這個布林值。**完全不上牆。**
     case 'bless': {
       p.hasBless = !!msg.has;
@@ -312,7 +308,6 @@ function common(s) {
     who: WHO,
     seek: SEEK,
     verse: VERSE,
-    cards: CARDS,
     respond: RESPOND,
     bless: BLESS,
   };

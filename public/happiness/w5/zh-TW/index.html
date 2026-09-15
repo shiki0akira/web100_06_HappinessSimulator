@@ -169,15 +169,19 @@
   /* **不在模擬裡。** 日曆收掉，換成一行大字「現在！」。 */
   .eggwrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
   .eggwrap img { display: block; width: min(calc(230px * var(--u)), 34vh); height: auto; image-rendering: pixelated; }
+  /* 門開了、耶穌拿著禮物：這一張是這一頁的主角，放大一點 */
+  .eggwrap img.jesus { width: min(calc(340px * var(--u)), 46vh); }
   .eggclock { font-family: var(--sans); font-weight: 900; letter-spacing: .08em; font-size: min(calc(48px * var(--u)), 6vh); color: var(--gold);
     margin-bottom: min(calc(16px * var(--u)), 2vh); }
-  .eggsays { margin-top: min(calc(20px * var(--u)), 2.6vh); font-size: min(calc(42px * var(--u)), 5.4vh, 3.2vw);
+  .egglead { margin-top: min(calc(18px * var(--u)), 2.4vh); font-size: min(calc(26px * var(--u)), 3.2vh);
+    font-weight: 700; color: var(--ink-2); }
+  .eggsays { margin-top: min(calc(4px * var(--u)), .6vh); font-size: min(calc(42px * var(--u)), 5.4vh, 3.2vw);
     font-weight: 900; white-space: nowrap; }
   /* 只有人數，不顯示是誰還沒開，不倒數 */
   .eggcount { margin-top: min(calc(12px * var(--u)), 1.6vh); font-family: var(--pixel);
     font-size: min(calc(18px * var(--u)), 2.4vh); color: var(--ink-3); }
-  .eggreveal { margin-top: min(calc(20px * var(--u)), 2.6vh); font-size: min(calc(84px * var(--u)), 10.5vh, 6vw);
-    font-weight: 900; letter-spacing: .12em; color: var(--root-c); white-space: nowrap;
+  .eggreveal { margin-top: min(calc(20px * var(--u)), 2.6vh); font-size: min(calc(56px * var(--u)), 7vh, 4vw);
+    font-weight: 900; letter-spacing: .04em; color: var(--root-c); white-space: nowrap;
     animation: unseal .6s ease-out; }
   @keyframes unseal { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
 

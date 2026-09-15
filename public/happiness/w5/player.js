@@ -7,8 +7,6 @@
   var S = null, pid = null, src = null, sig = '', cardURL = null, cardBlob = null;
   // 祝福禱告那顆按鈕：按下去之後 3 秒內寫「已更新」，不然按了看起來沒反應
   var blessSaved = false, blessSavedTimer = null;
-  // 彩蛋：「隔著門問」「假裝不在家」只在這支手機上換字，**不送伺服器**
-  var eggMsg = '', hideIdx = 0;
   var screen = document.getElementById('screen');
   var statusEl = document.getElementById('status');
 
@@ -25,7 +23,7 @@
   var PID_KEY = 'happiness_pid_w5_' + ROOM + (SEAT ? '_' + SEAT : '');
   var LINE_KEY = 'happiness_line_w5_' + ROOM + (SEAT ? '_' + SEAT : '');
 
-  // 「這個禮拜，我想把祝福帶給＿＿」那一句只存在這支手機裡，
+  // 「我收到禮物後的感覺是＿＿」那一句只存在這支手機裡，
   // 一個字都不會離開這台裝置。**完全不上牆。**
   function readLine() { try { return localStorage.getItem(LINE_KEY) || ''; } catch (e) { return ''; } }
   function writeLine(t) { try { localStorage.setItem(LINE_KEY, t); } catch (e) {} }
@@ -143,23 +141,18 @@
         wait('看大螢幕');
     },
 
-    // 彩蛋。**不在模擬裡、不算分。** 三顆鈕都在，但只有「開門」會讓敲門聲停下來。
+    // 彩蛋。**不在模擬裡、不算分。** **手機上只有一顆「開門」** —— 禮物一定送得出去。
     egg: function (me) {
       if (me.opened) {
-        return '<img class="doorart" src="/happiness/shared/art/door-open.svg" alt="">' +
-          '<div class="opened">' + esc(S.egg.opened) + '</div>' +
-          '<p class="eggnote">' + esc(S.egg.note) + '</p>' +
-          (S.eggNow.done
-            ? '<div class="eggreveal">' + esc(S.egg.reveal) + '</div>'
-            : wait('看大螢幕'));
+        return '<img class="doorart jesus" src="/happiness/shared/art/door-open.svg" alt="">' +
+          '<div class="opened">「' + esc(S.egg.opened) + '」</div>' +
+          (S.eggNow.done ? '' : wait('看大螢幕'));
       }
       return '<div class="clock">' + esc(S.egg.now) + '</div>' +
         '<img class="doorart" src="/happiness/shared/art/door-knock.svg" alt="">' +
+        '<p class="egglead">' + esc(S.egg.lead) + '</p>' +
         '<div class="eggsays">「' + esc(S.egg.says) + '」</div>' +
-        '<div class="eggmsg" id="eggmsg">' + esc(eggMsg) + '</div>' +
-        '<div class="opts">' + S.choices.map(function (c, i) {
-          return '<button class="opt" data-egg="' + i + '">' + esc(c) + '</button>';
-        }).join('') + '</div>';
+        '<button class="btn primary fullbtn" id="opendoor">開門</button>';
     },
 
     who: function () { return list(S.who.title, S.who.items); },
@@ -178,14 +171,6 @@
     // 見證那四分鐘手機要安靜。抬頭看講的那個人。
     testimony: function () {
       return '<h2>見證分享</h2>' + wait('把手機放下', '聽他講');
-    },
-
-    // 翻卡片。沒有卡的人什麼都不用做。
-    cards: function () {
-      return '<h2>' + esc(S.cards.title) + '</h2>' +
-        '<p>上一次有來的人，打開相簿，找第四關那張卡，看看你寫的那一句。</p>' +
-        '<p class="bigline">' + esc(S.cards.line) + '</p>' +
-        '<p class="privacy">沒有卡的人，就聽聽看。</p>';
     },
 
     // 回應。**第 1 點只印字** —— 手機上沒有任何按鈕。
@@ -216,7 +201,7 @@
 
     end: function () {
       return '<h2>下週見</h2>' +
-        '<p>你寫的那個人，這禮拜去敲他的門。</p>' +
+        '<p>今天那份禮物收好。</p>' +
         (cardURL ? '<img class="weekcard" src="' + cardURL + '" alt="第五關週卡">' : '') +
         (cardURL ? '<a class="btn ghost fullbtn" id="zoom" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none">放大這張卡</a>' : '') +
         '<p class="privacy">忘記截也沒關係。下一關直接重新評估現在的自己，一樣算數。</p>';
@@ -264,22 +249,8 @@
       b.onclick = function () { act('knock', { idx: S.knockNow.idx, value: Number(b.dataset.knock) }); };
     });
 
-    // 彩蛋。只有「開門」送伺服器；另外兩顆只換這支手機上的那一行字，
-    // **而且不重畫整頁** —— 門上的敲門動畫不會被打斷。
-    document.querySelectorAll('[data-egg]').forEach(function (b) {
-      b.onclick = function () {
-        var i = Number(b.dataset.egg);
-        if (i === 0) { act('open'); return; }
-        if (i === 1) {
-          eggMsg = S.egg.ask;
-        } else {
-          eggMsg = S.egg.hide[hideIdx % S.egg.hide.length];
-          hideIdx += 1;
-        }
-        var m = document.getElementById('eggmsg');
-        if (m) m.textContent = eggMsg;
-      };
-    });
+    var od = document.getElementById('opendoor');
+    if (od) od.onclick = function () { act('open'); };
 
     var v = document.getElementById('verse');
     if (v) v.onclick = function () { act('verse'); };
@@ -327,7 +298,7 @@
           inner: me.inner, innerLabel: '幸福根基',
           verseRef: S.verse.ref, verseText: S.verse.text,
           // 卡片上**不印禮物、不印彩蛋有沒有開門** —— 那一格不該看起來像「已決志」的紀錄。
-          burdenLabel: 'I WILL BLESS',
+          burdenLabel: 'I RECEIVED',
           burdenAsk: S.bless.ask + '：',
           burden: readLine(),
         });
@@ -378,9 +349,6 @@
     document.getElementById('outerbar').style.width = (me.outer == null ? 0 : me.outer) + '%';
     document.getElementById('innerv').textContent = me.inner ? me.inner : '—';
     document.getElementById('innerbar').style.width = me.inner + '%';
-
-    // 離開彩蛋那一頁，手機上那一行字就清掉 —— 回來的時候重新開始。
-    if (S.phase.id !== 'egg') { eggMsg = ''; hideIdx = 0; }
 
     // ⚠️ 祝福禱告那一格正在打的字不能進這一行 —— 一變就整頁重畫，焦點會被踢掉。
     var next = [

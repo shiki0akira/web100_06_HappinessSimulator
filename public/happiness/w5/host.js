@@ -188,13 +188,14 @@
     var e = S.eggNow;
     if (e.done) {
       return '<div class="eggwrap">' +
-        '<img src="/happiness/shared/art/door-open.svg" alt="">' +
-        '<div class="eggreveal">' + esc(S.egg.reveal) + '</div>' +
+        '<img class="jesus" src="/happiness/shared/art/door-open.svg" alt="">' +
+        '<div class="eggreveal">「' + esc(S.egg.opened) + '」</div>' +
       '</div>';
     }
     return '<div class="eggwrap">' +
       '<div class="eggclock">' + esc(S.egg.now) + '</div>' +
       '<img src="/happiness/shared/art/door-knock.svg" alt="">' +
+      '<div class="egglead">' + esc(S.egg.lead) + '</div>' +
       '<div class="eggsays">「' + esc(S.egg.says) + '」</div>' +
       '<div class="eggcount">' + e.opened + ' / ' + e.total + ' 人已開門</div>' +
     '</div>';
@@ -255,18 +256,12 @@
       return StageParts.testimony();
     },
 
-    // 翻卡片。**畫面上只有標題和一句問句**，其他全部主持人講。
-    cards: function () {
-      return '<div class="solo"><h2>' + esc(S.cards.title) + '</h2>' +
-        '<p class="sololine">' + esc(S.cards.line) + '</p></div>';
-    },
-
     respond: function () { return listBoard(S.respond.title, S.respond.items); },
 
     // 這一關的祝福禱告有指定題目。**完全不上牆** —— 這裡只有「幾人已寫下」。
     bless: function () {
       return StageParts.prayer({
-        lede: '「' + S.bless.ask + '＿＿」。寫一個人就好 —— 只有你自己看得到。',
+        lede: '「' + S.bless.ask + '＿＿」。寫一句就好 —— 只有你自己看得到。',
         done: S.stats.blessed, total: S.stats.count,
       });
     },
@@ -274,7 +269,7 @@
     card: function () {
       return StageParts.keepsake({
         done: S.stats.cardsDone, total: S.stats.count,
-        extra: '你想祝福的那個人',
+        extra: '你收到禮物後的感覺',
       });
     },
 
@@ -290,7 +285,7 @@
         lines: [
           '今天幸福指數被這五天推來推去。最後那一次敲門，一分都沒算 —— 但你手上多了一樣東西。',
           '他要來敲這扇門，付了一個代價。下一關 —— 十字架的勝利。',
-          '你寫的那個人，這禮拜去敲他的門。',
+          '今天那份禮物收好。',
         ],
       });
     },
