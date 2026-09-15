@@ -134,7 +134,6 @@
     var k = S.knockNow;
     return '<div class="callhd">' +
         '<h2>人生模擬器 · 有人來敲門</h2>' +
-        '<span class="rn">' + (k.idx + 1) + ' <small>/ ' + k.total + '</small></span>' +
       '</div>' +
       '<div class="kscene">' +
         '<div class="peep"><img src="/happiness/shared/art/visitor-' + esc(k.art) + '.svg" alt=""></div>' +
