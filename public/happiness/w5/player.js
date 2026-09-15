@@ -60,13 +60,6 @@
       esc(msg) + '</p>' + (sub ? '<p style="font-size:17px">' + esc(sub) + '</p>' : '') + '</div>';
   };
 
-  var list = function (title, items) {
-    return '<h2>' + esc(title) + '</h2>' +
-      '<div class="howlist">' + items.map(function (t, i) {
-        return '<div class="howrow"><b>' + (i + 1) + '. ' + esc(t) + '</b></div>';
-      }).join('') + '</div>';
-  };
-
   var views = {
     lobby: function (me) {
       return '<h2>你已經進場了</h2>' +
@@ -186,7 +179,14 @@
         wait('看大螢幕');
     },
 
-    seek: function () { return list(S.seek.title, S.seek.items); },
+    // 我認識的上帝。兩張並排，各一張小插圖。
+    seek: function () {
+      return '<h2>' + esc(S.seek.title) + '</h2>' +
+        '<div class="knowlist">' + S.seek.items.map(function (it) {
+          return '<div class="knowrow"><img src="/happiness/shared/art/' + esc(it.art) + '.svg" alt="">' +
+            '<b>' + esc(it.t) + '</b></div>';
+        }).join('') + '</div>';
+    },
 
     verse: function (me) {
       return '<div class="verse-p"><span class="ref">' + esc(S.verse.ref) + '</span>' +

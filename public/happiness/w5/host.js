@@ -121,13 +121,6 @@
       (all ? '　<b>大家都好了</b>' : '') + '</div>';
   }
 
-  function listBoard(title, items) {
-    return '<h2>' + esc(title) + '</h2>' +
-      '<div class="howlist">' + items.map(function (t, i) {
-        return '<div class="how"><span class="n">' + (i + 1) + '</span><b>' + esc(t) + '</b></div>';
-      }).join('') + '</div>';
-  }
-
   // ── 人生模擬器 ─────────────────────────────────────────────────────────
   // 上面是貓眼看出去的那個人，下面是三個選項。
   // **大螢幕上只有人數，沒有名字** —— 第 5 天那一次對某些人是真的。
@@ -270,7 +263,14 @@
         }).join('') + '</div>';
     },
 
-    seek: function () { return listBoard(S.seek.title, S.seek.items); },
+    // 我認識的上帝。左右兩張，各一張像素小插圖。
+    seek: function () {
+      return '<h2>' + esc(S.seek.title) + '</h2>' +
+        '<div class="knowgrid">' + S.seek.items.map(function (it) {
+          return '<div class="know"><img src="/happiness/shared/art/' + esc(it.art) + '.svg" alt="">' +
+            '<b>' + esc(it.t) + '</b></div>';
+        }).join('') + '</div>';
+    },
 
     verse: function () {
       return StageParts.verse({

@@ -89,9 +89,12 @@
   .screen .center { text-align: center; }
   .bigline { margin-top: 18px; font-size: 24px !important; font-weight: 900; line-height: 1.7; color: var(--gold) !important; }
 
-  .howlist { margin-top: 14px; }
-  .howrow { padding: 12px 0; border-bottom: 2px dashed var(--edge-soft); }
-  .howrow b { font-size: 21px; font-weight: 900; line-height: 1.6; }
+  /* 我認識的上帝：兩張並排 */
+  .knowlist { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+  .knowrow { text-align: center; padding: 14px 8px; border: 3px solid var(--edge); background: var(--surface);
+    box-shadow: 3px 3px 0 var(--hard); }
+  .knowrow img { display: block; width: 72%; margin: 0 auto; image-rendering: pixelated; }
+  .knowrow b { display: block; margin-top: 8px; font-size: 20px; font-weight: 900; }
 
   .verse-p { text-align: center; padding: 10px 0; }
   .verse-p .ref { font-family: var(--pixel); font-size: 13px; color: var(--gold); }
