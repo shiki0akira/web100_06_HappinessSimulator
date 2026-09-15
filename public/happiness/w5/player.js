@@ -23,7 +23,7 @@
   var PID_KEY = 'happiness_pid_w5_' + ROOM + (SEAT ? '_' + SEAT : '');
   var LINE_KEY = 'happiness_line_w5_' + ROOM + (SEAT ? '_' + SEAT : '');
 
-  // 「我收到禮物後的感覺是＿＿」那一句只存在這支手機裡，
+  // 「收到禮物後，我也想把祝福帶給＿＿」那一句只存在這支手機裡，
   // 一個字都不會離開這台裝置。**完全不上牆。**
   function readLine() { try { return localStorage.getItem(LINE_KEY) || ''; } catch (e) { return ''; } }
   function writeLine(t) { try { localStorage.setItem(LINE_KEY, t); } catch (e) {} }
@@ -201,7 +201,7 @@
 
     end: function () {
       return '<h2>下週見</h2>' +
-        '<p>今天那份禮物收好。</p>' +
+        '<p>你寫的那個人，這禮拜把祝福帶給他。</p>' +
         (cardURL ? '<img class="weekcard" src="' + cardURL + '" alt="第五關週卡">' : '') +
         (cardURL ? '<a class="btn ghost fullbtn" id="zoom" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none">放大這張卡</a>' : '') +
         '<p class="privacy">忘記截也沒關係。下一關直接重新評估現在的自己，一樣算數。</p>';
@@ -298,7 +298,7 @@
           inner: me.inner, innerLabel: '幸福根基',
           verseRef: S.verse.ref, verseText: S.verse.text,
           // 卡片上**不印禮物、不印彩蛋有沒有開門** —— 那一格不該看起來像「已決志」的紀錄。
-          burdenLabel: 'I RECEIVED',
+          burdenLabel: 'I WILL BLESS',
           burdenAsk: S.bless.ask + '：',
           burden: readLine(),
         });

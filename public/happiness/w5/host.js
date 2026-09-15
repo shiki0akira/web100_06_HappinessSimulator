@@ -261,7 +261,7 @@
     // 這一關的祝福禱告有指定題目。**完全不上牆** —— 這裡只有「幾人已寫下」。
     bless: function () {
       return StageParts.prayer({
-        lede: '「' + S.bless.ask + '＿＿」。寫一句就好 —— 只有你自己看得到。',
+        lede: '「' + S.bless.ask + '＿＿」。寫一個人就好 —— 只有你自己看得到。',
         done: S.stats.blessed, total: S.stats.count,
       });
     },
@@ -269,7 +269,7 @@
     card: function () {
       return StageParts.keepsake({
         done: S.stats.cardsDone, total: S.stats.count,
-        extra: '你收到禮物後的感覺',
+        extra: '你想祝福的那個人',
       });
     },
 
@@ -285,7 +285,7 @@
         lines: [
           '今天幸福指數被這五天推來推去。最後那一次敲門，一分都沒算 —— 但你手上多了一樣東西。',
           '他要來敲這扇門，付了一個代價。下一關 —— 十字架的勝利。',
-          '今天那份禮物收好。',
+          '你寫的那個人，這禮拜把祝福帶給他。',
         ],
       });
     },

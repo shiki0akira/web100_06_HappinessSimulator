@@ -87,7 +87,7 @@ export function addPlayer(s, name) {
     gains: [],            // 每一次公布實際動了多少（夾 0–100 之後的真實變動）
     knockBase: null,      // 第一次公布之前的幸福指數 —— 手機統計頁的起點，也是重跑時要還原的值
     opened: false,        // 彩蛋那一扇門開了沒（**不算分**）
-    hasBless: false,      // 「我收到禮物後的感覺是」留在他自己的手機上
+    hasBless: false,      // 「收到禮物後，我也想把祝福帶給」留在他自己的手機上
     prayed: false,
     receivedVerse: false,
     cardDone: false,
@@ -194,7 +194,7 @@ export function applyAction(s, pid, msg) {
     case 'verse':
       if (!p.receivedVerse) { p.receivedVerse = true; grow(p, INNER_VERSE); }
       break;
-    // 「我收到禮物後的感覺是＿＿」。那句話留在玩家自己的手機上，
+    // 「收到禮物後，我也想把祝福帶給＿＿」。那句話留在玩家自己的手機上，
     // 這裡只收「有沒有寫」這個布林值。**完全不上牆。**
     case 'bless': {
       p.hasBless = !!msg.has;
