@@ -162,7 +162,8 @@
   .beatfight .bossimg { display: block; width: min(calc(300px * var(--u)), 34vh); height: auto; image-rendering: pixelated;
     margin-top: min(calc(10px * var(--u)), 1.4vh); }
   /* 倒下的魔王：晃、閃白、往下垮成一堆，底下噴灰塵，最後輕輕抖著 */
-  .beatfight .fallwrap { position: relative; }
+  .beatfight .bossbox { position: relative; }
+  .beatfight .bossimg.broken { width: min(calc(300px * var(--u)), 34vh); }
   .beatfight .bossimg.broken { transform-origin: 50% 100%;
     animation: fall 1.4s cubic-bezier(.4,0,.6,1) both, hitflash .12s steps(1) 5 alternate, twitch .7s 1.4s steps(2) infinite; }
   @keyframes fall {
@@ -196,7 +197,6 @@
   @keyframes shake { 0% { transform: translateX(-8px); } 50% { transform: translateX(8px); } 100% { transform: none; } }
   .beatfight .bossname { margin-top: min(calc(6px * var(--u)), .8vh); }
   .beatfight .hpbar i.drain { transition: none; }
-  .beatfight .cinetitle { color: var(--vol); font-size: min(calc(56px * var(--u)), 6.4vh, 4vw); }
   /* 勝利：舉起手的四個職業，中間站著耶穌 */
   .cine .party { width: min(calc(620px * var(--u)), 62vw, 40vh * 92 / 28); height: auto; animation: unseal .8s ease-out both; }
   .hpbar.wide { width: min(calc(620px * var(--u)), 66vw); margin-top: min(calc(14px * var(--u)), 1.8vh); }

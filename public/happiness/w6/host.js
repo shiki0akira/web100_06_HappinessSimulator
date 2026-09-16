@@ -277,21 +277,7 @@
     beat: function () {
       var b = S.beatNow;
       var bst = beatStage();
-      if (bst === 'drain' || bst === 'broken') {
-        var broken = bst === 'broken';
-        return '<div class="cine beatfight">' +
-          (broken
-            // 倒下：被打得晃一下、閃白、往下垮，底下噴出灰塵
-            ? '<div class="fallwrap"><img class="bossimg broken" src="/happiness/shared/art/boss-broken.svg" alt="">' +
-                '<div class="dust"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>'
-            : '<img class="bossimg" src="/happiness/shared/art/boss.svg" alt="">') +
-          '<div class="bossname"><small>' + esc(S.boss.lead) + '</small>' + esc(S.boss.name) + '</div>' +
-          '<div class="hpbar wide"><i id="hpfill" class="drain" style="width:' + (broken ? 0 : beatFromPct() * beatLeft()) + '%"></i></div>' +
-          '<div class="hpnum" id="hpnum">' + (broken ? 0 : Math.round(beatFrom * beatLeft())) + ' / ' + S.boss.hp + '</div>' +
-          (broken ? '<div class="cinetitle">' + esc(S.beatInfo.done) + '</div>' : '') +
-        '</div>';
-      }
-      if (b.done) {
+      if (b.done && !bst) {
         return '<div class="cine victory">' +
           '<div class="rays gold"><i></i><i></i><i></i><i></i><i></i><i></i></div>' +
           '<img class="party" src="/happiness/shared/art/victory-party.svg" alt="">' +
@@ -301,12 +287,20 @@
           '<div class="cineline">' + esc(S.victory.line) + '</div>' +
         '</div>';
       }
+      // 出手中、血條歸零中、倒下，**都是同一個版面**，只換血條和插圖。
+      var broken = bst === 'broken';
+      var hp = bst === 'drain' ? Math.round(beatFrom * beatLeft()) : broken ? 0 : S.hp;
+      var pct = bst === 'drain' ? beatFromPct() * beatLeft() : broken ? 0 : Math.round(S.hp / S.boss.hp * 100);
       return '<div class="cine beatfight">' +
           '<div class="cinelead">' + esc(S.beatInfo.title) + '　·　' + esc(S.beatInfo.sub) + '</div>' +
-          '<img class="bossimg" src="/happiness/shared/art/boss.svg" alt="">' +
+          '<div class="bossbox">' + (broken
+            // 倒下：晃一下、閃白、往下垮，底下噴出灰塵
+            ? '<img class="bossimg broken" src="/happiness/shared/art/boss-broken.svg" alt="">' +
+              '<div class="dust"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>'
+            : '<img class="bossimg" src="/happiness/shared/art/boss.svg" alt="">') + '</div>' +
           '<div class="bossname"><small>' + esc(S.boss.lead) + '</small>' + esc(S.boss.name) + '</div>' +
-          '<div class="hpbar wide"><i style="width:' + Math.round(S.hp / S.boss.hp * 100) + '%"></i></div>' +
-          '<div class="hpnum">' + S.hp + ' / ' + S.boss.hp + '</div>' +
+          '<div class="hpbar wide"><i id="hpfill"' + (bst ? ' class="drain"' : '') + ' style="width:' + pct + '%"></i></div>' +
+          '<div class="hpnum" id="hpnum">' + hp + ' / ' + S.boss.hp + '</div>' +
           '<div style="margin-top:min(calc(14px * var(--u)),1.8vh)">' + counter(b.hit, '人已出手') + '</div>' +
         '</div>';
     },
