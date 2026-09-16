@@ -159,11 +159,13 @@
   .cine .stand { width: min(calc(240px * var(--u)), 30vh); }
   .cine .broken { width: min(calc(240px * var(--u)), 26vh); animation: unseal .6s ease-out both; }
   /* 最後一擊：整頁塞得下，不准捲動 */
-  .beatfight .bossimg { display: block; width: min(calc(300px * var(--u)), 34vh); height: auto; image-rendering: pixelated;
+  /* 插圖固定框：魔王和倒下的魔王都是 32×32，框先把正方形的位置佔好。
+     **換插圖的時候圖還沒載入完高度是 0**，沒有這個框底下的名字、血條會跟著跳。 */
+  .beatfight .bossbox { position: relative; flex: none; width: min(calc(300px * var(--u)), 34vh); aspect-ratio: 1 / 1;
     margin-top: min(calc(10px * var(--u)), 1.4vh); }
+  .beatfight .bossimg { position: absolute; inset: 0; display: block; width: 100%; height: 100%; image-rendering: pixelated; }
   /* 倒下的魔王：晃、閃白、往下垮成一堆，底下噴灰塵，最後輕輕抖著 */
-  .beatfight .bossbox { position: relative; }
-  .beatfight .bossimg.broken { width: min(calc(300px * var(--u)), 34vh); }
+  .beatfight .bossimg.broken { width: 100%; }
   .beatfight .bossimg.broken { transform-origin: 50% 100%;
     animation: fall 1.4s cubic-bezier(.4,0,.6,1) both, hitflash .12s steps(1) 5 alternate, twitch .7s 1.4s steps(2) infinite; }
   @keyframes fall {

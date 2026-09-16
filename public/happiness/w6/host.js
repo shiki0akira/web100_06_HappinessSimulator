@@ -390,6 +390,8 @@
   // 血條慢慢歸零（BEAT_DRAIN）→ 倒下的魔王（BEAT_BROKEN）→ 勝利畫面。
   // 重新整理或跳頁進來的時候已經倒了，就直接給勝利畫面。
   var BEAT_DRAIN = 2600, BEAT_BROKEN = 3000;
+  // 先把倒下的魔王和勝利那張圖載進來，換圖的那一瞬間才不會空白
+  ['boss-broken', 'victory-party'].forEach(function (n) { new Image().src = '/happiness/shared/art/' + n + '.svg'; });
   var beatFrom = 0, beatAt = 0, beatTimer = null, beatWasUp = false;
   function beatFromPct() { return Math.round(beatFrom / S.boss.hp * 100); }
   // 還剩幾成血（先快後慢，最後那一點點拖一下）
