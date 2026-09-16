@@ -301,7 +301,12 @@
           '<div class="bossname"><small>' + esc(S.boss.lead) + '</small>' + esc(S.boss.name) + '</div>' +
           '<div class="hpbar wide"><i id="hpfill"' + (bst ? ' class="drain"' : '') + ' style="width:' + pct + '%"></i></div>' +
           '<div class="hpnum" id="hpnum">' + hp + ' / ' + S.boss.hp + '</div>' +
-          '<div style="margin-top:min(calc(14px * var(--u)),1.8vh)">' + counter(b.hit, '人已出手') + '</div>' +
+          // 全場都出手了就藏起來 —— **只藏不拿掉**，拿掉的話整頁會往上跳
+          // 藏起來的時候不用「大家都好了」那一版（多一個 <b>，高一像素，整頁會抖一下）
+          ((b.done || bst)
+            ? '<div style="margin-top:min(calc(14px * var(--u)),1.8vh);visibility:hidden"><div class="qcount">' +
+                S.stats.count + ' / ' + S.stats.count + ' 人已出手</div></div>'
+            : '<div style="margin-top:min(calc(14px * var(--u)),1.8vh)">' + counter(b.hit, '人已出手') + '</div>') +
         '</div>';
     },
 
@@ -420,11 +425,27 @@
     }, 50);
   }
 
+  // 最後一擊那一頁：出手中 → 血條歸零 → 倒下，**版面是同一個**。
+  // 整頁重畫會閃一下、像換頁，所以只換掉有變的那幾塊（插圖、血條、數字）。
+  function patchBeat(html) {
+    var cur = stage.querySelector('.beatfight');
+    if (S.phase.id !== 'beat' || !cur) return false;
+    var tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    var next = tmp.querySelector('.beatfight');
+    if (!next || next.children.length !== cur.children.length) return false;
+    for (var i = next.children.length - 1; i >= 0; i--) {
+      if (cur.children[i].outerHTML !== next.children[i].outerHTML) cur.replaceChild(next.children[i], cur.children[i]);
+    }
+    return true;
+  }
+
   function paint() {
     beatWatch();
     stage.className = 'stage phase-' + S.phase.id +
       (S.phase.id === 'bossIn' || S.phase.id === 'beat' || S.phase.id === 'lost' ? ' cinepage' : '');
-    stage.innerHTML = (views[S.phase.id] || function () { return ''; })();
+    var html = (views[S.phase.id] || function () { return ''; })();
+    if (!patchBeat(html)) stage.innerHTML = html;
 
     var qr = document.getElementById('qr');
     if (qr && ROOM) {
