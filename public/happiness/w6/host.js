@@ -1,6 +1,6 @@
 // 主持人大螢幕 · 第六關「十字架的勝利」
 //
-// 二十一頁。兩個整面動畫（大魔王登場、得勝的力量）跟第二關的時光機同一個等級。
+// 十九頁。兩個整面動畫（大魔王登場、最後一擊之後的得勝的力量）跟第二關的時光機同一個等級。
 (function () {
   'use strict';
   var WEEK = 6;
@@ -78,8 +78,8 @@
 
   // 什麼才是「好」？兩欄。右邊翻開之前只有一個問號。
   function goodCols(open) {
-    return '<div class="goodgrid">' +
-      '<div class="goodcol"><h3>' + esc(S.good.leftLabel) + '</h3><ul>' +
+    return '<div class="goodgrid' + (open ? ' reveal' : '') + '">' +
+      '<div class="goodcol left"><h3>' + esc(S.good.leftLabel) + '</h3><ul>' +
         S.good.left.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') +
       '</ul></div>' +
       '<div class="goodcol right' + (open ? ' open' : '') + '"><h3>' + esc(S.good.rightLabel) + '</h3>' +
@@ -243,7 +243,7 @@
       '</div>';
     },
 
-    // 十字架。四段一段一段走。**手機上沒有任何按鈕。**
+    // 十字架。三段一段一段走，最後一段就是「復活的大能」。**手機上沒有任何按鈕。**
     cross: function () {
       var st = S.crossStep || 0;
       if (st === 0) {
@@ -261,22 +261,6 @@
           '<div class="line" style="margin-top:min(calc(18px * var(--u)),2.4vh)">' + esc(S.cross.steps[1].t) + '</div>' +
         '</div>';
       }
-      if (st === 2) {
-        return '<div class="cross dark">' +
-          '<img class="crossart" src="/happiness/shared/art/cross-dark.svg" alt="">' +
-          '<div class="days">' + S.cross.days.map(function (d, i) {
-            return '<span class="on' + (i === 2 ? ' last' : '') + '" style="animation-delay:' + (i * 1.4) + 's">' + esc(d) + '</span>';
-          }).join('') + '</div>' +
-        '</div>';
-      }
-      return '<div class="cross dark">' +
-        '<img class="tomb" src="/happiness/shared/art/tomb-open.svg" alt="">' +
-        '<div class="line" style="margin-top:min(calc(20px * var(--u)),2.6vh);color:var(--gold)">' +
-          esc(S.cross.steps[3].t) + '</div>' +
-      '</div>';
-    },
-
-    power: function () {
       return '<div class="teaser">' +
         '<div class="powerart"><img src="/happiness/shared/art/' + esc(S.power.art) + '.svg" alt=""></div>' +
         '<h2 class="big-title" style="font-size:min(calc(48px * var(--u)),6vh,3.6vw);letter-spacing:.04em">' +
@@ -297,16 +281,17 @@
 
     win: function () { return battle(S.winNow, true); },
 
-    // 最後一擊：全場一起出手。
+    // 最後一擊：全場一起出手。倒下之後**同一頁**換成「得勝的力量」整面動畫。
     beat: function () {
       var b = S.beatNow;
       if (b.done) {
-        return '<div class="cine beat">' +
+        return '<div class="cine victory">' +
+          '<div class="rays gold"><i></i><i></i><i></i><i></i><i></i><i></i></div>' +
           '<img class="broken" src="/happiness/shared/art/boss-broken.svg" alt="">' +
-          '<div class="hpbar wide"><i style="width:0%"></i></div>' +
-          '<div class="hpnum">0 / ' + S.boss.hp + '</div>' +
-          '<div class="cinetitle">' + esc(S.beatInfo.done) + '</div>' +
-          '<div class="crossdone">' + esc(S.beatInfo.gainNote) + '</div>' +
+          '<div class="crossdone">' + esc(S.beatInfo.done) + '　·　' + esc(S.beatInfo.gainNote) + '</div>' +
+          '<div class="cinelead" style="margin-top:min(calc(16px * var(--u)),2vh)">' + esc(S.victory.lead) + '</div>' +
+          '<div class="cinetitle big">' + esc(S.victory.title) + '</div>' +
+          '<div class="cineline">' + esc(S.victory.line) + '</div>' +
         '</div>';
       }
       return '<h2>' + esc(S.beatInfo.title) + '</h2>' +
@@ -315,21 +300,12 @@
         '<div class="kfoot">' + counter(b.hit, '人已出手') + '</div>';
     },
 
-    // 得勝的力量 —— 整面動畫。
-    victory: function () {
-      return '<div class="cine victory">' +
-        '<div class="rays gold"><i></i><i></i><i></i><i></i><i></i><i></i></div>' +
-        '<div class="cinelead">' + esc(S.victory.lead) + '</div>' +
-        '<div class="cinetitle big">' + esc(S.victory.title) + '</div>' +
-        '<div class="cineline">' + esc(S.victory.line) + '</div>' +
-      '</div>';
-    },
-
-    // 開場那張蓋著的卡，在這裡翻開。
+    // 開場那張蓋著的卡，到這一頁**直接是翻開的**（不用主持人再按）。
+    // 左邊淡下去，重點在右邊。
     goodOpen: function () {
       return '<h2>' + esc(S.good.title) + '</h2>' +
-        '<div class="goodsub">' + esc(S.goodOpen ? '信靠耶穌，成為人生勝利組' : S.good.sub) + '</div>' +
-        goodCols(!!S.goodOpen);
+        '<div class="goodsub">信靠耶穌，成為人生勝利組</div>' +
+        goodCols(true);
     },
 
     bless: function () {
@@ -401,8 +377,7 @@
 
   function paint() {
     stage.className = 'stage phase-' + S.phase.id +
-      (S.phase.id === 'cross' && (S.crossStep || 0) >= 2 ? ' dark' : '') +
-      (S.phase.id === 'bossIn' || S.phase.id === 'victory' || S.phase.id === 'lost' ? ' cinepage' : '');
+      (S.phase.id === 'bossIn' || (S.phase.id === 'beat' && S.beatNow.done) || S.phase.id === 'lost' ? ' cinepage' : '');
     stage.innerHTML = (views[S.phase.id] || function () { return ''; })();
 
     var qr = document.getElementById('qr');
@@ -459,7 +434,6 @@
     show('crossctl', S.phase.id === 'cross');
     show('winctl', S.phase.id === 'win');
     show('beatctl', S.phase.id === 'beat');
-    show('goodctl', S.phase.id === 'goodOpen');
 
     if (S.phase.id === 'draw') {
       var cr = document.getElementById('creveal');
@@ -481,17 +455,14 @@
       var st = S.crossStep || 0;
       document.getElementById('cback').disabled = st <= 0;
       var cn = document.getElementById('cnext');
-      var LABELS = ['下一步（他替他們挨了那一擊）', '下一步（三天）', '下一步（他站起來）', '走完了，按下一頁'];
+      var LABELS = ['下一步（他替他們挨了那一擊）', '下一步（復活的大能）', '走完了，按下一頁'];
       cn.textContent = LABELS[st];
-      cn.disabled = st >= 3;
+      cn.disabled = st >= 2;
     }
     if (S.phase.id === 'beat') {
       var ba = document.getElementById('beatall');
       ba.textContent = S.beatNow.done ? '已經倒下了' : '全場出手（' + S.beatNow.hit + '/' + S.beatNow.total + '）';
       ba.disabled = S.beatNow.done;
-    }
-    if (S.phase.id === 'goodOpen') {
-      document.getElementById('gopen').textContent = S.goodOpen ? '蓋回去' : '翻開「在耶穌基督裡的好」';
     }
     renderPlayers();
     paint();

@@ -39,11 +39,10 @@ export const PHASES = [
   { id: 'fight',     tag: '主遊戲',   title: '靠自己打（五回合）' },
   { id: 'lost',      tag: '結算頁',   title: '沒有人打得倒它' },
   { id: 'cross',     tag: '過場',     title: '十字架' },
-  { id: 'power',     tag: '信息',     title: '復活的大能成為我們得勝的能力' },
   { id: 'verse',     tag: '經文',     title: '領受經文 ＋ 領受復活' },
   { id: 'win',       tag: '主遊戲',   title: '在生活中得勝' },
-  { id: 'beat',      tag: '互動點 4', title: '最後一擊' },
-  { id: 'victory',   tag: '過場',     title: '得勝的力量' },
+  // 最後一擊打完，同一頁直接換成「得勝的力量」—— 不另開一頁。
+  { id: 'beat',      tag: '互動點 4', title: '最後一擊 · 得勝的力量' },
   { id: 'goodOpen',  tag: '揭曉',     title: '在耶穌基督裡的好' },
   { id: 'bless',     tag: '互動點 5', title: '得勝禱告' },
   { id: 'card',      tag: '週卡',     title: '儲存模擬回憶' },
@@ -65,11 +64,10 @@ export function createState() {
     fightOpen: [],
     winRound: 0,          // 第二階段（三回合）
     winOpen: [],
-    crossStep: 0,         // 十字架：0–3
+    crossStep: 0,         // 十字架：0–2（2 是復活的大能）
     beaten: false,        // 最後一擊打完了沒
     beatPaid: false,      // +15 只給一次
     beatForced: false,    // 有人手機沒電：主持人替大螢幕收尾（**不替任何人按**）
-    goodOpen: false,      // 最後把開場那張卡翻開
     seq: 0,
   };
 }
@@ -241,9 +239,10 @@ export function fightRestart(s) {
 }
 
 // ── 十字架 ──────────────────────────────────────────────────────────────
-// 四段一段一段走。**這一段一分都不加** —— 加分在最後那一擊。
+// 三段一段一段走。**這一段一分都不加** —— 加分在最後那一擊。
+export const CROSS_LAST = 2;
 export function crossNext(s) {
-  if (s.crossStep >= 3) return false;
+  if (s.crossStep >= CROSS_LAST) return false;
   s.crossStep += 1;
   return true;
 }
@@ -429,7 +428,6 @@ export function applyHost(s, msg) {
     // 有人手機沒電：讓大螢幕收得了尾。**不替任何人按手機。**
     case 'beatAll': s.beatForced = true; settleBeat(s); return null;
     // 最後：翻開開場那張蓋著的卡。再按一次蓋回去。
-    case 'goodOpen': s.goodOpen = !s.goodOpen; return null;
     case 'adjust': {
       const p = s.players[msg.pid];
       if (p && p.outer !== null) {
@@ -533,7 +531,6 @@ function common(s) {
     phase: PHASES[s.phaseIdx],
     phaseIdx: s.phaseIdx,
     good: GOOD,
-    goodOpen: !!s.goodOpen,
     chase: CHASE,
     aspects: ASPECTS,
     pickInfo: PICK,
@@ -550,7 +547,7 @@ function common(s) {
     fightNow: battleView(s, 'fight'),
     lost: LOST,
     cross: CROSS,
-    crossStep: s.crossStep || 0,
+    crossStep: Math.min(s.crossStep || 0, CROSS_LAST),
     power: POWER,
     verse: VERSE,
     winInfo: WIN,

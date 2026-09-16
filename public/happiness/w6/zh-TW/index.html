@@ -119,6 +119,14 @@
   .goodq { flex: 1; display: flex; align-items: center; justify-content: center;
     font-family: var(--pixel); font-size: min(calc(150px * var(--u)), 22vh); color: var(--gold); }
   .goodcol.right.open { animation: unseal .6s ease-out; }
+  /* 最後那一頁：右邊直接翻開、是主角；左邊退到後面 */
+  .goodgrid.reveal { grid-template-columns: 2fr 3fr; }
+  .goodgrid.reveal .left { opacity: .4; box-shadow: none; border-color: var(--edge-soft); }
+  .goodgrid.reveal .left li { font-size: min(calc(24px * var(--u)), 3vh, 1.6vw); }
+  .goodgrid.reveal .left li::before { color: var(--ink-3); }
+  .goodgrid.reveal .right { border-width: 6px; box-shadow: 8px 8px 0 var(--gold); }
+  .goodgrid.reveal .right h3 { font-size: min(calc(36px * var(--u)), 4.4vh); }
+  .goodgrid.reveal .right li { font-size: min(calc(38px * var(--u)), 4.8vh, 2.3vw); }
 
   /* ── 整面動畫：大魔王登場／五回合過去了／得勝的力量 ──────────────────
      跟第二關的時光機同一個等級 —— 這三頁是過場，不是資訊頁。 */
@@ -149,7 +157,7 @@
   .cine .risen { width: min(calc(300px * var(--u)), 36vh); animation: rise 1.1s cubic-bezier(.2,.9,.3,1) both; }
   @keyframes rise { from { transform: translateY(60%); opacity: 0; } to { transform: none; opacity: 1; } }
   .cine .stand { width: min(calc(240px * var(--u)), 30vh); }
-  .cine .broken { width: min(calc(280px * var(--u)), 34vh); animation: unseal .6s ease-out both; }
+  .cine .broken { width: min(calc(240px * var(--u)), 26vh); animation: unseal .6s ease-out both; }
   .hpbar.wide { width: min(calc(620px * var(--u)), 66vw); margin-top: min(calc(14px * var(--u)), 1.8vh); }
   .hpbar.wide i.fillup { animation: fillup 1.2s .5s ease-out both; }
   @keyframes fillup { from { width: 0; } to { width: 100%; } }
@@ -309,17 +317,7 @@
   @keyframes raise { from { transform: translateY(0) scale(1); } to { transform: translateY(-10px) scale(1.04); } }
   .cross .him { width: min(calc(260px * var(--u)), 32vh); animation: stepin .8s ease-out; }
   @keyframes stepin { from { opacity: 0; transform: translateX(-60px); } to { opacity: 1; transform: none; } }
-  /* 第三段：暗場，只剩一個十字架的剪影，底下三天一格一格亮 */
-  .stage.phase-cross.dark { background: #0B0F0E; }
-  .cross.dark { color: #E7EFEA; }
   .cross .crossart { width: min(calc(230px * var(--u)), 30vh); }
-  /* 打開的墳墓（第 4 段）。**沒有寬度的 <img> 會把 SVG 撐成整頁高** —— 這一行不能少。 */
-  .cross .tomb { width: min(calc(300px * var(--u)), 34vh); }
-  .days { display: flex; gap: calc(22px * var(--u)); margin-top: min(calc(24px * var(--u)), 3vh); }
-  .days span { padding: min(calc(10px * var(--u)), 1.3vh) calc(26px * var(--u));
-    border: 4px solid #2B3A36; color: #4A5D57; font-size: min(calc(26px * var(--u)), 3.2vh); font-weight: 900; }
-  .days span.on { border-color: var(--gold); color: var(--gold); animation: unseal .5s ease-out; }
-  .days span.last.on { border-color: var(--root-c); color: var(--root-c); }
   .crossdone { margin-top: min(calc(18px * var(--u)), 2.4vh); font-size: min(calc(20px * var(--u)), 2.5vh);
     font-family: var(--pixel); color: var(--root-c); }
   @keyframes unseal { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
@@ -439,7 +437,7 @@
     <span id="beatctl" style="display:none;gap:8px;">
       <button class="btn primary" data-cmd="beatAll" id="beatall">全場出手</button>
     </span>
-    <!-- 十字架：四段一段一段走。**每一段的停頓都不准省。** -->
+    <!-- 十字架：三段一段一段走。**每一段的停頓都不准省。** -->
     <span id="crossctl" style="display:none;gap:8px;">
       <button class="btn" data-cmd="crossBack" id="cback">← 上一步</button>
       <button class="btn primary" data-cmd="crossNext" id="cnext">下一步</button>
@@ -448,10 +446,6 @@
       <button class="btn" data-cmd="togetherPrev" id="tprev">← 上一回合</button>
       <button class="btn primary" data-cmd="togetherStep" id="tstep">出招</button>
       <button class="btn" data-cmd="wonAll" id="wonall">全場得勝</button>
-    </span>
-    <!-- 最後：翻開「在耶穌基督裡的好」 -->
-    <span id="goodctl" style="display:none;gap:8px;">
-      <button class="btn primary" data-cmd="goodOpen" id="gopen">翻開</button>
     </span>
     <span class="sp"></span>
     <span class="hint" id="hint"></span>

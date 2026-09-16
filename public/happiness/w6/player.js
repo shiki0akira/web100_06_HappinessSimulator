@@ -214,28 +214,16 @@
         wait('看大螢幕');
     },
 
-    // 十字架。**手機上沒有任何按鈕。**
+    // 十字架。**手機上沒有任何按鈕。** 最後一段就是「復活的大能」。
     cross: function () {
       var st = S.crossStep || 0;
-      if (st === 2) {
-        return '<img class="crossart" src="/happiness/shared/art/cross-dark.svg" alt="">' +
-          '<div class="days">' + S.cross.days.map(function (d) {
-            return '<span class="on">' + esc(d) + '</span>';
-          }).join('') + '</div>' +
-          wait('看大螢幕');
-      }
-      if (st === 3) {
-        return '<img class="bossart" src="/happiness/shared/art/tomb-open.svg" alt="">' +
-          '<h2 class="center" style="margin-top:14px">' + esc(S.cross.steps[3].t) + '</h2>';
+      if (st >= 2) {
+        return '<img class="bossart" src="/happiness/shared/art/' + esc(S.power.art) + '.svg" alt="">' +
+          '<h2 class="center" style="margin-top:14px">' + esc(S.power.title) + '</h2>';
       }
       return '<h2 class="center">' + esc(S.cross.steps[st].t) + '</h2>' +
         '<img class="crossart" src="/happiness/shared/art/' + (st === 0 ? 'boss' : 'cross-dark') + '.svg" alt="">' +
         wait('看大螢幕');
-    },
-
-    power: function () {
-      return '<img class="bossart" src="/happiness/shared/art/' + esc(S.power.art) + '.svg" alt="">' +
-        '<h2 class="center" style="margin-top:14px">' + esc(S.power.title) + '</h2>';
     },
 
     // 領受經文 ＋ 領受復活。兩顆分開按。
@@ -258,10 +246,12 @@
     // 最後一擊。**每個人都按得到。**
     beat: function (me) {
       if (S.beatNow.done) {
-        return '<h2 class="center">' + esc(S.beatInfo.done) + '</h2>' +
-          '<img class="bossart" src="/happiness/shared/art/boss-broken.svg" alt="">' +
+        return '<div class="qn center">' + esc(S.beatInfo.done) + '</div>' +
+          '<img class="bossart" src="/happiness/shared/art/boss-broken.svg" alt="" style="width:44%">' +
           (me.beatGain ? '<div class="hit up">幸福指數 ' + fmt(me.beatGain) + '</div>' : '') +
-          '<p class="privacy center">不是你變強了 —— 是他先站起來。</p>';
+          '<div class="qn center" style="margin-top:16px">' + esc(S.victory.lead) + '</div>' +
+          '<h2 class="center" style="margin-top:6px">' + esc(S.victory.title) + '</h2>' +
+          '<p class="bigline center">' + esc(S.victory.line) + '</p>';
       }
       if (me.beat) return '<h2 class="center">' + esc(S.beatInfo.title) + '</h2>' + wait('等其他人出手');
       return '<h2 class="center">' + esc(S.beatInfo.title) + '</h2>' +
@@ -270,22 +260,14 @@
         '<button class="btn primary fullbtn" id="beat">' + esc(S.beatInfo.button) + '</button>';
     },
 
-    victory: function () {
-      return '<div class="qn center">' + esc(S.victory.lead) + '</div>' +
-        '<h2 class="center" style="margin-top:8px">' + esc(S.victory.title) + '</h2>' +
-        '<p class="bigline center">' + esc(S.victory.line) + '</p>';
-    },
-
     goodOpen: function () {
       return '<h2>' + esc(S.good.title) + '</h2>' +
         '<div class="goodtwo">' +
-          '<div class="gcol"><h3>' + esc(S.good.leftLabel) + '</h3><ul>' +
+          '<div class="gcol" style="opacity:.4"><h3>' + esc(S.good.leftLabel) + '</h3><ul>' +
             S.good.left.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') +
           '</ul></div>' +
           '<div class="gcol right"><h3>' + esc(S.good.rightLabel) + '</h3>' +
-            (S.goodOpen
-              ? '<ul>' + S.good.right.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>'
-              : '<div class="gq">？</div>') +
+            '<ul>' + S.good.right.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' +
           '</div>' +
         '</div>' + wait('看大螢幕');
     },
@@ -486,7 +468,7 @@
 
     // ⚠️ 得勝禱告那一格正在打的字不能進這一行 —— 一變就整頁重畫，焦點會被踢掉。
     var next = [
-      S.phase.id, S.cardsNow.open, S.crossStep, S.goodOpen,
+      S.phase.id, S.cardsNow.open, S.crossStep,
       S.fightNow.round, S.fightNow.revealed, S.winNow.round, S.winNow.revealed,
       S.beatNow.done, S.hp,
       me.outer, me.inner, me.visits, me.aspect, me.pick, me.job,

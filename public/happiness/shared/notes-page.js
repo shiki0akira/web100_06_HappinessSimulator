@@ -200,25 +200,16 @@
       }
     }
 
-    // 第六關的十字架：四段一段一段走。**每一段的停頓都不准省。**
+    // 第六關的十字架：三段一段一段走（最後一段是復活的大能）。**每一段的停頓都不准省。**
     var crossc = el('crossctl');
     if (crossc) {
       crossc.hidden = S.phase.id !== 'cross';
       if (!crossc.hidden) {
         var st = S.crossStep || 0;
-        var LBL = ['下一步（他走到最前面）', '下一步（三天）', '下一步（復活）', '走完了，按下一頁'];
+        var LBL = ['下一步（他替他們挨了那一擊）', '下一步（復活的大能）', '走完了，按下一頁'];
         el('crossback').disabled = st <= 0;
         el('crossnext').textContent = LBL[st];
-        el('crossnext').disabled = st >= 3;
-      }
-    }
-
-    // 第六關的收口：翻開開場那張蓋著的卡（在耶穌基督裡的好）。
-    var goodc = el('goodctl');
-    if (goodc) {
-      goodc.hidden = S.phase.id !== 'goodOpen';
-      if (!goodc.hidden) {
-        el('goodopen').textContent = S.goodOpen ? '蓋回去' : '翻開「在耶穌基督裡的好」';
+        el('crossnext').disabled = st >= 2;
       }
     }
 
@@ -304,7 +295,6 @@
     on('crossback', function () { post('crossBack'); });
     on('crossnext', function () { post('crossNext'); });
     on('beatall', function () { post('beatAll'); });
-    on('goodopen', function () { post('goodOpen'); });
   }
 
   if (!WEEK) {
