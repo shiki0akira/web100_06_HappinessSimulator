@@ -161,7 +161,38 @@
   /* 最後一擊：整頁塞得下，不准捲動 */
   .beatfight .bossimg { display: block; width: min(calc(300px * var(--u)), 34vh); height: auto; image-rendering: pixelated;
     margin-top: min(calc(10px * var(--u)), 1.4vh); }
-  .beatfight .bossimg.broken { animation: shake .5s steps(4) both, unseal .6s ease-out both; }
+  /* 倒下的魔王：晃、閃白、往下垮成一堆，底下噴灰塵，最後輕輕抖著 */
+  .beatfight .fallwrap { position: relative; }
+  .beatfight .bossimg.broken { transform-origin: 50% 100%;
+    animation: fall 1.4s cubic-bezier(.4,0,.6,1) both, hitflash .12s steps(1) 5 alternate, twitch .7s 1.4s steps(2) infinite; }
+  @keyframes fall {
+    0%   { transform: translateX(0); }
+    8%   { transform: translateX(-10px) rotate(-3deg); }
+    16%  { transform: translateX(10px) rotate(3deg); }
+    24%  { transform: translateX(-6px) rotate(-2deg); }
+    40%  { transform: translateY(-4%) rotate(2deg); }
+    70%  { transform: translateY(6%) rotate(-5deg) scaleY(.9); }
+    85%  { transform: translateY(3%) rotate(-3deg) scaleY(.95); }
+    100% { transform: translateY(5%) rotate(-4deg) scaleY(.92); }
+  }
+  @keyframes hitflash { 0% { filter: brightness(2.2); } 100% { filter: none; } }
+  @keyframes twitch { 0% { translate: 0 0; } 100% { translate: 2px 1px; } }
+  .beatfight .dust { position: absolute; left: 50%; bottom: 4%; width: 0; height: 0; }
+  .beatfight .dust i { position: absolute; width: min(calc(22px * var(--u)), 2.8vh); height: min(calc(22px * var(--u)), 2.8vh);
+    background: #DCE5E1; opacity: 0; animation: puff 1.6s .5s ease-out both; }
+  .beatfight .dust i:nth-child(1) { --dx: -170px; --dy: -30px; }
+  .beatfight .dust i:nth-child(2) { --dx: -120px; --dy: -70px; animation-delay: .6s; }
+  .beatfight .dust i:nth-child(3) { --dx: -60px;  --dy: -90px; animation-delay: .55s; background: #B9C7C1; }
+  .beatfight .dust i:nth-child(4) { --dx: 0px;    --dy: -110px; animation-delay: .65s; }
+  .beatfight .dust i:nth-child(5) { --dx: 60px;   --dy: -85px; animation-delay: .5s; background: #B9C7C1; }
+  .beatfight .dust i:nth-child(6) { --dx: 120px;  --dy: -65px; animation-delay: .7s; }
+  .beatfight .dust i:nth-child(7) { --dx: 170px;  --dy: -25px; animation-delay: .6s; background: #F0C64B; }
+  .beatfight .dust i:nth-child(8) { --dx: -20px;  --dy: -40px; animation-delay: .75s; background: #F0C64B; }
+  @keyframes puff {
+    0%   { opacity: 1; transform: translate(0, 0) scale(1); }
+    100% { opacity: 0;  transform: translate(calc(var(--dx) * var(--u)), calc(var(--dy) * var(--u))) scale(2.2); }
+  }
+  @media (prefers-reduced-motion: reduce) { .beatfight .bossimg.broken, .beatfight .dust i { animation: none; } }
   @keyframes shake { 0% { transform: translateX(-8px); } 50% { transform: translateX(8px); } 100% { transform: none; } }
   .beatfight .bossname { margin-top: min(calc(6px * var(--u)), .8vh); }
   .beatfight .hpbar i.drain { transition: none; }

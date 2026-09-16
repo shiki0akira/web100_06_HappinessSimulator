@@ -280,7 +280,11 @@
       if (bst === 'drain' || bst === 'broken') {
         var broken = bst === 'broken';
         return '<div class="cine beatfight">' +
-          '<img class="bossimg' + (broken ? ' broken' : '') + '" src="/happiness/shared/art/boss' + (broken ? '-broken' : '') + '.svg" alt="">' +
+          (broken
+            // 倒下：被打得晃一下、閃白、往下垮，底下噴出灰塵
+            ? '<div class="fallwrap"><img class="bossimg broken" src="/happiness/shared/art/boss-broken.svg" alt="">' +
+                '<div class="dust"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>'
+            : '<img class="bossimg" src="/happiness/shared/art/boss.svg" alt="">') +
           '<div class="bossname"><small>' + esc(S.boss.lead) + '</small>' + esc(S.boss.name) + '</div>' +
           '<div class="hpbar wide"><i id="hpfill" class="drain" style="width:' + (broken ? 0 : beatFromPct() * beatLeft()) + '%"></i></div>' +
           '<div class="hpnum" id="hpnum">' + (broken ? 0 : Math.round(beatFrom * beatLeft())) + ' / ' + S.boss.hp + '</div>' +
@@ -386,7 +390,7 @@
   // 伺服器只知道「倒了沒」。**在這一頁親眼看到它從沒倒變成倒了**，才播：
   // 血條慢慢歸零（BEAT_DRAIN）→ 倒下的魔王（BEAT_BROKEN）→ 勝利畫面。
   // 重新整理或跳頁進來的時候已經倒了，就直接給勝利畫面。
-  var BEAT_DRAIN = 2600, BEAT_BROKEN = 11800;   // 倒下的魔王多停 10 秒
+  var BEAT_DRAIN = 2600, BEAT_BROKEN = 3000;
   var beatFrom = 0, beatAt = 0, beatTimer = null, beatWasUp = false;
   function beatFromPct() { return Math.round(beatFrom / S.boss.hp * 100); }
   // 還剩幾成血（先快後慢，最後那一點點拖一下）
