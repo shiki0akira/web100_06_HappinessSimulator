@@ -59,7 +59,13 @@
   .ab:active { transform: translate(3px, 3px); box-shadow: none; }
   .ab img { width: 40px; height: auto; image-rendering: pixelated; }
 
-  /* 第二步：那一塊的四句話，一排一句 */
+  /* 第二頁：蓋著的牌，點一張就是抽 */
+  .deck { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
+  .drawcard { height: 108px; cursor: pointer; border: 3px dashed var(--edge); background: var(--surface-2);
+    color: var(--ink-3); font-family: var(--pixel); font-size: 38px; box-shadow: 3px 3px 0 var(--hard); }
+  .drawcard:active { transform: translate(3px, 3px); box-shadow: none; }
+
+  /* 抽到的那一句 */
   .pickcard { display: block; width: 100%; text-align: left; padding: 15px 17px; cursor: pointer;
     border: 3px solid var(--edge); background: var(--surface); color: var(--ink);
     font-family: var(--sans); box-shadow: 3px 3px 0 var(--hard); }

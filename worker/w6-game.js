@@ -3,14 +3,14 @@
 // 這一關完全不依賴前五關 —— 上一次沒來的人不會少玩到任何東西。
 // 接過來的只有卡片上的兩條線。**第三關起第一次來的人，幸福根基直接給 15。**
 //
-// 一句話講完這一關：先挑一塊、再挑一句最像自己的困難（−3）→ 統計前三名合體成大魔王 →
+// 一句話講完這一關：挑一塊、從那一塊抽一張困難（−3）→ 統計前三名合體成大魔王 →
 // 靠自己打三回合（每招 −2，**魔王每回合都補滿血**）→ 十字架：最後一擊被一個人擋下來，
 // 三天之後血條歸零，**全場 +10（沒有人按任何東西）** → 苦難照樣來，但這一次全場互相扛。
 //
 // ⚠️ **那 +10 不准綁在按鈕上。** 一綁上按鈕就變成用分數換恩典（第二關拆寶箱同一條線）。
 // ⚠️ **幫別人禱告的人自己不加分。** 按的人也加分，全場就會搶著按。
 import {
-  GOOD, CHASE, ASPECTS, CARDS, PICK, CARD_LOSS, TALLY, BOSS,
+  GOOD, CHASE, ASPECTS, CARDS, PICK, DRAW, CARD_LOSS, TALLY, BOSS,
   MOVES, FIGHT_LOSS, ATTACKS, FIGHT, FIGHT_END, CROSS, POWER, VERSE,
   TOGETHER, WON, BLESS,
 } from './w6-data.js';
@@ -31,7 +31,9 @@ export const PHASES = [
   // 開場的伏筆：右邊那一格蓋著，第 13 頁才翻開。
   { id: 'good',      tag: '信息',     title: '什麼才是「好」？' },
   { id: 'chase',     tag: '信息',     title: '我們追求的方向，不能滿足生命真正的需要' },
+  // 挑分類和抽卡**分兩頁**：先全場挑完那一塊，翻頁才抽。
   { id: 'cards',     tag: '互動點 1', title: '你現在扛的是哪一塊？' },
+  { id: 'draw',      tag: '互動點 1', title: '抽一張' },
   { id: 'boss',      tag: '統計',     title: '最近讓你最累的是什麼？' },
   { id: 'fight',     tag: '互動點 2', title: '靠自己打' },
   { id: 'fightEnd',  tag: '結算頁',   title: '勞苦重擔的不幸人生' },
@@ -93,7 +95,7 @@ export function addPlayer(s, name) {
     visits: 0,
     newcomer: false,
     aspect: '',           // 他自己挑的那一個面向（財務／工作／婚姻／感情／家庭／健康）
-    pick: -1,             // 那一類的四句話裡挑了哪一句（0–3）
+    pick: -1,             // 從那一塊裡**抽**到的是第幾句（0–3）—— 他選不了
     cardLoss: 0,          // 挑那一句扣了多少（重挑的時候要還原）
     moves: [],            // 第一回合三回合各出了什麼招
     fightLoss: 0,         // 第一回合總共掉了多少（重跑的時候要還原）
@@ -108,8 +110,8 @@ export function addPlayer(s, name) {
   return pid;
 }
 
-// ── 你現在扛的是哪一塊（兩步：挑一塊 → 挑一句）──────────────────────────
-// 公布的那一刻才扣分。**兩步都做完的人 −3，沒挑的人不動。**
+// ── 挑一塊（第 5 頁）→ 抽一張（第 6 頁）────────────────────────────────
+// 公布的那一刻才扣分。**抽到的人 −3，沒抽的人不動。**
 export function revealCards(s) {
   if (s.cardsOpen) return false;
   s.cardsOpen = true;
@@ -122,7 +124,7 @@ export function revealCards(s) {
   return true;
 }
 
-// 重挑：分數還原，剛剛挑的那一塊和那一句都清掉。
+// 重挑：分數還原，剛剛挑的那一塊和抽到的那一句都清掉。
 export function redealCards(s) {
   alive(s).forEach((p) => {
     if (p.cardLoss && p.outer !== null) p.outer = clamp(p.outer + p.cardLoss);
@@ -310,21 +312,27 @@ export function applyAction(s, pid, msg) {
       p.innerStart = p.inner;
       break;
     }
-    // 先挑一個面向（最近哪一塊最有壓力）。換一個分類，那一類的四句話才跟著換。
+    // 挑一塊（最近哪一塊最有壓力）。**這一頁只挑分類，不抽卡。**
     case 'aspect': {
-      if (phaseId(s) !== 'cards' || s.cardsOpen) break;
+      if (phaseId(s) !== 'cards') break;
       const k = String(msg.k || '');
-      // 空字串＝手機上按了「換一塊」，退回第一步。**不能當成無效值擋掉。**
+      // 空字串＝手機上按了「換一塊」。**不能當成無效值擋掉。**
       if (k && !ASPECTS.some((a) => a.k === k)) break;
       if (p.aspect !== k) { p.aspect = k; p.pick = -1; }
       break;
     }
-    // 再從那一類的四句話裡挑一句最像自己的。公布之前隨時可以改。
-    case 'pick': {
-      if (phaseId(s) !== 'cards' || s.cardsOpen) break;
-      const i = Math.floor(Number(msg.idx));
-      if (!p.aspect || !(i >= 0 && i < (CARDS[p.aspect] || []).length)) break;
-      p.pick = i;
+    // 下一頁才抽。**抽到哪一句不是他選的** —— 點哪一張都一樣，伺服器隨機發。
+    // 同一塊裡盡量不要發到全場已經抽過的那一句（四句發完才可以重複）。
+    case 'draw': {
+      if (phaseId(s) !== 'draw' || s.cardsOpen) break;
+      if (!p.aspect || p.pick >= 0) break;
+      const all = (CARDS[p.aspect] || []).map((_, i) => i);
+      if (!all.length) break;
+      const used = {};
+      alive(s).forEach((q) => { if (q !== p && q.aspect === p.aspect && q.pick >= 0) used[q.pick] = true; });
+      const free = all.filter((i) => !used[i]);
+      const from = free.length ? free : all;
+      p.pick = from[Math.floor(Math.random() * from.length)];
       break;
     }
     // 靠自己打：只收現在這一回合，公布之前可以改。
@@ -420,7 +428,7 @@ function cardsView(s) {
   const done = ps.filter((p) => p.aspect && p.pick >= 0);
   return {
     open: !!s.cardsOpen,
-    // **選了分類但還沒挑那一句的不算完成** —— 主持人等的是「已挑」。
+    // 第一頁等的是「幾人已挑一塊」，第二頁等的是「幾人已抽」。
     chosen: ps.filter((p) => !!p.aspect).length,
     picked: done.length,
     // 公布之後大螢幕上翻出每一句被挑走的話（＋挑的人的名字）
@@ -521,6 +529,7 @@ function common(s) {
     chase: CHASE,
     aspects: ASPECTS,
     pickInfo: PICK,
+    drawInfo: DRAW,
     cardsNow: cardsView(s),
     tally: TALLY,
     bossInfo: BOSS,
@@ -556,6 +565,7 @@ export function hostView(s, roomCode) {
       pid: p.pid, name: p.name,
       outer: p.outer, outerStart: p.outerStart, inner: p.inner || 0,
       visits: p.visits, newcomer: p.newcomer,
+      chose: !!p.aspect,
       picked: !!p.aspect && p.pick >= 0,
       moved: moveOf(p, s.fightRound) >= 0,
       hasBless: !!p.hasBless, prayed: !!p.prayed,
@@ -565,6 +575,7 @@ export function hostView(s, roomCode) {
       count: ps.length,
       reconnected: sc.length,
       newcomers: ps.filter((p) => p.newcomer).length,
+      chose: ps.filter((p) => !!p.aspect).length,
       picked: ps.filter((p) => !!p.aspect && p.pick >= 0).length,
       moved: ps.filter((p) => moveOf(p, s.fightRound) >= 0).length,
       outerAvg: outers.length ? Math.round(outers.reduce((a, b) => a + b, 0) / outers.length) : null,
@@ -602,7 +613,9 @@ export function playerView(s, pid, roomCode) {
       // 他挑的那一個面向，還有那一類的四句話。**別人挑了什麼誰也看不到。**
       aspect: p.aspect || '',
       aspectName: p.aspect ? aspectOf(p.aspect).t : '',
-      cards: p.aspect ? (CARDS[p.aspect] || []).map((t) => ({ aspect: aspectOf(p.aspect).t, k: p.aspect, text: t })) : [],
+      // 那一塊有幾張卡（蓋著的時候手機要畫幾張），**內容抽到才給**。
+      deck: p.aspect ? (CARDS[p.aspect] || []).length : 0,
+      drawn: p.pick >= 0 ? { aspect: aspectOf(p.aspect).t, k: p.aspect, text: cardText(p.aspect, p.pick) } : null,
       pick: p.pick,
       cardLoss: p.cardLoss || 0,
       move: moveOf(p, r),

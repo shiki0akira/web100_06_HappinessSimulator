@@ -160,14 +160,14 @@
       }
     }
 
-    // 第六關的三張困難卡：大家挑完你才公布（公布的那一刻才扣分）。
+    // 第六關的抽一張：大家抽完你才公布（公布的那一刻才扣分）。
     var pickc = el('pickctl');
     if (pickc) {
-      pickc.hidden = S.phase.id !== 'cards' || !S.cardsNow;
+      pickc.hidden = S.phase.id !== 'draw' || !S.cardsNow;
       if (!pickc.hidden) {
         el('pickreveal').textContent = S.cardsNow.open
           ? '已經公布了'
-          : '公布結果（' + S.stats.picked + '/' + S.stats.count + ' 已挑）';
+          : '公布結果（' + S.stats.picked + '/' + S.stats.count + ' 已抽）';
         el('pickreveal').disabled = S.cardsNow.open;
       }
     }

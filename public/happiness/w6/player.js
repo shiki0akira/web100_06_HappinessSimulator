@@ -60,10 +60,9 @@
   };
 
   function myCard(me) {
-    var c = (me.cards || [])[me.pick];
-    if (!c) return '';
-    return '<div class="mine"><div class="as">' + esc(c.aspect) + '</div>' +
-      '<div class="tx">' + esc(c.text) + '</div></div>';
+    if (!me.drawn) return '';
+    return '<div class="mine"><div class="as">' + esc(me.drawn.aspect) + '</div>' +
+      '<div class="tx">' + esc(me.drawn.text) + '</div></div>';
   }
 
   var views = {
@@ -110,34 +109,44 @@
       return '<h2 class="center">' + esc(S.chase.line) + '</h2>' + wait('看大螢幕');
     },
 
-    // 三張困難卡。**三張都只有他自己看得到**，挑一張最像自己的。
+    // 第一頁：六塊裡挑一塊。**這一頁不抽卡，也看不到任何句子。**
     cards: function (me) {
-      if (S.cardsNow.open) {
-        if (me.pick < 0) return '<h2>' + esc(S.pickInfo.title) + '</h2>' + wait('看大螢幕', '這一次你沒有挑');
-        return '<h2>你挑的那一張</h2>' + myCard(me) +
-          (me.cardLoss ? '<div class="hit">幸福指數 ' + fmt(-me.cardLoss) + '</div>' : '') +
-          wait('看大螢幕');
+      if (me.aspect) {
+        return '<div class="qn">你挑的那一塊</div>' +
+          '<h2 style="margin-top:6px">' + esc(me.aspectName) + '</h2>' +
+          '<img class="bossart" src="' + aspectArt(me.aspect) + '" alt="" style="width:34%;max-width:120px">' +
+          '<button class="btn ghost fullbtn" id="backaspect">' + esc(S.pickInfo.change) + '</button>' +
+          wait('等主持人翻頁', '下一頁才抽卡');
       }
-      // 第一步：六塊裡挑一塊。**沒挑之前不給看任何句子。**
-      if (!me.aspect) {
-        return '<h2>' + esc(S.pickInfo.title) + '</h2>' +
-          '<p>' + esc(S.pickInfo.sub) + '</p>' +
-          '<div class="aspects">' + S.aspects.map(function (a) {
-            return '<button class="ab" data-aspect="' + esc(a.k) + '">' +
-              '<img src="' + aspectArt(a.k) + '" alt="">' + esc(a.t) + '</button>';
-          }).join('') + '</div>' +
-          '<p class="privacy">挑你這禮拜真的最有壓力的那一塊。只有你自己看得到。</p>';
-      }
-      // 第二步：那一塊的四句話。
-      return '<div class="qn">' + esc(me.aspectName) + '</div>' +
-        '<h2 style="margin-top:6px">' + esc(S.pickInfo.step2) + '</h2>' +
-        '<div style="margin-top:16px">' + (me.cards || []).map(function (c, i) {
-          return '<button class="pickcard' + (me.pick === i ? ' on' : '') + '" data-pick="' + i + '">' +
-            '<span class="tx">' + esc(c.text) + '</span>' +
-          '</button>';
+      return '<h2>' + esc(S.pickInfo.title) + '</h2>' +
+        '<p>' + esc(S.pickInfo.sub) + '</p>' +
+        '<div class="aspects">' + S.aspects.map(function (a) {
+          return '<button class="ab" data-aspect="' + esc(a.k) + '">' +
+            '<img src="' + aspectArt(a.k) + '" alt="">' + esc(a.t) + '</button>';
         }).join('') + '</div>' +
-        '<button class="btn ghost fullbtn" id="backaspect">' + esc(S.pickInfo.change) + '</button>' +
-        '<p class="privacy">' + (me.pick >= 0 ? '主持人公布之前都可以改。' : esc(S.pickInfo.hint)) + '</p>';
+        '<p class="privacy">' + esc(S.pickInfo.hint) + '只有你自己看得到。</p>';
+    },
+
+    // 第二頁：從他挑的那一塊裡**抽**一張。點哪一張都一樣，是隨機的。
+    draw: function (me) {
+      if (!me.aspect) {
+        return '<h2>' + esc(S.drawInfo.title) + '</h2>' +
+          '<p>你上一頁沒有挑，所以這一頁沒有你的牌。</p>' + wait('看大螢幕');
+      }
+      if (me.pick >= 0) {
+        return '<div class="qn">' + esc(me.aspectName) + ' · 你抽到的</div>' +
+          '<div class="mine"><div class="tx">' + esc(me.drawn.text) + '</div></div>' +
+          (S.cardsNow.open
+            ? (me.cardLoss ? '<div class="hit">幸福指數 ' + fmt(-me.cardLoss) + '</div>' : '') + wait('看大螢幕')
+            : wait(esc(S.drawInfo.waiting)));
+      }
+      var n = me.deck || 4;
+      var backs = '';
+      for (var i = 0; i < n; i++) backs += '<button class="drawcard" data-draw="' + i + '">？</button>';
+      return '<div class="qn">' + esc(me.aspectName) + '</div>' +
+        '<h2 style="margin-top:6px">' + esc(S.drawInfo.title) + '</h2>' +
+        '<div class="deck">' + backs + '</div>' +
+        '<p class="privacy">' + esc(S.drawInfo.hint) + '</p>';
     },
 
     // 統計那一頁手機安靜。他自己挑的那一張留在畫面上。
@@ -343,8 +352,8 @@
       b.onclick = function () { act('aspect', { k: b.dataset.aspect }); };
     });
 
-    document.querySelectorAll('[data-pick]').forEach(function (b) {
-      b.onclick = function () { act('pick', { idx: Number(b.dataset.pick) }); };
+    document.querySelectorAll('[data-draw]').forEach(function (b) {
+      b.onclick = function () { act('draw', {}); };
     });
 
     var ba = document.getElementById('backaspect');

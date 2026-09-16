@@ -139,26 +139,36 @@
       return '<div class="solo"><h2>' + esc(S.chase.line) + '</h2></div>';
     },
 
-    // 你現在扛的是哪一塊。大螢幕上只有六塊的名字，**誰挑了什麼一律不顯示**；
-    // 公布之後才翻出被挑走的那幾句。
+    // 你現在扛的是哪一塊。**這一頁只挑分類**，大螢幕上只有六塊的名字 ——
+    // 誰挑了哪一塊一律不顯示。抽卡和公布都在下一頁。
     cards: function () {
-      var c = S.cardsNow;
-      if (c.open) {
-        return '<h2>' + esc(S.pickInfo.title) + '</h2>' +
-          '<div class="taken">' + (c.taken.length
-            ? c.taken.map(function (t) {
-              return '<div class="tk"><div class="as">' + esc(t.aspect) + '<b>' + esc(t.name) + '</b></div>' +
-                '<p>' + esc(t.text) + '</p></div>';
-            }).join('')
-            : '<p class="lede">沒有人挑。</p>') + '</div>';
-      }
-      // 大螢幕上只有六塊的名字 —— **誰挑了哪一塊、挑了哪一句，這裡都不顯示。**
       return '<h2>' + esc(S.pickInfo.title) + '</h2>' +
         '<p class="lede">' + esc(S.pickInfo.sub) + '</p>' +
         '<div class="aspectgrid">' + S.aspects.map(function (a) {
           return '<div class="ac"><img src="' + aspectArt(a.k) + '" alt="">' + esc(a.t) + '</div>';
         }).join('') + '</div>' +
-        '<div class="kfoot">' + counter(S.cardsNow.picked, '人已挑') + '</div>';
+        '<div class="kfoot">' + counter(S.stats.chose, '人已挑一塊') + '</div>';
+    },
+
+    // 抽一張。**抽到哪一句不是他選的。** 公布之前大螢幕上一句話都不顯示。
+    draw: function () {
+      var c = S.cardsNow;
+      if (c.open) {
+        return '<h2>' + esc(S.drawInfo.title) + '</h2>' +
+          '<div class="taken">' + (c.taken.length
+            ? c.taken.map(function (t) {
+              return '<div class="tk"><div class="as">' + esc(t.aspect) + '<b>' + esc(t.name) + '</b></div>' +
+                '<p>' + esc(t.text) + '</p></div>';
+            }).join('')
+            : '<p class="lede">沒有人抽。</p>') + '</div>';
+      }
+      return '<h2>' + esc(S.drawInfo.title) + '</h2>' +
+        '<p class="lede">' + esc(S.drawInfo.sub) + '</p>' +
+        '<div class="cardgrid">' +
+          '<div class="cardback">？</div><div class="cardback">？</div>' +
+          '<div class="cardback">？</div><div class="cardback">？</div>' +
+        '</div>' +
+        '<div class="kfoot">' + counter(S.cardsNow.picked, '人已抽') + '</div>';
     },
 
     // 統計 ＋ 合體。**只有人數，沒有名字** —— 這一題是重擔。
@@ -425,16 +435,16 @@
       var el = document.getElementById(id);
       if (el) el.style.display = on ? 'inline-flex' : 'none';
     };
-    show('cardsctl', S.phase.id === 'cards');
+    show('cardsctl', S.phase.id === 'draw');
     show('bossctl', S.phase.id === 'boss');
     show('fightctl', S.phase.id === 'fight');
     show('crossctl', S.phase.id === 'cross');
     show('togetherctl', S.phase.id === 'together');
     show('wonctl', S.phase.id === 'won');
 
-    if (S.phase.id === 'cards') {
+    if (S.phase.id === 'draw') {
       var cr = document.getElementById('creveal');
-      cr.textContent = S.cardsNow.open ? '已經公布了' : '公布結果（' + S.stats.picked + '/' + S.stats.count + ' 已挑）';
+      cr.textContent = S.cardsNow.open ? '已經公布了' : '公布結果（' + S.stats.picked + '/' + S.stats.count + ' 已抽）';
       cr.disabled = S.cardsNow.open;
     }
     if (S.phase.id === 'boss') {
@@ -494,7 +504,7 @@
     b.onclick = function () {
       var cmd = b.dataset.cmd;
       if (cmd === 'reset' && !confirm('把這個房間整個重置？所有人的分數和接關資料都會清掉。')) return;
-      if (cmd === 'cardsRedeal' && !confirm('大家重挑一次？每個人的幸福指數會還原，剛剛挑的那一塊和那一句都會清掉。')) return;
+      if (cmd === 'cardsRedeal' && !confirm('大家重來一次？每個人的幸福指數會還原，剛剛挑的那一塊和抽到的那一句都會清掉。')) return;
       if (cmd === 'fightRestart' && !confirm('第一回合整個重跑？每個人掉的分數會還原。')) return;
       post(cmd);
     };
