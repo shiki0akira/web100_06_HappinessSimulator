@@ -21,7 +21,9 @@
   .hero { border-bottom: 4px solid var(--edge); background: var(--surface); padding: 34px 0 30px; margin-bottom: 34px; }
   .hero .eyebrow { font-family: var(--pixel); font-size: 13px; color: var(--ink-3); letter-spacing: .08em; }
   .hero h1 { font-size: 46px; font-weight: 900; letter-spacing: .04em; margin: 16px 0 0; }
-  .hero p { font-size: 16px; color: var(--ink-2); max-width: 56ch; margin: 14px 0 0; line-height: 1.9; }
+  /* 用 em 不用 ch —— ch 量的是數字「0」的寬度，中文字比它寬一倍，
+     56ch 看起來只有 28 個字，開場那一段就被擠成四行。**最多三行。** */
+  .hero p { font-size: 16px; color: var(--ink-2); max-width: 38em; margin: 14px 0 0; line-height: 1.9; }
   .hero p.lead { font-size: 26px; font-weight: 900; color: var(--ink); line-height: 1.65; margin-top: 20px; letter-spacing: .02em; }
   .hero p b { color: var(--ink); }
   .hero p.quiet { color: var(--ink-3); font-size: 15px; }
