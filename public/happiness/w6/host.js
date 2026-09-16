@@ -272,23 +272,39 @@
 
     win: function () { return battle(S.winNow, true); },
 
-    // 最後一擊：全場一起出手。倒下之後**同一頁**換成「得勝的力量」整面動畫。
+    // 最後一擊：全場一起出手。**全部的人都按了就自己走**（主持人不用按）：
+    // 血條慢慢歸零 → 魔王倒下 → 換成「得勝的力量」（舉起手的四個職業，中間站著耶穌）。
     beat: function () {
       var b = S.beatNow;
+      var bst = beatStage();
+      if (bst === 'drain' || bst === 'broken') {
+        var broken = bst === 'broken';
+        return '<div class="cine beatfight">' +
+          '<img class="bossimg' + (broken ? ' broken' : '') + '" src="/happiness/shared/art/boss' + (broken ? '-broken' : '') + '.svg" alt="">' +
+          '<div class="bossname"><small>' + esc(S.boss.lead) + '</small>' + esc(S.boss.name) + '</div>' +
+          '<div class="hpbar wide"><i id="hpfill" class="drain" style="width:' + (broken ? 0 : beatFromPct() * beatLeft()) + '%"></i></div>' +
+          '<div class="hpnum" id="hpnum">' + (broken ? 0 : Math.round(beatFrom * beatLeft())) + ' / ' + S.boss.hp + '</div>' +
+          (broken ? '<div class="cinetitle">' + esc(S.beatInfo.done) + '</div>' : '') +
+        '</div>';
+      }
       if (b.done) {
         return '<div class="cine victory">' +
           '<div class="rays gold"><i></i><i></i><i></i><i></i><i></i><i></i></div>' +
-          '<img class="broken" src="/happiness/shared/art/boss-broken.svg" alt="">' +
+          '<img class="party" src="/happiness/shared/art/victory-party.svg" alt="">' +
           '<div class="crossdone">' + esc(S.beatInfo.done) + '　·　' + esc(S.beatInfo.gainNote) + '</div>' +
           '<div class="cinelead" style="margin-top:min(calc(16px * var(--u)),2vh)">' + esc(S.victory.lead) + '</div>' +
           '<div class="cinetitle big">' + esc(S.victory.title) + '</div>' +
           '<div class="cineline">' + esc(S.victory.line) + '</div>' +
         '</div>';
       }
-      return '<h2>' + esc(S.beatInfo.title) + '</h2>' +
-        '<p class="lede">' + esc(S.beatInfo.sub) + '</p>' +
-        bossBar(false, false) +
-        '<div class="kfoot">' + counter(b.hit, '人已出手') + '</div>';
+      return '<div class="cine beatfight">' +
+          '<div class="cinelead">' + esc(S.beatInfo.title) + '　·　' + esc(S.beatInfo.sub) + '</div>' +
+          '<img class="bossimg" src="/happiness/shared/art/boss.svg" alt="">' +
+          '<div class="bossname"><small>' + esc(S.boss.lead) + '</small>' + esc(S.boss.name) + '</div>' +
+          '<div class="hpbar wide"><i style="width:' + Math.round(S.hp / S.boss.hp * 100) + '%"></i></div>' +
+          '<div class="hpnum">' + S.hp + ' / ' + S.boss.hp + '</div>' +
+          '<div style="margin-top:min(calc(14px * var(--u)),1.8vh)">' + counter(b.hit, '人已出手') + '</div>' +
+        '</div>';
     },
 
     // 開場那張蓋著的卡，到這一頁**直接是翻開的**（不用主持人再按）。
@@ -366,9 +382,50 @@
     }, 1400);
   }
 
+  // ── 最後一擊的動畫 ─────────────────────────────────────────────────
+  // 伺服器只知道「倒了沒」。**在這一頁親眼看到它從沒倒變成倒了**，才播：
+  // 血條慢慢歸零（BEAT_DRAIN）→ 倒下的魔王（BEAT_BROKEN）→ 勝利畫面。
+  // 重新整理或跳頁進來的時候已經倒了，就直接給勝利畫面。
+  var BEAT_DRAIN = 2600, BEAT_BROKEN = 1800;
+  var beatFrom = 0, beatAt = 0, beatTimer = null, beatWasUp = false;
+  function beatFromPct() { return Math.round(beatFrom / S.boss.hp * 100); }
+  // 還剩幾成血（先快後慢，最後那一點點拖一下）
+  function beatLeft() {
+    var t = Math.min(1, (Date.now() - beatAt) / BEAT_DRAIN);
+    return Math.pow(1 - t, 2.2);
+  }
+  function beatStage() {
+    if (!beatAt) return '';
+    var t = Date.now() - beatAt;
+    return t < BEAT_DRAIN ? 'drain' : t < BEAT_DRAIN + BEAT_BROKEN ? 'broken' : '';
+  }
+  function beatWatch() {
+    if (S.phase.id !== 'beat') { beatWasUp = false; beatAt = 0; return; }
+    if (!S.beatNow.done) { beatWasUp = true; beatAt = 0; beatFrom = S.hp; return; }
+    if (beatWasUp && !beatAt) {
+      beatWasUp = false;
+      beatAt = Date.now();
+      clearTimeout(beatTimer);
+      beatTimer = setTimeout(function () { paint(); beatTimer = setTimeout(paint, BEAT_BROKEN); }, BEAT_DRAIN);
+    }
+  }
+  var beatTick = null;
+  function beatNumbers() {
+    clearInterval(beatTick);
+    if (beatStage() !== 'drain') return;
+    beatTick = setInterval(function () {
+      var nm = document.getElementById('hpnum');
+      var fl = document.getElementById('hpfill');
+      if (!nm || !fl || beatStage() !== 'drain') { clearInterval(beatTick); return; }
+      nm.textContent = Math.round(beatFrom * beatLeft()) + ' / ' + S.boss.hp;
+      fl.style.width = (beatFromPct() * beatLeft()) + '%';
+    }, 50);
+  }
+
   function paint() {
+    beatWatch();
     stage.className = 'stage phase-' + S.phase.id +
-      (S.phase.id === 'bossIn' || (S.phase.id === 'beat' && S.beatNow.done) || S.phase.id === 'lost' ? ' cinepage' : '');
+      (S.phase.id === 'bossIn' || S.phase.id === 'beat' || S.phase.id === 'lost' ? ' cinepage' : '');
     stage.innerHTML = (views[S.phase.id] || function () { return ''; })();
 
     var qr = document.getElementById('qr');
@@ -377,6 +434,7 @@
     }
     healKey = '';
     healAnim();
+    beatNumbers();
     fitSolo();
   }
 

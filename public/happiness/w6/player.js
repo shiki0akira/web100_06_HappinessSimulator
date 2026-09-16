@@ -245,7 +245,7 @@
     beat: function (me) {
       if (S.beatNow.done) {
         return '<div class="qn center">' + esc(S.beatInfo.done) + '</div>' +
-          '<img class="bossart" src="/happiness/shared/art/boss-broken.svg" alt="" style="width:44%">' +
+          '<img class="bossart" src="/happiness/shared/art/victory-party.svg" alt="" style="width:100%;max-width:360px">' +
           (me.beatGain ? '<div class="hit up">幸福指數 ' + fmt(me.beatGain) + '</div>' : '') +
           '<div class="qn center" style="margin-top:16px">' + esc(S.victory.lead) + '</div>' +
           '<h2 class="center" style="margin-top:6px">' + esc(S.victory.title) + '</h2>' +

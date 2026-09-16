@@ -158,6 +158,16 @@
   @keyframes rise { from { transform: translateY(60%); opacity: 0; } to { transform: none; opacity: 1; } }
   .cine .stand { width: min(calc(240px * var(--u)), 30vh); }
   .cine .broken { width: min(calc(240px * var(--u)), 26vh); animation: unseal .6s ease-out both; }
+  /* 最後一擊：整頁塞得下，不准捲動 */
+  .beatfight .bossimg { display: block; width: min(calc(300px * var(--u)), 34vh); height: auto; image-rendering: pixelated;
+    margin-top: min(calc(10px * var(--u)), 1.4vh); }
+  .beatfight .bossimg.broken { animation: shake .5s steps(4) both, unseal .6s ease-out both; }
+  @keyframes shake { 0% { transform: translateX(-8px); } 50% { transform: translateX(8px); } 100% { transform: none; } }
+  .beatfight .bossname { margin-top: min(calc(6px * var(--u)), .8vh); }
+  .beatfight .hpbar i.drain { transition: none; }
+  .beatfight .cinetitle { color: var(--vol); font-size: min(calc(56px * var(--u)), 6.4vh, 4vw); }
+  /* 勝利：舉起手的四個職業，中間站著耶穌 */
+  .cine .party { width: min(calc(620px * var(--u)), 62vw, 40vh * 92 / 28); height: auto; animation: unseal .8s ease-out both; }
   .hpbar.wide { width: min(calc(620px * var(--u)), 66vw); margin-top: min(calc(14px * var(--u)), 1.8vh); }
   .hpbar.wide i.fillup { animation: fillup 1.2s .5s ease-out both; }
   @keyframes fillup { from { width: 0; } to { width: 100%; } }
