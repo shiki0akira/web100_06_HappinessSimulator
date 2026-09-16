@@ -1,7 +1,7 @@
 // 玩家手機 · 第六關「十字架的勝利」
 //
-// ⚠️ 這一關手機會亮的：接關、挑一張困難卡、三回合出招、替被打中的人禱告、領受、
-// 寫那一仗（再加存卡）。其餘的頁手機都是安靜的。
+// ⚠️ 這一關手機會亮的：接關、挑一塊、抽一張、選職業、五回合出手、
+// 領受經文＋領受復活、第二階段出手、最後一擊、寫那一仗（再加存卡）。
 // **十字架那一頁手機上一顆按鈕都沒有** —— 只要有東西可以按，全場就會以為魔王是他們按倒的。
 (function () {
   'use strict';
@@ -49,6 +49,7 @@
 
   function fmt(d) { return d > 0 ? '+' + d : d < 0 ? '−' + Math.abs(d) : '±0'; }
   function aspectArt(k) { return '/happiness/shared/art/aspect-' + k + '.svg'; }
+  function jobArt(a) { return '/happiness/shared/art/' + a + '.svg'; }
 
   // 送出之前只活在這支手機上的暫存
   var draft = { byVisits: false };
@@ -63,6 +64,38 @@
     if (!me.drawn) return '';
     return '<div class="mine"><div class="as">' + esc(me.drawn.aspect) + '</div>' +
       '<div class="tx">' + esc(me.drawn.text) + '</div></div>';
+  }
+
+  // 打鬥那兩頁共用：一顆「出手」、一顆「什麼都不做」。
+  function battleScreen(me, b, isWin) {
+    var head = '<div class="qn">第 ' + (b.round + 1) + ' / ' + b.total + ' 回合 · ' + esc(b.aspect) + '</div>' +
+      '<h2 style="margin-top:6px">' + esc(b.attack) + '</h2>';
+    var mine = isWin ? me.winAct : me.act;
+    var c = me.jobCard;
+
+    if (!c) return head + wait('看大螢幕', '你沒有選職業');
+
+    if (b.revealed) {
+      var went = mine === true;
+      return head +
+        '<div class="reply"><span class="replyfrom">' + esc(went ? c.act : S.idle.t) + '</span><br>' +
+          esc(went ? (isWin ? '這一次，它擋不住。' : c.d) : S.idle.d) + '</div>' +
+        (isWin
+          ? '<div class="hit up">魔王 −' + (went ? c.dmg * S.winInfo.boost : 0) + '</div>'
+          : '<div class="hit">幸福指數 −' + (went ? c.loss : S.idle.loss) + '　魔王 −' + (went ? c.dmg : 0) + '</div>') +
+        wait('看大螢幕');
+    }
+
+    return head +
+      '<div class="jobnow"><img src="' + jobArt(c.art) + '" alt=""><span>' + esc(c.t) + '</span></div>' +
+      '<div class="opts">' +
+        '<button class="opt' + (mine === true ? ' on' : '') + '" data-act="1">' + esc(c.act) +
+          '<small>傷害 ' + (isWin ? c.dmg * S.winInfo.boost : c.dmg) +
+          (isWin ? '' : '　幸福指數 −' + c.loss) + '</small></button>' +
+        '<button class="opt' + (mine === false ? ' on' : '') + '" data-act="0">' + esc(S.idle.t) +
+          '<small>' + (isWin ? '傷害 0' : '傷害 0　幸福指數 −' + S.idle.loss) + '</small></button>' +
+      '</div>' +
+      '<p class="privacy">' + (mine === undefined ? '選一個。主持人公布之前都可以改。' : '主持人公布之前都可以改。') + '</p>';
   }
 
   var views = {
@@ -92,7 +125,6 @@
           (draft.byVisits ? '我有卡片，改填幸福根基' : '忘記帶卡片？改填「這是你第幾次來」') + '</button>';
     },
 
-    // 什麼才是「好」？右邊那一格蓋著，最後一頁才翻開。
     good: function () {
       return '<h2>' + esc(S.good.title) + '</h2>' +
         '<p>' + esc(S.good.sub) + '</p>' +
@@ -109,7 +141,7 @@
       return '<h2 class="center">' + esc(S.chase.line) + '</h2>' + wait('看大螢幕');
     },
 
-    // 第一頁：六塊裡挑一塊。**這一頁不抽卡，也看不到任何句子。**
+    // 挑一塊。**這一頁不抽卡，也看不到任何句子。**
     cards: function (me) {
       if (me.aspect) {
         return '<div class="qn">你挑的那一塊</div>' +
@@ -127,7 +159,7 @@
         '<p class="privacy">' + esc(S.pickInfo.hint) + '只有你自己看得到。</p>';
     },
 
-    // 第二頁：從他挑的那一塊裡**抽**一張。點哪一張都一樣，是隨機的。
+    // 抽一張。點哪一張都一樣，是隨機的。
     draw: function (me) {
       if (!me.aspect) {
         return '<h2>' + esc(S.drawInfo.title) + '</h2>' +
@@ -138,7 +170,7 @@
           '<div class="mine"><div class="tx">' + esc(me.drawn.text) + '</div></div>' +
           (S.cardsNow.open
             ? (me.cardLoss ? '<div class="hit">幸福指數 ' + fmt(-me.cardLoss) + '</div>' : '') + wait('看大螢幕')
-            : wait(esc(S.drawInfo.waiting)));
+            : wait(S.drawInfo.waiting));
       }
       var n = me.deck || 4;
       var backs = '';
@@ -149,63 +181,56 @@
         '<p class="privacy">' + esc(S.drawInfo.hint) + '</p>';
     },
 
-    // 統計那一頁手機安靜。他自己挑的那一張留在畫面上。
-    boss: function (me) {
-      if (S.bossNow.merged) {
-        return '<h2 class="center">' + esc(S.bossInfo.name) + '</h2>' +
-          '<img class="bossart" src="/happiness/shared/art/boss.svg" alt="">' +
-          '<div class="hpline">' + S.bossInfo.hp + ' / ' + S.bossInfo.hp + '</div>' +
-          wait('看大螢幕');
-      }
+    tally: function (me) {
       return '<h2>' + esc(S.tally.title) + '</h2>' + myCard(me) + wait('看大螢幕');
     },
 
-    // 靠自己打。四招都掉一樣的分 —— 打掉多少血不一樣，代價一樣。
-    fight: function (me) {
-      var f = S.fightNow;
-      var head = '<div class="qn">第 ' + (f.round + 1) + ' / ' + f.total + ' 回合 · ' + esc(f.aspect) + '</div>' +
-        '<h2 style="margin-top:6px">' + esc(f.attack) + '</h2>';
-      if (f.revealed) {
-        if (me.move < 0) return head + wait('看大螢幕', '這一回合你沒有出招');
-        return head +
-          '<div class="reply"><span class="replyfrom">' + esc(S.moves[me.move].label) + '</span><br>' +
-            esc(me.moveText) + '</div>' +
-          '<div class="hit">幸福指數 −2</div>' +
-          wait('看大螢幕');
-      }
-      return head +
-        '<div class="opts">' + S.moves.map(function (m, i) {
-          return '<button class="opt' + (me.move === i ? ' on' : '') + '" data-move="' + i + '">' +
-            esc(m.label) + '<small>' + (m.dmg ? '傷害 ' + m.dmg : 'MISS') + '</small></button>';
-        }).join('') + '</div>' +
-        '<p class="privacy">' + (me.move >= 0 ? '主持人公布之前都可以改。' : '你平常累的時候會怎麼做，就怎麼按。') + '</p>';
+    bossIn: function () {
+      return '<h2 class="center">' + esc(S.boss.name) + '</h2>' +
+        '<img class="bossart" src="/happiness/shared/art/boss.svg" alt="">' +
+        '<div class="hpline">' + S.boss.hp + ' / ' + S.boss.hp + '</div>' +
+        '<p class="privacy center">' + esc(S.boss.sub) + '</p>';
     },
 
-    fightEnd: function (me) {
-      return '<h2>' + esc(S.fightEnd.title) + '</h2>' +
-        '<div class="hpline">' + S.bossInfo.hp + ' / ' + S.bossInfo.hp + '　血條一格都沒少</div>' +
-        (me.fightLoss ? '<div class="hit">這三回合你掉了 ' + me.fightLoss + ' 分</div>' : '') +
+    // 選職業。四張卡，選一張。
+    job: function (me) {
+      return '<h2>' + esc(S.jobInfo.title) + '</h2>' +
+        '<p>' + esc(S.jobInfo.sub) + '</p>' +
+        '<div style="margin-top:16px">' + S.classes.map(function (c) {
+          return '<button class="pickcard' + (me.job === c.k ? ' on' : '') + '" data-job="' + esc(c.k) + '">' +
+            '<span class="as"><img src="' + jobArt(c.art) + '" alt="">' + esc(c.t) + '　' + esc(c.act) + '</span>' +
+            '<span class="tx">傷害 ' + c.dmg + '　幸福指數 −' + c.loss + '</span>' +
+            '<span class="dd">' + esc(c.d) + '</span>' +
+          '</button>';
+        }).join('') + '</div>' +
+        '<p class="privacy">' + esc(S.jobInfo.hint) + '</p>';
+    },
+
+    fight: function (me) { return battleScreen(me, S.fightNow, false); },
+
+    lost: function (me) {
+      return '<h2 class="center">' + esc(S.lost.line) + '</h2>' +
+        '<div class="hpline">' + S.boss.hp + ' / ' + S.boss.hp + '　血條補滿了</div>' +
+        (me.fightLoss ? '<div class="hit">這五回合你掉了 ' + me.fightLoss + ' 分</div>' : '') +
         wait('看大螢幕');
     },
 
-    // 十字架。**手機上沒有任何按鈕。** 這一仗是他打贏的。
-    cross: function (me) {
+    // 十字架。**手機上沒有任何按鈕。**
+    cross: function () {
       var st = S.crossStep || 0;
-      if (st >= 3) {
-        return '<h2 class="center">' + esc(S.cross.steps[3].t) + '</h2>' +
-          '<div class="hpline zero">0 / ' + S.bossInfo.hp + '</div>' +
-          (me.crossGain ? '<div class="hit up">幸福指數 ' + fmt(me.crossGain) + '</div>' : '') +
-          '<p class="privacy center">這一仗不是你打的。</p>';
-      }
       if (st === 2) {
         return '<img class="crossart" src="/happiness/shared/art/cross-dark.svg" alt="">' +
-          '<div class="days">' + S.cross.days.map(function (d, i) {
+          '<div class="days">' + S.cross.days.map(function (d) {
             return '<span class="on">' + esc(d) + '</span>';
           }).join('') + '</div>' +
           wait('看大螢幕');
       }
+      if (st === 3) {
+        return '<img class="bossart" src="/happiness/shared/art/tomb-open.svg" alt="">' +
+          '<h2 class="center" style="margin-top:14px">' + esc(S.cross.steps[3].t) + '</h2>';
+      }
       return '<h2 class="center">' + esc(S.cross.steps[st].t) + '</h2>' +
-        '<img class="bossart" src="/happiness/shared/art/boss.svg" alt="">' +
+        '<img class="crossart" src="/happiness/shared/art/' + (st === 0 ? 'boss' : 'cross-dark') + '.svg" alt="">' +
         wait('看大螢幕');
     },
 
@@ -214,72 +239,59 @@
         '<h2 class="center" style="margin-top:14px">' + esc(S.power.title) + '</h2>';
     },
 
+    // 領受經文 ＋ 領受復活。兩顆分開按。
+    // ⚠️ 領受復活**不是門檻** —— 沒按的人第二階段照樣打得動。
     verse: function (me) {
       return '<div class="verse-p"><span class="ref">' + esc(S.verse.ref) + '</span>' +
         '<blockquote>「' + esc(S.verse.text) + '」</blockquote></div>' +
         (me.receivedVerse
           ? '<div class="grew"><img src="/happiness/shared/art/verse.svg" alt="">' +
             '<p class="ok">已領受<br><b>幸福根基 +10</b></p></div>'
-          : '<button class="btn primary fullbtn" id="verse">領受</button>');
+          : '<button class="btn primary fullbtn" id="verse">' + esc(S.verse.receive) + '</button>') +
+        (me.revived
+          ? '<div class="grew"><img src="/happiness/shared/art/tomb-open.svg" alt="">' +
+            '<p class="ok">' + esc(S.verse.revived) + '</p></div>'
+          : '<button class="btn fullbtn revivebtn" id="revive">' + esc(S.verse.revive) + '</button>');
     },
 
-    // 在生活中得勝。被打中的人等人扛；其他人可以替他禱告。
-    // **按的人一分都不動** —— 按禱告換分數就毀了這一頁。
-    together: function (me) {
-      var t = S.togetherNow;
-      var e = t.energy;
-      var mine = (me.hits || []).filter(function (h) { return h.me; });
-      var others = (me.hits || []).filter(function (h) { return !h.me; });
-      var head = '<div class="qn">第 ' + (t.round + 1) + ' / ' + t.total + ' 回合 · ' + esc(t.aspect) + '</div>' +
-        '<h2 style="margin-top:6px">' + esc(S.together.sub) + '</h2>';
+    win: function (me) { return battleScreen(me, S.winNow, true); },
 
-      var mineHtml = mine.map(function (h) {
-        return '<div class="hitcard"><div class="who">你被打中了</div>' +
-          '<div class="what">' + esc(h.text) + '</div>' +
-          '<div class="hpline" style="text-align:left">幸福指數 −' + S.together.hitLoss + '</div>' +
-          (h.prays
-            ? '<div class="ok" style="margin-top:8px">有 ' + h.prays + ' 個人為你禱告　＋' + S.together.prayBack + '</div>'
-            : '<div class="privacy" style="margin-top:8px">等別人為你禱告。</div>') +
-        '</div>';
-      }).join('');
-
-      var othersHtml = others.length
-        ? others.map(function (h) {
-          return '<div class="prayrow' + (h.prayed ? ' done' : '') + '">' +
-            '<div class="who">' + esc(h.name) + '</div>' +
-            '<div class="what">' + esc(h.text) + '</div>' +
-            (h.prayed
-              ? '<div class="ok">✓ 你為他禱告了</div>'
-              : '<button class="btn primary" data-pray="' + h.i + '">' + esc(S.together.pray) + '</button>') +
-          '</div>';
-        }).join('')
-        : (mine.length ? '' : wait('看大螢幕', '等主持人出招'));
-
-      return head + mineHtml + othersHtml +
-        '<div class="energy"><div class="el"><span>全場能量</span><span>' + e.lit + ' / ' + e.planned + '</span></div>' +
-          '<div class="cells">' + new Array(e.planned + 1).join('x').split('').map(function (_, i) {
-            return '<i class="' + (i < e.lit ? 'on' : '') + '"></i>';
-          }).join('') + '</div></div>';
+    // 最後一擊。**每個人都按得到。**
+    beat: function (me) {
+      if (S.beatNow.done) {
+        return '<h2 class="center">' + esc(S.beatInfo.done) + '</h2>' +
+          '<img class="bossart" src="/happiness/shared/art/boss-broken.svg" alt="">' +
+          (me.beatGain ? '<div class="hit up">幸福指數 ' + fmt(me.beatGain) + '</div>' : '') +
+          '<p class="privacy center">不是你變強了 —— 是他先站起來。</p>';
+      }
+      if (me.beat) return '<h2 class="center">' + esc(S.beatInfo.title) + '</h2>' + wait('等其他人出手');
+      return '<h2 class="center">' + esc(S.beatInfo.title) + '</h2>' +
+        '<p class="center">' + esc(S.beatInfo.sub) + '</p>' +
+        '<img class="bossart" src="/happiness/shared/art/boss.svg" alt="">' +
+        '<button class="btn primary fullbtn" id="beat">' + esc(S.beatInfo.button) + '</button>';
     },
 
-    won: function (me) {
-      var mine = (me.hits || []).filter(function (h) { return h.me; });
-      var helped = (me.hits || []).filter(function (h) { return h.prayed; }).length;
-      return '<h2>' + esc(S.won.title) + '</h2>' +
-        (S.goodOpen
-          ? '<div class="goodtwo"><div class="gcol"><h3>' + esc(S.good.leftLabel) + '</h3><ul>' +
-              S.good.left.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') +
-            '</ul></div>' +
-            '<div class="gcol right"><h3>' + esc(S.good.rightLabel) + '</h3><ul>' +
-              S.good.right.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') +
-            '</ul></div></div>'
-          : '<p>' + esc(S.won.sub) + '</p>') +
-        (mine.length ? '<p class="privacy">你被打中 ' + mine.length + ' 次，有人扛了。</p>' : '') +
-        (helped ? '<p class="privacy">你為 ' + helped + ' 個人禱告。</p>' : '') +
-        wait('看大螢幕');
+    victory: function () {
+      return '<div class="qn center">' + esc(S.victory.lead) + '</div>' +
+        '<h2 class="center" style="margin-top:8px">' + esc(S.victory.title) + '</h2>' +
+        '<p class="bigline center">' + esc(S.victory.line) + '</p>';
     },
 
-    // 得勝禱告。七關收尾的固定儀式，這一關有指定題目。**什麼都沒寫也按得下去。**
+    goodOpen: function () {
+      return '<h2>' + esc(S.good.title) + '</h2>' +
+        '<div class="goodtwo">' +
+          '<div class="gcol"><h3>' + esc(S.good.leftLabel) + '</h3><ul>' +
+            S.good.left.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') +
+          '</ul></div>' +
+          '<div class="gcol right"><h3>' + esc(S.good.rightLabel) + '</h3>' +
+            (S.goodOpen
+              ? '<ul>' + S.good.right.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>'
+              : '<div class="gq">？</div>') +
+          '</div>' +
+        '</div>' + wait('看大螢幕');
+    },
+
+    // 得勝禱告。**什麼都沒寫也按得下去。**
     bless: function (me) {
       var mine = readLine();
       return '<h2>得勝禱告</h2>' +
@@ -351,31 +363,36 @@
     document.querySelectorAll('[data-aspect]').forEach(function (b) {
       b.onclick = function () { act('aspect', { k: b.dataset.aspect }); };
     });
+    var back = document.getElementById('backaspect');
+    if (back) back.onclick = function () { act('aspect', { k: '' }); };
 
     document.querySelectorAll('[data-draw]').forEach(function (b) {
       b.onclick = function () { act('draw', {}); };
     });
 
-    var ba = document.getElementById('backaspect');
-    if (ba) ba.onclick = function () { act('aspect', { k: '' }); };
-
-    document.querySelectorAll('[data-move]').forEach(function (b) {
-      b.onclick = function () { act('move', { round: S.fightNow.round, value: Number(b.dataset.move) }); };
+    document.querySelectorAll('[data-job]').forEach(function (b) {
+      b.onclick = function () { act('job', { k: b.dataset.job }); };
     });
 
-    document.querySelectorAll('[data-pray]').forEach(function (b) {
-      b.onclick = function () { act('pray', { idx: Number(b.dataset.pray) }); };
+    document.querySelectorAll('[data-act]').forEach(function (b) {
+      b.onclick = function () {
+        var isWin = S.phase.id === 'win';
+        act('act', { round: isWin ? S.winNow.round : S.fightNow.round, go: b.dataset.act === '1' });
+      };
     });
 
     var v = document.getElementById('verse');
     if (v) v.onclick = function () { act('verse'); };
+    var rv = document.getElementById('revive');
+    if (rv) rv.onclick = function () { act('revive'); };
+    var bt = document.getElementById('beat');
+    if (bt) bt.onclick = function () { act('beat'); };
 
     var save = document.getElementById('savebl');
     if (save) save.onclick = function () {
       var text = document.getElementById('bl').value;
       writeLine(text);
       // 只送「有寫」這件事上去。那句話留在這支手機裡，一個字都不會離開。
-      // **什麼都沒寫也算送出** —— 幸福根基 +5 看的是他按了沒。
       act('bless', { has: !!text.trim() });
       // 按鈕先變「已更新」，3 秒後變回來。
       // ⚠️ 變回來的時候**只改按鈕上的字，不重畫整頁** —— 重畫會把他正在補的字洗掉。
@@ -406,17 +423,15 @@
     if (img) {
       var make = function () {
         var cv = document.createElement('canvas');
-        var mine = (me.cards || [])[me.pick];
         drawWeekCard(cv, {
           week: 6,
           name: me.name,
           outer: me.outer, outerPrev: me.outerStart,
           inner: me.inner, innerLabel: '幸福根基',
           verseRef: S.verse.ref, verseText: S.verse.text,
-          // 他挑的那一張 —— 隔週再看到這張卡，他想得起自己今天挑了什麼。
-          path: mine ? { label: 'MY CARD', steps: [mine.aspect + ' · ' + mine.text] } : null,
+          // 他抽到的那一張 —— 隔週再看到這張卡，他想得起今天打的是什麼。
+          path: me.drawn ? { label: 'MY CARD', steps: [me.drawn.aspect + ' · ' + me.drawn.text] } : null,
           // 第八週的護照要收這一行（架構第九節）。
-          // **不印他被打中幾次、幫了幾個人** —— 印上去就是一張成績單。
           stamp: '這一仗，全場 ' + S.playerCount + ' 個人一起打贏',
           burdenLabel: 'MY BATTLE',
           burdenAsk: S.bless.ask + '：',
@@ -472,11 +487,11 @@
 
     // ⚠️ 得勝禱告那一格正在打的字不能進這一行 —— 一變就整頁重畫，焦點會被踢掉。
     var next = [
-      S.phase.id, S.cardsNow.open, S.bossNow.merged, (S.me && S.me.aspect) || '',
-      S.fightNow.round, S.fightNow.revealed, S.crossStep, S.goodOpen,
-      S.togetherNow.round, S.togetherNow.struck,
-      (me.hits || []).map(function (h) { return h.i + ':' + h.prays + (h.prayed ? 'p' : ''); }).join(','),
-      me.outer, me.inner, me.visits, me.pick, me.move,
+      S.phase.id, S.cardsNow.open, S.crossStep, S.goodOpen,
+      S.fightNow.round, S.fightNow.revealed, S.winNow.round, S.winNow.revealed,
+      S.beatNow.done, S.hp,
+      me.outer, me.inner, me.visits, me.aspect, me.pick, me.job,
+      me.act, me.winAct, me.revived, me.beat,
       me.receivedVerse, me.cardDone, me.prayed,
       draft.byVisits,
     ].join('|');

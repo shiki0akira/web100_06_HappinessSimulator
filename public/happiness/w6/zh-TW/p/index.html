@@ -77,6 +77,16 @@
   .pickcard.on { border-color: var(--vol); background: var(--vol-soft); }
   .pickcard.on .tx { color: var(--vol); }
 
+  /* 職業卡上的說明 */
+  .pickcard .dd { display: block; margin-top: 6px; font-size: 15px; line-height: 1.6; color: var(--ink-3); }
+  /* 打鬥的時候，上面掛著你的職業 */
+  .jobnow { display: flex; align-items: center; gap: 10px; margin-top: 14px; padding: 10px 14px;
+    border: 3px solid var(--gold); background: var(--surface); }
+  .jobnow img { width: 34px; height: auto; image-rendering: pixelated; }
+  .jobnow span { font-size: 19px; font-weight: 900; }
+  /* 領受復活：金色的那一顆，跟「領受」分開 */
+  .revivebtn { margin-top: 12px; border-color: var(--gold); color: var(--gold); }
+
   .mine { margin-top: 16px; padding: 16px; border: 3px solid var(--gold); }
   .mine .as { font-family: var(--pixel); font-size: 13px; color: var(--gold); }
   .mine .tx { margin-top: 8px; font-size: 21px; font-weight: 900; line-height: 1.6; }

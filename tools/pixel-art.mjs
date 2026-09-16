@@ -992,3 +992,93 @@ function animatedSvg(w, h, css, body, label) {
 
   console.log('第六關：boss／boss-broken／cross-dark／tomb-open ＋ 六個面向的小圖');
 }
+
+// ── 第六關的四個職業 ─────────────────────────────────────────────────────
+// 騎士、法師、坦克、村民。**四個都是人**，不是怪物 ——
+// 這一關的對手是勞苦重擔，不是彼此。
+{
+  const OUT_SHARED = 'public/happiness/shared/art';
+  const JOBS = {
+    // 騎士：頭盔 ＋ 劍。正面衝上去。
+    knight: [
+      '................',
+      '.....WWWWWW.....',
+      '....WWWWWWWW....',
+      '....WWddddWW....',
+      '....WW....WW....',
+      '....WWdddWWW....',
+      '.....WWWWWW.....',
+      '...WWWWWWWWWW...',
+      '..WWWWWWWWWWWW..',
+      '..WW.WWWWWW.WW..',
+      '..WW.WWWWWW.WW..',
+      '.....WWWWWW.....',
+      '.....WW..WW.....',
+      '.....WW..WW.....',
+      '....DDD..DDD....',
+      '................',
+    ],
+    // 法師：尖帽 ＋ 一顆會發光的球。想辦法解決。
+    mage: [
+      '.......C........',
+      '......CCC.......',
+      '.....CCCCC......',
+      '....CCCCCCC.....',
+      '...CCCCCCCCC....',
+      '......kkkk......',
+      '.....kkkkkk.....',
+      '.....kddkdk.....',
+      '......kkkk......',
+      '....cccccccc....',
+      '...cccccccccc...',
+      '..ccccccccccccG.',
+      '..cc.cccccc.ccG.',
+      '.....cccccc.....',
+      '....DDD..DDD....',
+      '................',
+    ],
+    // 坦克：一面大盾。硬扛下來。
+    tank: [
+      '................',
+      '......kkkk......',
+      '.....kkkkkk.....',
+      '.....kddkdk.....',
+      '......kkkk......',
+      '..WWWWWWWWWWWW..',
+      '.WWWWWWWWWWWWWW.',
+      '.WWWWWwwwwWWWWW.',
+      '.WWWWwwwwwwWWWW.',
+      '.WWWWwwwwwwWWWW.',
+      '.WWWWWwwwwWWWWW.',
+      '..WWWWWWWWWWWW..',
+      '...WWWWWWWWWW...',
+      '.....WWWWWW.....',
+      '....DDD..DDD....',
+      '................',
+    ],
+    // 村民：草帽 ＋ 圍裙。你不是英雄，你只是想有人一起。
+    villager: [
+      '................',
+      '....GGGGGGGG....',
+      '...GGGGGGGGGG...',
+      '......kkkk......',
+      '.....kkkkkk.....',
+      '.....kddkdk.....',
+      '......kkkk......',
+      '....hhhhhhhh....',
+      '...hhhhhhhhhh...',
+      '...hh.WWWW.hh...',
+      '...hh.WWWW.hh...',
+      '....hhWWWWhh....',
+      '.....hhhhhh.....',
+      '.....hh..hh.....',
+      '....DDD..DDD....',
+      '................',
+    ],
+  };
+  const NAMES = { knight: '騎士', mage: '法師', tank: '坦克', villager: '村民' };
+  Object.keys(JOBS).forEach((k) => {
+    write('job-' + k + '.svg', '0 0 16 16', sprite(JOBS[k], 0, 0), NAMES[k], OUT_SHARED);
+  });
+  console.log('第六關：四個職業（騎士／法師／坦克／村民）');
+}

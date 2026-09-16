@@ -172,27 +172,31 @@
       }
     }
 
-    // 第六關的大魔王：統計念完，前三名合體。
-    var mergec = el('mergectl');
-    if (mergec) {
-      mergec.hidden = S.phase.id !== 'boss' || !S.bossNow;
-      if (!mergec.hidden) {
-        el('bossmerge').textContent = S.bossNow.merged ? '已經合體了' : '合體（前三名 → 大魔王）';
-        el('bossmerge').disabled = S.bossNow.merged;
+    // 第六關的兩段打鬥：大家決定完你才公布，公布完再開下一回合。
+    var fightc = el('fightctl');
+    if (fightc) {
+      var onFight = S.phase.id === 'fight' || S.phase.id === 'win';
+      fightc.hidden = !onFight || !S.fightNow;
+      if (!fightc.hidden) {
+        var bt = S.phase.id === 'win' ? S.winNow : S.fightNow;
+        var lastF = bt.round >= bt.total - 1;
+        el('fightprev').disabled = bt.round <= 0;
+        el('fightstep').textContent = !bt.revealed
+          ? '公布結果（' + S.stats.acted + '/' + S.stats.count + ' 已決定）'
+          : (lastF ? '都打完了，按下一頁' : '下一回合 →（' + (bt.round + 2) + '/' + bt.total + '）');
+        el('fightstep').disabled = bt.revealed && lastF;
       }
     }
 
-    // 第六關的靠自己打：大家出招完你才公布，公布完再開下一回合。
-    var fightc = el('fightctl');
-    if (fightc) {
-      fightc.hidden = S.phase.id !== 'fight' || !S.fightNow;
-      if (!fightc.hidden) {
-        var lastF = S.fightNow.round >= S.fightNow.total - 1;
-        el('fightprev').disabled = S.fightNow.round <= 0;
-        el('fightstep').textContent = !S.fightNow.revealed
-          ? '公布結果（' + S.stats.moved + '/' + S.stats.count + ' 已出招）'
-          : (lastF ? '都打完了，按下一頁' : '下一回合 →（' + (S.fightNow.round + 2) + '/' + S.fightNow.total + '）');
-        el('fightstep').disabled = S.fightNow.revealed && lastF;
+    // 第六關的最後一擊：全場都出手了才倒下。
+    var beatc = el('beatctl');
+    if (beatc) {
+      beatc.hidden = S.phase.id !== 'beat' || !S.beatNow;
+      if (!beatc.hidden) {
+        el('beatall').textContent = S.beatNow.done
+          ? '已經倒下了'
+          : '全場出手（' + S.beatNow.hit + '/' + S.beatNow.total + '）';
+        el('beatall').disabled = S.beatNow.done;
       }
     }
 
@@ -209,29 +213,10 @@
       }
     }
 
-    // 第六關的在生活中得勝：你按「出招」才抽人；能量條一格一個被打中的人。
-    var togc = el('togetherctl');
-    if (togc) {
-      togc.hidden = S.phase.id !== 'together' || !S.togetherNow;
-      if (!togc.hidden) {
-        var t6 = S.togetherNow;
-        var lastT = t6.round >= t6.total - 1;
-        el('togprev').disabled = t6.round <= 0;
-        el('togstep').textContent = !t6.struck
-          ? '出招（' + (t6.round + 1) + '/' + t6.total + '）'
-          : (lastT ? '三回合都打完了，按下一頁' : '下一回合 →（' + (t6.round + 2) + '/' + t6.total + '）');
-        el('togstep').disabled = t6.struck && lastT;
-        el('wonallbtn').textContent = t6.energy.done
-          ? '能量條滿了'
-          : '全場得勝（' + t6.energy.lit + '/' + t6.energy.planned + '）';
-        el('wonallbtn').disabled = t6.energy.done;
-      }
-    }
-
     // 第六關的收口：翻開開場那張蓋著的卡（在耶穌基督裡的好）。
     var goodc = el('goodctl');
     if (goodc) {
-      goodc.hidden = S.phase.id !== 'won';
+      goodc.hidden = S.phase.id !== 'goodOpen';
       if (!goodc.hidden) {
         el('goodopen').textContent = S.goodOpen ? '蓋回去' : '翻開「在耶穌基督裡的好」';
       }
@@ -313,14 +298,12 @@
     on('seeknext', function () { post('seekNext'); });
     on('opengift', function () { post('openGift'); });
     on('pickreveal', function () { post('cardsReveal'); });
-    on('bossmerge', function () { post('bossMerge'); });
-    on('fightprev', function () { post('fightPrev'); });
-    on('fightstep', function () { post('fightStep'); });
+    // 兩段打鬥共用這兩顆 —— 在哪一頁就送哪一段的指令。
+    on('fightprev', function () { post(S && S.phase.id === 'win' ? 'winPrev' : 'fightPrev'); });
+    on('fightstep', function () { post(S && S.phase.id === 'win' ? 'winStep' : 'fightStep'); });
     on('crossback', function () { post('crossBack'); });
     on('crossnext', function () { post('crossNext'); });
-    on('togprev', function () { post('togetherPrev'); });
-    on('togstep', function () { post('togetherStep'); });
-    on('wonallbtn', function () { post('wonAll'); });
+    on('beatall', function () { post('beatAll'); });
     on('goodopen', function () { post('goodOpen'); });
   }
 

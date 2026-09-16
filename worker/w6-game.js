@@ -3,16 +3,17 @@
 // 這一關完全不依賴前五關 —— 上一次沒來的人不會少玩到任何東西。
 // 接過來的只有卡片上的兩條線。**第三關起第一次來的人，幸福根基直接給 15。**
 //
-// 一句話講完這一關：挑一塊、從那一塊抽一張困難（−3）→ 統計前三名合體成大魔王 →
-// 靠自己打三回合（每招 −2，**魔王每回合都補滿血**）→ 十字架：最後一擊被一個人擋下來，
-// 三天之後血條歸零，**全場 +10（沒有人按任何東西）** → 苦難照樣來，但這一次全場互相扛。
+// 流程：挑一塊 → 抽一張（−3）→ 統計 → 大魔王登場 → 選職業 →
+// **靠自己打五回合（血條掉了又補滿）→ 全員倒下** → 十字架 → 復活 →
+// 領受經文（幸福根基 +10）＋領受復活 → **同樣的招式，這一次打得動**（傷害 ×12，它不再補血）→
+// **全場一起出手，擊敗大魔王，幸福指數 +15。**
 //
-// ⚠️ **那 +10 不准綁在按鈕上。** 一綁上按鈕就變成用分數換恩典（第二關拆寶箱同一條線）。
-// ⚠️ **幫別人禱告的人自己不加分。** 按的人也加分，全場就會搶著按。
+// ⚠️ **第二階段的傷害是復活的大能給的，不是他練出來的。**
+// ⚠️ **領受復活不是門檻** —— 沒按的人照樣打得動，全場照樣一起贏。
+//     「信了才有能力」是這套設計明文避開的東西。
 import {
   GOOD, CHASE, ASPECTS, CARDS, PICK, DRAW, CARD_LOSS, TALLY, BOSS,
-  MOVES, FIGHT_LOSS, ATTACKS, FIGHT, FIGHT_END, CROSS, POWER, VERSE,
-  TOGETHER, WON, BLESS,
+  CLASSES, JOB, IDLE, FIGHT, LOST, CROSS, POWER, VERSE, WIN, BEAT, VICTORY, BLESS,
 } from './w6-data.js';
 
 // 幸福根基的規則七關都一樣。上限 95 不是 100 —— 你自己填不滿。
@@ -23,26 +24,28 @@ export const INNER_PRAYER = 5;
 // 第三關起第一次來的新朋友直接給 15。
 export const NEWCOMER_INNER = 15;
 
-export const ROUNDS = 3;          // 兩個回合制的遊戲都是三回合
-
 export const PHASES = [
   { id: 'lobby',     tag: '入場',     title: '掃碼進場' },
   { id: 'reconnect', tag: '接關',     title: '輸入幸福指數' },
-  // 開場的伏筆：右邊那一格蓋著，第 13 頁才翻開。
+  // 開場的伏筆：右邊那一格蓋著，最後一頁才翻開。
   { id: 'good',      tag: '信息',     title: '什麼才是「好」？' },
   { id: 'chase',     tag: '信息',     title: '我們追求的方向，不能滿足生命真正的需要' },
   // 挑分類和抽卡**分兩頁**：先全場挑完那一塊，翻頁才抽。
   { id: 'cards',     tag: '互動點 1', title: '你現在扛的是哪一塊？' },
   { id: 'draw',      tag: '互動點 1', title: '抽一張' },
-  { id: 'boss',      tag: '統計',     title: '最近讓你最累的是什麼？' },
-  { id: 'fight',     tag: '互動點 2', title: '靠自己打' },
-  { id: 'fightEnd',  tag: '結算頁',   title: '勞苦重擔的不幸人生' },
+  { id: 'tally',     tag: '統計',     title: '最近讓你最累的是什麼？' },
+  { id: 'bossIn',    tag: '過場',     title: '今晚的大魔王 · 勞苦重擔' },
+  { id: 'job',       tag: '互動點 2', title: '選一個職業' },
+  { id: 'fight',     tag: '主遊戲',   title: '靠自己打（五回合）' },
+  { id: 'lost',      tag: '結算頁',   title: '沒有人打得倒它' },
   { id: 'cross',     tag: '過場',     title: '十字架' },
   { id: 'power',     tag: '信息',     title: '復活的大能成為我們得勝的能力' },
-  { id: 'verse',     tag: '經文',     title: '領受經文' },
-  { id: 'together',  tag: '互動點 3', title: '在生活中得勝' },
-  { id: 'won',       tag: '結算頁',   title: '這一仗，全場一起打贏' },
-  { id: 'bless',     tag: '互動點 4', title: '得勝禱告' },
+  { id: 'verse',     tag: '經文',     title: '領受經文 ＋ 領受復活' },
+  { id: 'win',       tag: '主遊戲',   title: '在生活中得勝' },
+  { id: 'beat',      tag: '互動點 4', title: '最後一擊' },
+  { id: 'victory',   tag: '過場',     title: '得勝的力量' },
+  { id: 'goodOpen',  tag: '揭曉',     title: '在耶穌基督裡的好' },
+  { id: 'bless',     tag: '互動點 5', title: '得勝禱告' },
   { id: 'card',      tag: '週卡',     title: '儲存模擬回憶' },
   { id: 'end',       tag: '預告',     title: '下週預告' },
 ];
@@ -55,18 +58,18 @@ export function createState() {
     phaseIdx: 0,
     players: {},
     order: [],
-    cardsOpen: false,     // 那一頁公布了沒（公布之後鎖住，那一刻才扣分）
-    bossMerged: false,    // 前三名合體成魔王了沒
-    bossPicks: [],        // 魔王的三個面向（合體之後固定）
-    fightRound: 0,
-    fightOpen: [],        // 第一回合哪幾回合公布了
+    cardsOpen: false,     // 抽的那一頁公布了沒（公布之後鎖住，那一刻才扣分）
+    moves: [],            // 魔王的五招：[{ k: 面向, i: 第幾句 }]，從全場抽到的卡來
+    hp: BOSS.hp,          // 魔王現在剩多少血
+    fightRound: 0,        // 第一階段（五回合）
+    fightOpen: [],
+    winRound: 0,          // 第二階段（三回合）
+    winOpen: [],
     crossStep: 0,         // 十字架：0–3
-    crossPaid: false,     // 全場 +10 只給一次
-    tRound: 0,            // 第二回合現在第幾回合
-    tStruck: [],          // 哪幾回合已經出招了
-    hits: [],             // [{ round, pid, aspect, text, prays: [pid], back: true }]
-    wonForced: false,     // 有人手機沒電：主持人把能量條補滿（**不動任何人的分**）
-    goodOpen: false,      // 第 13 頁翻開「在耶穌基督裡的好」
+    beaten: false,        // 最後一擊打完了沒
+    beatPaid: false,      // +15 只給一次
+    beatForced: false,    // 有人手機沒電：主持人替大螢幕收尾（**不替任何人按**）
+    goodOpen: false,      // 最後把開場那張卡翻開
     seq: 0,
   };
 }
@@ -79,7 +82,10 @@ const grow = (p, n) => { p.inner = Math.min(INNER_CAP, (p.inner || 0) + n); };
 // 防呆：舊版規則建立的房間還會在 DO 裡活六小時，別讓它們把房間打掛。
 const arr = (v) => (Array.isArray(v) ? v : []);
 const aspectOf = (k) => ASPECTS.find((a) => a.k === k) || ASPECTS[0];
+const classOf = (k) => CLASSES.find((c) => c.k === k) || null;
 const cardText = (k, i) => (CARDS[k] || [])[i] || '';
+const FIGHT_ROUNDS = FIGHT.rounds;
+const WIN_ROUNDS = WIN.rounds;
 
 export function addPlayer(s, name) {
   s.seq += 1;
@@ -94,13 +100,17 @@ export function addPlayer(s, name) {
     innerStart: 0,
     visits: 0,
     newcomer: false,
-    aspect: '',           // 他自己挑的那一個面向（財務／工作／婚姻／感情／家庭／健康）
-    pick: -1,             // 從那一塊裡**抽**到的是第幾句（0–3）—— 他選不了
-    cardLoss: 0,          // 挑那一句扣了多少（重挑的時候要還原）
-    moves: [],            // 第一回合三回合各出了什麼招
-    fightLoss: 0,         // 第一回合總共掉了多少（重跑的時候要還原）
-    crossGain: 0,         // 十字架那一刻拿到多少（往回跳不退分，這裡只做紀錄）
-    hasBless: false,      // 「我現在正在打的那一仗」留在他自己的手機上
+    aspect: '',           // 他挑的那一塊
+    pick: -1,             // 從那一塊抽到第幾句（他選不了）
+    cardLoss: 0,          // 抽到那一句扣了多少（重來的時候要還原）
+    job: '',              // 職業：騎士／法師／坦克／村民
+    acts: [],             // 第一階段五回合各做了什麼（true＝出手、false＝什麼都不做）
+    winActs: [],          // 第二階段三回合
+    fightLoss: 0,         // 第一階段總共掉了多少（重跑的時候要還原）
+    revived: false,       // 按過「領受復活」沒（**不是門檻，只是儀式**）
+    beat: false,          // 最後一擊按了沒
+    beatGain: 0,
+    hasBless: false,
     prayed: false,
     receivedVerse: false,
     cardDone: false,
@@ -121,10 +131,11 @@ export function revealCards(s) {
     p.outer = clamp(p.outer - CARD_LOSS);
     p.cardLoss = before - p.outer;
   });
+  buildMoves(s);
   return true;
 }
 
-// 重挑：分數還原，剛剛挑的那一塊和抽到的那一句都清掉。
+// 重來：分數還原，那一塊、抽到的那一句、魔王的招式都清掉。
 export function redealCards(s) {
   alive(s).forEach((p) => {
     if (p.cardLoss && p.outer !== null) p.outer = clamp(p.outer + p.cardLoss);
@@ -133,70 +144,88 @@ export function redealCards(s) {
     p.pick = -1;
   });
   s.cardsOpen = false;
-  s.bossMerged = false;
-  s.bossPicks = [];
+  s.moves = [];
 }
 
-// 最近讓你最累的是什麼：**只算人數，不印名字**。
-function tallyRows(s) {
-  const ps = alive(s);
-  return ASPECTS.map((a, k) => {
-    const picks = ps.filter((p) => p.aspect === a.k && p.pick >= 0);
-    // 被挑走的那幾句的原文（**不掛名字**）—— 主持人念那一句就是最好的接話點
-    const texts = [];
-    picks.forEach((p) => {
-      const t = cardText(p.aspect, p.pick);
-      if (t && texts.indexOf(t) < 0) texts.push(t);
-    });
-    return { k: a.k, t: a.t, n: picks.length, texts, order: k };
+// ── 魔王的五招 ──────────────────────────────────────────────────────────
+// **就是全場抽到的那幾句。** 人不夠五個就補（補沒被抽走的那些）。
+function buildMoves(s) {
+  const out = [];
+  const seen = {};
+  alive(s).forEach((p) => {
+    if (!p.aspect || p.pick < 0) return;
+    const key = p.aspect + ':' + p.pick;
+    if (seen[key]) return;
+    seen[key] = true;
+    out.push({ k: p.aspect, i: p.pick });
   });
+  // 洗一下，不要照進場順序
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const t = out[i]; out[i] = out[j]; out[j] = t;
+  }
+  const pool = [];
+  ASPECTS.forEach((a) => (CARDS[a.k] || []).forEach((_, i) => {
+    if (!seen[a.k + ':' + i]) pool.push({ k: a.k, i });
+  }));
+  while (out.length < FIGHT_ROUNDS && pool.length) {
+    const at = Math.floor(Math.random() * pool.length);
+    out.push(pool.splice(at, 1)[0]);
+  }
+  s.moves = out.slice(0, FIGHT_ROUNDS);
 }
 
-// 合體：前三名變成魔王的三個面向（同票照 ASPECTS 的順序，不滿三個就照順序補）。
-export function mergeBoss(s) {
-  if (s.bossMerged) return false;
-  const rows = tallyRows(s).slice().sort((a, b) => (b.n - a.n) || (a.order - b.order));
-  const picks = rows.filter((r) => r.n > 0).slice(0, 3).map((r) => r.k);
-  ASPECTS.forEach((a) => { if (picks.length < 3 && picks.indexOf(a.k) < 0) picks.push(a.k); });
-  s.bossPicks = picks;
-  s.bossMerged = true;
-  return true;
+const movesOf = (s) => (arr(s.moves).length ? s.moves : [{ k: 'work', i: 0 }]);
+const moveAt = (s, r) => movesOf(s)[r % movesOf(s).length];
+
+// ── 打鬥（兩個階段共用）──────────────────────────────────────────────────
+const openList = (s, key) => (Array.isArray(s[key]) ? s[key] : (s[key] = []));
+const shown = (s, key, r) => openList(s, key).indexOf(r) >= 0;
+const actOf = (p, r, key) => arr(p[key])[r] === true;
+
+// 這一回合全場打掉多少（職業的傷害；什麼都不做是 0）
+function damageOf(s, r, key, boost) {
+  return alive(s).reduce((sum, p) => {
+    if (!actOf(p, r, key)) return sum;
+    const c = classOf(p.job);
+    return sum + (c ? c.dmg : 0) * (boost || 1);
+  }, 0);
 }
 
-const bossPicks = (s) => (arr(s.bossPicks).length ? s.bossPicks : ASPECTS.slice(0, 3).map((a) => a.k));
-const roundAspect = (s, r) => bossPicks(s)[Math.min(r, 2)];
-
-// ── 第一回合：靠自己打 ──────────────────────────────────────────────────
+// ── 第一階段：靠自己打（五回合）─────────────────────────────────────────
 // 一顆按鈕按到底：還沒公布就公布，公布過了才換下一回合。
-const fightOpenList = (s) => (Array.isArray(s.fightOpen) ? s.fightOpen : (s.fightOpen = []));
-const fightShown = (s, r) => fightOpenList(s).indexOf(r) >= 0;
-const moveOf = (p, r) => {
-  const v = arr(p.moves)[r];
-  return v >= 0 && v < MOVES.length ? v : -1;
-};
-
+// **公布的時候血條真的會掉，換下一回合的時候它補滿。**
 export function revealFight(s) {
   const r = s.fightRound;
-  if (r >= ROUNDS || fightShown(s, r)) return false;
+  if (r >= FIGHT_ROUNDS || shown(s, 'fightOpen', r)) return false;
   s.fightOpen.push(r);
   alive(s).forEach((p) => {
-    if (p.outer === null || moveOf(p, r) < 0) return;
+    if (p.outer === null) return;
+    const c = classOf(p.job);
+    // 出手照職業的代價扣；什麼都不做也扣 —— **問題不會自己走。**
+    const loss = actOf(p, r, 'acts') ? (c ? c.loss : IDLE.loss) : IDLE.loss;
     const before = p.outer;
-    p.outer = clamp(p.outer - FIGHT_LOSS);
+    p.outer = clamp(p.outer - loss);
     p.fightLoss = (p.fightLoss || 0) + (before - p.outer);
   });
+  s.hp = Math.max(1, BOSS.hp - damageOf(s, r, 'acts', 1));
   return true;
 }
 
 export function fightStep(s) {
-  if (!fightShown(s, s.fightRound)) return revealFight(s);
-  if (s.fightRound < ROUNDS - 1) { s.fightRound += 1; return true; }
+  if (!shown(s, 'fightOpen', s.fightRound)) return revealFight(s);
+  if (s.fightRound < FIGHT_ROUNDS - 1) {
+    s.fightRound += 1;
+    s.hp = BOSS.hp;     // **補滿血。** 這一段全部的重量就在這一行。
+    return true;
+  }
   return false;
 }
 
 export function fightPrev(s) {
   if (s.fightRound <= 0) return false;
   s.fightRound -= 1;
+  s.hp = BOSS.hp;
   return true;
 }
 
@@ -204,26 +233,18 @@ export function fightRestart(s) {
   alive(s).forEach((p) => {
     if (p.fightLoss && p.outer !== null) p.outer = clamp(p.outer + p.fightLoss);
     p.fightLoss = 0;
-    p.moves = [];
+    p.acts = [];
   });
   s.fightRound = 0;
   s.fightOpen = [];
+  s.hp = BOSS.hp;
 }
 
 // ── 十字架 ──────────────────────────────────────────────────────────────
-// 四段一段一段走。**走到第 4 段那一秒，全場幸福指數 +10** —— 只加一次，往回跳不退分。
+// 四段一段一段走。**這一段一分都不加** —— 加分在最後那一擊。
 export function crossNext(s) {
   if (s.crossStep >= 3) return false;
   s.crossStep += 1;
-  if (s.crossStep >= 3 && !s.crossPaid) {
-    s.crossPaid = true;
-    alive(s).forEach((p) => {
-      if (p.outer === null) return;
-      const before = p.outer;
-      p.outer = clamp(p.outer + CROSS.gain);
-      p.crossGain = p.outer - before;
-    });
-  }
   return true;
 }
 
@@ -233,60 +254,63 @@ export function crossBack(s) {
   return true;
 }
 
-// ── 第二回合：在生活中得勝 ───────────────────────────────────────────────
-// 主持人按「出招」才抽人。**只抽在線的、整晚不重複**（人不夠才重複）。
-const struckList = (s) => (Array.isArray(s.tStruck) ? s.tStruck : (s.tStruck = []));
-const hitsOf = (s) => (Array.isArray(s.hits) ? s.hits : (s.hits = []));
-
-function hitCount(n) { return n >= 10 ? 3 : n >= 6 ? 2 : 1; }
-
-export function strike(s) {
-  const r = s.tRound;
-  if (r >= ROUNDS || struckList(s).indexOf(r) >= 0) return false;
-  const ps = scored(s);
-  if (!ps.length) return false;
-  const already = {};
-  hitsOf(s).forEach((h) => { already[h.pid] = true; });
-  let pool = ps.filter((p) => !already[p.pid]);
-  if (!pool.length) pool = ps.slice();
-  const want = Math.min(hitCount(ps.length), pool.length);
-  const k = roundAspect(s, r);
-  const text = (ATTACKS[k] || {}).r2 || '';
-  for (let i = 0; i < want; i++) {
-    const at = Math.floor(Math.random() * pool.length);
-    const p = pool.splice(at, 1)[0];
-    const before = p.outer;
-    p.outer = clamp(p.outer - TOGETHER.hitLoss);
-    s.hits.push({ round: r, pid: p.pid, aspect: k, text, loss: before - p.outer, prays: [], back: 0 });
-  }
-  s.tStruck.push(r);
+// ── 第二階段：在生活中得勝（三回合）─────────────────────────────────────
+// 一樣的職業、一樣的招式、一樣的那幾件事 —— 可是傷害 ×12，而且**它補不回來**。
+// **這一段不扣任何人的分。**
+export function revealWin(s) {
+  const r = s.winRound;
+  if (r >= WIN_ROUNDS || shown(s, 'winOpen', r)) return false;
+  s.winOpen.push(r);
+  // 打到剩一點點就好 —— **最後那一擊留給全場一起出手。**
+  const floor = Math.round(BOSS.hp * 0.08);
+  s.hp = Math.max(floor, s.hp - damageOf(s, r, 'winActs', WIN.boost));
   return true;
 }
 
-export function togetherStep(s) {
-  if (struckList(s).indexOf(s.tRound) < 0) return strike(s);
-  if (s.tRound < ROUNDS - 1) { s.tRound += 1; return true; }
+export function winStep(s) {
+  if (!shown(s, 'winOpen', s.winRound)) return revealWin(s);
+  if (s.winRound < WIN_ROUNDS - 1) { s.winRound += 1; return true; }
   return false;
 }
 
-export function togetherPrev(s) {
-  if (s.tRound <= 0) return false;
-  s.tRound -= 1;
+export function winPrev(s) {
+  if (s.winRound <= 0) return false;
+  s.winRound -= 1;
   return true;
 }
 
-// 能量條：**一格一個被打中的人**，有人替他禱告那一格就亮。按了幾次不算。
-function energy(s) {
-  const hits = hitsOf(s);
-  const planned = Math.max(hits.length, hitCount(scored(s).length) * ROUNDS);
-  const lit = hits.filter((h) => h.prays.length > 0).length;
-  const all = struckList(s).length >= ROUNDS && hits.length > 0 && lit >= hits.length;
-  return { planned, lit, total: hits.length, done: !!s.wonForced || all };
+export function winRestart(s) {
+  alive(s).forEach((p) => { p.winActs = []; });
+  s.winRound = 0;
+  s.winOpen = [];
+  s.hp = BOSS.hp;
+}
+
+// ── 最後一擊 ────────────────────────────────────────────────────────────
+// 全場都出手了（或主持人按了「全場出手」），魔王倒下，**全場幸福指數 +15**。
+function beatDone(s) {
+  const ps = alive(s);
+  return !!s.beatForced || (ps.length > 0 && ps.every((p) => p.beat));
+}
+
+function settleBeat(s) {
+  if (!beatDone(s) || s.beatPaid) return;
+  s.beatPaid = true;
+  s.beaten = true;
+  s.hp = 0;
+  alive(s).forEach((p) => {
+    if (p.outer === null) return;
+    const before = p.outer;
+    p.outer = clamp(p.outer + BEAT.gain);
+    p.beatGain = p.outer - before;
+  });
 }
 
 // ── 階段切換 ────────────────────────────────────────────────────────────
 export function enterPhase(s, idx) {
   s.phaseIdx = Math.max(0, Math.min(PHASES.length - 1, idx));
+  // 走到第二階段之前血條是滿的 —— 第一階段最後停在「它補滿了」。
+  if (phaseId(s) === 'win' && !arr(s.winOpen).length) s.hp = BOSS.hp;
   return null;
 }
 
@@ -312,7 +336,7 @@ export function applyAction(s, pid, msg) {
       p.innerStart = p.inner;
       break;
     }
-    // 挑一塊（最近哪一塊最有壓力）。**這一頁只挑分類，不抽卡。**
+    // 挑一塊。**這一頁只挑分類，不抽卡。**
     case 'aspect': {
       if (phaseId(s) !== 'cards') break;
       const k = String(msg.k || '');
@@ -321,8 +345,7 @@ export function applyAction(s, pid, msg) {
       if (p.aspect !== k) { p.aspect = k; p.pick = -1; }
       break;
     }
-    // 下一頁才抽。**抽到哪一句不是他選的** —— 點哪一張都一樣，伺服器隨機發。
-    // 同一塊裡盡量不要發到全場已經抽過的那一句（四句發完才可以重複）。
+    // 抽。**抽到哪一句不是他選的** —— 點哪一張都一樣，伺服器隨機發。
     case 'draw': {
       if (phaseId(s) !== 'draw' || s.cardsOpen) break;
       if (!p.aspect || p.pick >= 0) break;
@@ -335,38 +358,41 @@ export function applyAction(s, pid, msg) {
       p.pick = from[Math.floor(Math.random() * from.length)];
       break;
     }
-    // 靠自己打：只收現在這一回合，公布之前可以改。
-    case 'move': {
-      if (phaseId(s) !== 'fight') break;
-      const r = Math.floor(Number(msg.round));
-      if (r !== s.fightRound || fightShown(s, r)) break;
-      const v = Math.floor(Number(msg.value));
-      if (!(v >= 0 && v < MOVES.length)) break;
-      const rows = arr(p.moves).slice();
-      rows[r] = v;
-      p.moves = rows;
+    // 選職業。**開打之前隨時可以換。**
+    case 'job': {
+      if (phaseId(s) !== 'job') break;
+      const k = String(msg.k || '');
+      if (k && !CLASSES.some((c) => c.k === k)) break;
+      p.job = k;
       break;
     }
-    // 我為你禱告。**按的人一分都不動**，被打中的那個人補回剛剛那一下（同一擊只補一次）。
-    case 'pray': {
-      if (phaseId(s) !== 'together') break;
-      const i = Math.floor(Number(msg.idx));
-      const h = hitsOf(s)[i];
-      if (!h || h.pid === pid || h.prays.indexOf(pid) >= 0) break;
-      h.prays.push(pid);
-      if (h.prays.length === 1) {
-        const q = s.players[h.pid];
-        if (q && q.outer !== null) {
-          const before = q.outer;
-          q.outer = clamp(q.outer + TOGETHER.prayBack);
-          h.back = q.outer - before;
-        }
-      }
+    // 出手／什麼都不做。第一階段和第二階段共用這一個動作。
+    case 'act': {
+      const id = phaseId(s);
+      const key = id === 'fight' ? 'acts' : id === 'win' ? 'winActs' : '';
+      if (!key) break;
+      const r = id === 'fight' ? s.fightRound : s.winRound;
+      if (Math.floor(Number(msg.round)) !== r) break;
+      if (shown(s, id === 'fight' ? 'fightOpen' : 'winOpen', r)) break;
+      const rows = arr(p[key]).slice();
+      rows[r] = !!msg.go;
+      p[key] = rows;
       break;
     }
     case 'verse':
       if (!p.receivedVerse) { p.receivedVerse = true; grow(p, INNER_VERSE); }
       break;
+    // 領受復活。**不加分、不是門檻** —— 沒按的人第二階段照樣打得動。
+    case 'revive':
+      p.revived = true;
+      break;
+    // 最後一擊。全場都按了，魔王倒下，**全場 +15**。
+    case 'beat': {
+      if (phaseId(s) !== 'beat' || s.beatPaid) break;
+      p.beat = true;
+      settleBeat(s);
+      break;
+    }
     // 「我現在正在打的那一仗是＿＿」。那句話留在玩家自己的手機上，
     // 這裡只收「有沒有寫」這個布林值。**完全不上牆。**
     case 'bless': {
@@ -392,17 +418,17 @@ export function applyHost(s, msg) {
     case 'goto': return enterPhase(s, Number(msg.idx));
     case 'cardsReveal': revealCards(s); return null;
     case 'cardsRedeal': redealCards(s); return null;
-    case 'bossMerge': mergeBoss(s); return null;
     case 'fightStep': fightStep(s); return null;
     case 'fightPrev': fightPrev(s); return null;
     case 'fightRestart': fightRestart(s); return null;
     case 'crossNext': crossNext(s); return null;
     case 'crossBack': crossBack(s); return null;
-    case 'togetherStep': togetherStep(s); return null;
-    case 'togetherPrev': togetherPrev(s); return null;
-    // 有人手機沒電、或人太少扛不過來：**只把能量條補滿**，不替任何人補分。
-    case 'wonAll': s.wonForced = true; return null;
-    // 第 13 頁：翻開「在耶穌基督裡的好」。再按一次蓋回去。
+    case 'winStep': winStep(s); return null;
+    case 'winPrev': winPrev(s); return null;
+    case 'winRestart': winRestart(s); return null;
+    // 有人手機沒電：讓大螢幕收得了尾。**不替任何人按手機。**
+    case 'beatAll': s.beatForced = true; settleBeat(s); return null;
+    // 最後：翻開開場那張蓋著的卡。再按一次蓋回去。
     case 'goodOpen': s.goodOpen = !s.goodOpen; return null;
     case 'adjust': {
       const p = s.players[msg.pid];
@@ -422,16 +448,14 @@ export function applyHost(s, msg) {
 }
 
 // ── 對外視圖 ────────────────────────────────────────────────────────────
-// 你現在扛的是哪一塊。公布之前**不送任何人挑了什麼** —— 送出去等於把答案印在手機上。
 function cardsView(s) {
   const ps = alive(s);
   const done = ps.filter((p) => p.aspect && p.pick >= 0);
   return {
     open: !!s.cardsOpen,
-    // 第一頁等的是「幾人已挑一塊」，第二頁等的是「幾人已抽」。
     chosen: ps.filter((p) => !!p.aspect).length,
     picked: done.length,
-    // 公布之後大螢幕上翻出每一句被挑走的話（＋挑的人的名字）
+    // 公布之後大螢幕上翻出每個人抽到的那一句（＋名字）
     taken: s.cardsOpen
       ? done.map((p) => ({
         name: p.name, aspect: aspectOf(p.aspect).t, k: p.aspect, text: cardText(p.aspect, p.pick),
@@ -440,82 +464,66 @@ function cardsView(s) {
   };
 }
 
-// 統計 ＋ 合體。長條依人數排序，**只有人數，沒有名字**。
-function bossView(s) {
-  const rows = tallyRows(s).slice().sort((a, b) => (b.n - a.n) || (a.order - b.order));
-  const max = rows.reduce((m, r) => Math.max(m, r.n), 0);
-  return {
-    rows,
-    max: Math.max(max, 1),
-    merged: !!s.bossMerged,
-    picks: bossPicks(s).map((k) => ({ k, t: aspectOf(k).t })),
-    hp: BOSS.hp,
-  };
-}
-
-// 靠自己打。還沒公布就不送出結果。
-function fightView(s) {
+// 統計：照他自己挑的那一塊算，**只有人數，沒有名字**。
+function tallyView(s) {
   const ps = alive(s);
-  const r = s.fightRound;
-  const open = fightShown(s, r);
-  const k = roundAspect(s, r);
-  const cols = MOVES.map((m, i) => {
-    const who = ps.filter((p) => moveOf(p, r) === i);
-    return {
-      label: m.label, dmg: m.dmg,
-      n: open ? who.length : null,
-      names: open ? who.map((p) => p.name) : [],
-      t: open ? m.t : '',
-    };
+  const rows = ASPECTS.map((a, k) => {
+    const picks = ps.filter((p) => p.aspect === a.k && p.pick >= 0);
+    const texts = [];
+    picks.forEach((p) => {
+      const t = cardText(p.aspect, p.pick);
+      if (t && texts.indexOf(t) < 0) texts.push(t);
+    });
+    return { k: a.k, t: a.t, n: picks.length, texts, order: k };
   });
-  const dmg = open
-    ? ps.reduce((sum, p) => {
-      const mi = moveOf(p, r);
-      return sum + (mi >= 0 ? MOVES[mi].dmg : 0);
-    }, 0)
-    : 0;
+  const max = rows.reduce((m, r) => Math.max(m, r.n), 0);
+  rows.sort((a, b) => (b.n - a.n) || (a.order - b.order));
+  return { rows, max: Math.max(max, 1) };
+}
+
+// 魔王的五招（**就是他們自己抽到的那幾句**）
+function movesView(s) {
+  return movesOf(s).map((m) => ({ aspect: aspectOf(m.k).t, k: m.k, text: cardText(m.k, m.i) }));
+}
+
+// 打鬥（兩個階段共用一個視圖）
+function battleView(s, id) {
+  const ps = alive(s);
+  const isWin = id === 'win';
+  const key = isWin ? 'winActs' : 'acts';
+  const openKey = isWin ? 'winOpen' : 'fightOpen';
+  const r = isWin ? s.winRound : s.fightRound;
+  const total = isWin ? WIN_ROUNDS : FIGHT_ROUNDS;
+  const open = shown(s, openKey, r);
+  const m = moveAt(s, r);
   return {
-    round: r, total: ROUNDS, revealed: open,
-    aspect: aspectOf(k).t, aspectK: k,
-    attack: (ATTACKS[k] || {}).r1 || '',
-    cols,
-    dmg: Math.min(dmg, BOSS.hp - 1),   // 打得到，但**永遠打不死** —— 回合一結束它就補滿
-    hp: BOSS.hp,
-    moved: ps.filter((p) => moveOf(p, r) >= 0).length,
-    done: fightOpenList(s).length >= ROUNDS,
+    round: r, total, revealed: open,
+    aspect: aspectOf(m.k).t, attack: cardText(m.k, m.i),
+    acted: ps.filter((p) => arr(p[key])[r] !== undefined).length,
+    went: ps.filter((p) => actOf(p, r, key)).length,
+    idle: ps.filter((p) => arr(p[key])[r] === false).length,
+    dmg: open ? damageOf(s, r, key, isWin ? WIN.boost : 1) : 0,
+    hp: s.hp,
+    maxHp: BOSS.hp,
+    done: openList(s, openKey).length >= total,
+    // 公布之後才給：哪一個職業出手了幾個人
+    byJob: open
+      ? CLASSES.map((c) => ({
+        k: c.k, t: c.t, act: c.act,
+        n: ps.filter((p) => p.job === c.k && actOf(p, r, key)).length,
+        dmg: c.dmg * (isWin ? WIN.boost : 1),
+      }))
+      : [],
   };
 }
 
-// 結算：四招各出了幾次（**不印名字**）。
-function fightEndView(s) {
+function beatView(s) {
   const ps = alive(s);
   return {
-    cols: MOVES.map((m, i) => ({
-      label: m.label,
-      n: ps.reduce((sum, p) => sum + p.moves.filter((v) => v === i).length, 0),
-    })),
-    hp: BOSS.hp,
-    lost: ps.reduce((sum, p) => sum + (p.fightLoss || 0), 0),
-    avgLost: ps.length ? Math.round(ps.reduce((sum, p) => sum + (p.fightLoss || 0), 0) / ps.length) : 0,
-  };
-}
-
-// 在生活中得勝。每一擊印名字、招式、**幾個人為他禱告**（不印誰按的）。
-function togetherView(s) {
-  const e = energy(s);
-  return {
-    round: s.tRound, total: ROUNDS,
-    struck: struckList(s).indexOf(s.tRound) >= 0,
-    aspect: aspectOf(roundAspect(s, s.tRound)).t,
-    hits: hitsOf(s).map((h, i) => {
-      const p = s.players[h.pid];
-      return {
-        i, round: h.round, name: p ? p.name : '—', pid: h.pid,
-        aspect: aspectOf(h.aspect).t, text: h.text,
-        prays: h.prays.length, back: h.back || 0,
-      };
-    }),
-    energy: e,
+    hit: ps.filter((p) => p.beat).length,
+    total: ps.length,
+    done: !!s.beaten,
+    hp: s.hp,
   };
 }
 
@@ -532,21 +540,26 @@ function common(s) {
     drawInfo: DRAW,
     cardsNow: cardsView(s),
     tally: TALLY,
-    bossInfo: BOSS,
-    bossNow: bossView(s),
-    moves: MOVES.map((m) => ({ label: m.label, dmg: m.dmg })),
+    tallyNow: tallyView(s),
+    boss: BOSS,
+    bossMoves: movesView(s),
+    classes: CLASSES,
+    jobInfo: JOB,
+    idle: IDLE,
     fight: FIGHT,
-    fightNow: fightView(s),
-    fightEnd: FIGHT_END,
-    fightEndNow: fightEndView(s),
+    fightNow: battleView(s, 'fight'),
+    lost: LOST,
     cross: CROSS,
     crossStep: s.crossStep || 0,
     power: POWER,
     verse: VERSE,
-    together: TOGETHER,
-    togetherNow: togetherView(s),
-    won: WON,
+    winInfo: WIN,
+    winNow: battleView(s, 'win'),
+    beatInfo: BEAT,
+    beatNow: beatView(s),
+    victory: VICTORY,
     bless: BLESS,
+    hp: s.hp,
   };
 }
 
@@ -555,6 +568,9 @@ export function hostView(s, roomCode) {
   const sc = scored(s);
   const outers = sc.map((p) => p.outer);
   const starts = sc.map((p) => p.outerStart);
+  const id = phaseId(s);
+  const key = id === 'win' ? 'winActs' : 'acts';
+  const r = id === 'win' ? s.winRound : s.fightRound;
 
   return {
     role: 'host',
@@ -567,7 +583,10 @@ export function hostView(s, roomCode) {
       visits: p.visits, newcomer: p.newcomer,
       chose: !!p.aspect,
       picked: !!p.aspect && p.pick >= 0,
-      moved: moveOf(p, s.fightRound) >= 0,
+      job: p.job, jobName: p.job && classOf(p.job) ? classOf(p.job).t : '',
+      acted: arr(p[key])[r] !== undefined,
+      revived: !!p.revived,
+      beat: !!p.beat,
       hasBless: !!p.hasBless, prayed: !!p.prayed,
       receivedVerse: !!p.receivedVerse, cardDone: !!p.cardDone, adjust: p.adjust || 0,
     })),
@@ -577,7 +596,10 @@ export function hostView(s, roomCode) {
       newcomers: ps.filter((p) => p.newcomer).length,
       chose: ps.filter((p) => !!p.aspect).length,
       picked: ps.filter((p) => !!p.aspect && p.pick >= 0).length,
-      moved: ps.filter((p) => moveOf(p, s.fightRound) >= 0).length,
+      jobbed: ps.filter((p) => !!p.job).length,
+      acted: ps.filter((p) => arr(p[key])[r] !== undefined).length,
+      revived: ps.filter((p) => p.revived).length,
+      beat: ps.filter((p) => p.beat).length,
       outerAvg: outers.length ? Math.round(outers.reduce((a, b) => a + b, 0) / outers.length) : null,
       startAvg: starts.length ? Math.round(starts.reduce((a, b) => a + b, 0) / starts.length) : null,
       innerAvg: ps.length ? Math.round(ps.reduce((a, b) => a + (b.inner || 0), 0) / ps.length) : 0,
@@ -586,6 +608,7 @@ export function hostView(s, roomCode) {
       cardsDone: ps.filter((p) => p.cardDone).length,
       // 「已寫下」＝按過那顆按鈕的人。什麼都沒寫也算 —— 你等的就是那顆按鈕。
       blessed: ps.filter((p) => p.prayed).length,
+      fightLoss: ps.length ? Math.round(ps.reduce((a, b) => a + (b.fightLoss || 0), 0) / ps.length) : 0,
     },
   };
 }
@@ -597,12 +620,10 @@ export function playerView(s, pid, roomCode) {
     room: roomCode,
     ...common(s),
     playerCount: alive(s).length,
-    // 手機在等別人的時候要看得到進度。只有人數，不含任何人的答案。
     reconnected: alive(s).filter((x) => x.outer !== null).length,
   };
   if (!p) return { ...base, me: null };
-  const r = s.fightRound;
-  const hits = hitsOf(s);
+  const c = classOf(p.job);
   return {
     ...base,
     me: {
@@ -610,7 +631,6 @@ export function playerView(s, pid, roomCode) {
       outer: p.outer, outerStart: p.outerStart,
       inner: p.inner || 0, innerCap: INNER_CAP,
       visits: p.visits, newcomer: p.newcomer,
-      // 他挑的那一個面向，還有那一類的四句話。**別人挑了什麼誰也看不到。**
       aspect: p.aspect || '',
       aspectName: p.aspect ? aspectOf(p.aspect).t : '',
       // 那一塊有幾張卡（蓋著的時候手機要畫幾張），**內容抽到才給**。
@@ -618,16 +638,14 @@ export function playerView(s, pid, roomCode) {
       drawn: p.pick >= 0 ? { aspect: aspectOf(p.aspect).t, k: p.aspect, text: cardText(p.aspect, p.pick) } : null,
       pick: p.pick,
       cardLoss: p.cardLoss || 0,
-      move: moveOf(p, r),
-      moveText: fightShown(s, r) && moveOf(p, r) >= 0 ? MOVES[moveOf(p, r)].t : '',
+      job: p.job || '',
+      jobCard: c ? { k: c.k, t: c.t, art: c.art, act: c.act, dmg: c.dmg, loss: c.loss, d: c.d } : null,
+      act: arr(p.acts)[s.fightRound],
+      winAct: arr(p.winActs)[s.winRound],
       fightLoss: p.fightLoss || 0,
-      crossGain: p.crossGain || 0,
-      // 這一回合被打中的人（他自己在不在裡面、他替誰按過）
-      hits: hits.map((h, i) => ({
-        i, round: h.round, me: h.pid === pid, name: (s.players[h.pid] || {}).name || '—',
-        aspect: aspectOf(h.aspect).t, text: h.text,
-        prays: h.prays.length, prayed: h.prays.indexOf(pid) >= 0, back: h.back || 0,
-      })),
+      revived: !!p.revived,
+      beat: !!p.beat,
+      beatGain: p.beatGain || 0,
       hasBless: !!p.hasBless, prayed: !!p.prayed,
       receivedVerse: !!p.receivedVerse, cardDone: !!p.cardDone,
     },
