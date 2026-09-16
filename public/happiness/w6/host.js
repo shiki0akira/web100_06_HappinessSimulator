@@ -139,8 +139,8 @@
       return '<div class="solo"><h2>' + esc(S.chase.line) + '</h2></div>';
     },
 
-    // 三張困難卡。**大螢幕上不顯示任何人抽到什麼** —— 每個人的三張都不一樣，
-    // 公布之後才翻出被挑走的那幾張。
+    // 你現在扛的是哪一塊。大螢幕上只有六塊的名字，**誰挑了什麼一律不顯示**；
+    // 公布之後才翻出被挑走的那幾句。
     cards: function () {
       var c = S.cardsNow;
       if (c.open) {
@@ -152,12 +152,13 @@
             }).join('')
             : '<p class="lede">沒有人挑。</p>') + '</div>';
       }
+      // 大螢幕上只有六塊的名字 —— **誰挑了哪一塊、挑了哪一句，這裡都不顯示。**
       return '<h2>' + esc(S.pickInfo.title) + '</h2>' +
         '<p class="lede">' + esc(S.pickInfo.sub) + '</p>' +
-        '<div class="cardgrid">' +
-          '<div class="cardback">？</div><div class="cardback">？</div><div class="cardback">？</div>' +
-        '</div>' +
-        '<div class="kfoot">' + counter(S.stats.picked, '人已挑') + '</div>';
+        '<div class="aspectgrid">' + S.aspects.map(function (a) {
+          return '<div class="ac"><img src="' + aspectArt(a.k) + '" alt="">' + esc(a.t) + '</div>';
+        }).join('') + '</div>' +
+        '<div class="kfoot">' + counter(S.cardsNow.picked, '人已挑') + '</div>';
     },
 
     // 統計 ＋ 合體。**只有人數，沒有名字** —— 這一題是重擔。
@@ -493,7 +494,7 @@
     b.onclick = function () {
       var cmd = b.dataset.cmd;
       if (cmd === 'reset' && !confirm('把這個房間整個重置？所有人的分數和接關資料都會清掉。')) return;
-      if (cmd === 'cardsRedeal' && !confirm('重發三張困難卡？每個人的幸福指數會還原，重新洗一輪牌。')) return;
+      if (cmd === 'cardsRedeal' && !confirm('大家重挑一次？每個人的幸福指數會還原，剛剛挑的那一塊和那一句都會清掉。')) return;
       if (cmd === 'fightRestart' && !confirm('第一回合整個重跑？每個人掉的分數會還原。')) return;
       post(cmd);
     };

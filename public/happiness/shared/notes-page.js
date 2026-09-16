@@ -6,7 +6,10 @@
 (function () {
   'use strict';
   var N = window.WEEK_NOTES || {};
-  var WEEK = N.week || 1;
+  // ⚠️ 沒有 WEEK_NOTES 就**不要連線**。以前這裡是 `N.week || 1`，
+  // 結果某一關的 notes.js 打錯一個逗號，備忘錄就安安靜靜連到第一關的房間、
+  // 照著第一關的流程走 —— 現場看到的是「怎麼變成第一關了」，完全猜不到是語法錯誤。
+  var WEEK = N.week || 0;
   var S = null, conn = null, sig = '';
   var ROOM = Room.readCode();
 
@@ -265,8 +268,11 @@
 
 
     // 上一頁／下一頁在頁尾，拇指按得到 —— 主持人可以站起來走動
-    el('prev').disabled = S.phaseIdx <= 0;
-    el('next').disabled = S.phaseIdx >= S.phases.length - 1;
+    // **最後一頁不要把「下一頁」鎖起來。** 現場主持人按到底的時候，
+    // 一顆變灰的按鈕會讓人以為是當掉了 —— 底下那行字已經寫著「最後一頁」，
+    // 按下去不會動，但它看起來是活的。第一頁的「←」同理。
+    el('prev').disabled = false;
+    el('next').disabled = false;
     el('nextlbl').textContent = S.phaseIdx >= S.phases.length - 1
       ? '最後一頁'
       : S.phases[S.phaseIdx + 1].title;
@@ -318,7 +324,13 @@
     on('goodopen', function () { post('goodOpen'); });
   }
 
-  if (!ROOM) {
+  if (!WEEK) {
+    // notes.js 掛了（多半是文案裡少一個逗號）。**寧可壞得明顯，也不要默默連錯關。**
+    el('app').innerHTML =
+      '<div class="ask"><h1>備忘錄載入失敗</h1>' +
+      '<p>這一關的 <b>notes.js</b> 沒有載進來 —— 通常是檔案裡有語法錯誤。</p>' +
+      '<p class="hint">大螢幕照常可以跑，翻頁用電腦上的控制列。</p></div>';
+  } else if (!ROOM) {
     el('app').innerHTML =
       '<div class="ask"><h1>主持人備忘錄</h1>' +
       '<p>輸入大螢幕上的四碼房號，這支手機就會跟著大螢幕走。</p>' +

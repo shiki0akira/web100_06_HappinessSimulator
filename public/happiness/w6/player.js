@@ -118,15 +118,26 @@
           (me.cardLoss ? '<div class="hit">幸福指數 ' + fmt(-me.cardLoss) + '</div>' : '') +
           wait('看大螢幕');
       }
-      return '<h2>' + esc(S.pickInfo.title) + '</h2>' +
-        '<p>' + esc(S.pickInfo.sub) + '</p>' +
+      // 第一步：六塊裡挑一塊。**沒挑之前不給看任何句子。**
+      if (!me.aspect) {
+        return '<h2>' + esc(S.pickInfo.title) + '</h2>' +
+          '<p>' + esc(S.pickInfo.sub) + '</p>' +
+          '<div class="aspects">' + S.aspects.map(function (a) {
+            return '<button class="ab" data-aspect="' + esc(a.k) + '">' +
+              '<img src="' + aspectArt(a.k) + '" alt="">' + esc(a.t) + '</button>';
+          }).join('') + '</div>' +
+          '<p class="privacy">挑你這禮拜真的最有壓力的那一塊。只有你自己看得到。</p>';
+      }
+      // 第二步：那一塊的四句話。
+      return '<div class="qn">' + esc(me.aspectName) + '</div>' +
+        '<h2 style="margin-top:6px">' + esc(S.pickInfo.step2) + '</h2>' +
         '<div style="margin-top:16px">' + (me.cards || []).map(function (c, i) {
           return '<button class="pickcard' + (me.pick === i ? ' on' : '') + '" data-pick="' + i + '">' +
-            '<span class="as"><img src="' + aspectArt(c.k) + '" alt="">' + esc(c.aspect) + '</span>' +
             '<span class="tx">' + esc(c.text) + '</span>' +
           '</button>';
         }).join('') + '</div>' +
-        '<p class="privacy">' + (me.pick >= 0 ? '主持人公布之前都可以改。' : '挑一張最像你現在的。') + '</p>';
+        '<button class="btn ghost fullbtn" id="backaspect">' + esc(S.pickInfo.change) + '</button>' +
+        '<p class="privacy">' + (me.pick >= 0 ? '主持人公布之前都可以改。' : esc(S.pickInfo.hint)) + '</p>';
     },
 
     // 統計那一頁手機安靜。他自己挑的那一張留在畫面上。
@@ -328,9 +339,16 @@
       if (tm) tm.onclick = function () { draft.byVisits = !draft.byVisits; sig = ''; render(); };
     }
 
+    document.querySelectorAll('[data-aspect]').forEach(function (b) {
+      b.onclick = function () { act('aspect', { k: b.dataset.aspect }); };
+    });
+
     document.querySelectorAll('[data-pick]').forEach(function (b) {
       b.onclick = function () { act('pick', { idx: Number(b.dataset.pick) }); };
     });
+
+    var ba = document.getElementById('backaspect');
+    if (ba) ba.onclick = function () { act('aspect', { k: '' }); };
 
     document.querySelectorAll('[data-move]').forEach(function (b) {
       b.onclick = function () { act('move', { round: S.fightNow.round, value: Number(b.dataset.move) }); };
@@ -445,7 +463,7 @@
 
     // ⚠️ 得勝禱告那一格正在打的字不能進這一行 —— 一變就整頁重畫，焦點會被踢掉。
     var next = [
-      S.phase.id, S.cardsNow.open, S.bossNow.merged,
+      S.phase.id, S.cardsNow.open, S.bossNow.merged, (S.me && S.me.aspect) || '',
       S.fightNow.round, S.fightNow.revealed, S.crossStep, S.goodOpen,
       S.togetherNow.round, S.togetherNow.struck,
       (me.hits || []).map(function (h) { return h.i + ':' + h.prays + (h.prayed ? 'p' : ''); }).join(','),

@@ -3,7 +3,7 @@
 // 這一關完全不依賴前五關 —— 上一次沒來的人不會少玩到任何東西。
 // 接過來的只有卡片上的兩條線。**第三關起第一次來的人，幸福根基直接給 15。**
 //
-// 一句話講完這一關：抽三張困難卡挑一張（−3）→ 統計前三名合體成大魔王 →
+// 一句話講完這一關：先挑一塊、再挑一句最像自己的困難（−3）→ 統計前三名合體成大魔王 →
 // 靠自己打三回合（每招 −2，**魔王每回合都補滿血**）→ 十字架：最後一擊被一個人擋下來，
 // 三天之後血條歸零，**全場 +10（沒有人按任何東西）** → 苦難照樣來，但這一次全場互相扛。
 //
@@ -24,7 +24,6 @@ export const INNER_PRAYER = 5;
 export const NEWCOMER_INNER = 15;
 
 export const ROUNDS = 3;          // 兩個回合制的遊戲都是三回合
-const DEAL = 3;                   // 抽幾張卡
 
 export const PHASES = [
   { id: 'lobby',     tag: '入場',     title: '掃碼進場' },
@@ -32,7 +31,7 @@ export const PHASES = [
   // 開場的伏筆：右邊那一格蓋著，第 13 頁才翻開。
   { id: 'good',      tag: '信息',     title: '什麼才是「好」？' },
   { id: 'chase',     tag: '信息',     title: '我們追求的方向，不能滿足生命真正的需要' },
-  { id: 'cards',     tag: '互動點 1', title: '三張困難卡，挑一張' },
+  { id: 'cards',     tag: '互動點 1', title: '你現在扛的是哪一塊？' },
   { id: 'boss',      tag: '統計',     title: '最近讓你最累的是什麼？' },
   { id: 'fight',     tag: '互動點 2', title: '靠自己打' },
   { id: 'fightEnd',  tag: '結算頁',   title: '勞苦重擔的不幸人生' },
@@ -54,7 +53,7 @@ export function createState() {
     phaseIdx: 0,
     players: {},
     order: [],
-    cardsOpen: false,     // 三張困難卡公布了沒（公布之後鎖住，那一刻才扣分）
+    cardsOpen: false,     // 那一頁公布了沒（公布之後鎖住，那一刻才扣分）
     bossMerged: false,    // 前三名合體成魔王了沒
     bossPicks: [],        // 魔王的三個面向（合體之後固定）
     fightRound: 0,
@@ -80,35 +79,6 @@ const arr = (v) => (Array.isArray(v) ? v : []);
 const aspectOf = (k) => ASPECTS.find((a) => a.k === k) || ASPECTS[0];
 const cardText = (k, i) => (CARDS[k] || [])[i] || '';
 
-// ── 發牌 ────────────────────────────────────────────────────────────────
-// 三張一定來自三個不同的面向，**全場盡量不重複**（發不完才可以重複）。
-function dealCards(s, p) {
-  const used = {};
-  alive(s).forEach((q) => arr(q.cards).forEach((c) => { used[c.k + ':' + c.i] = true; }));
-  const pool = ASPECTS.slice();
-  for (let i = pool.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    const t = pool[i]; pool[i] = pool[j]; pool[j] = t;
-  }
-  const out = [];
-  pool.forEach((a) => {
-    if (out.length >= DEAL) return;
-    const all = (CARDS[a.k] || []).map((_, i) => i);
-    const free = all.filter((i) => !used[a.k + ':' + i]);
-    const from = free.length ? free : all;
-    if (!from.length) return;
-    const i = from[Math.floor(Math.random() * from.length)];
-    used[a.k + ':' + i] = true;
-    out.push({ k: a.k, i });
-  });
-  p.cards = out;
-  p.pick = -1;
-}
-
-function dealAll(s) {
-  alive(s).forEach((p) => { if (!arr(p.cards).length) dealCards(s, p); });
-}
-
 export function addPlayer(s, name) {
   s.seq += 1;
   const pid = 'p' + s.seq + Math.random().toString(36).slice(2, 6);
@@ -122,9 +92,9 @@ export function addPlayer(s, name) {
     innerStart: 0,
     visits: 0,
     newcomer: false,
-    cards: [],            // 抽到的三張（{ k: 面向, i: 第幾張 }）
-    pick: -1,             // 挑了哪一張（0–2）
-    cardLoss: 0,          // 挑那一張扣了多少（重發的時候要還原）
+    aspect: '',           // 他自己挑的那一個面向（財務／工作／婚姻／感情／家庭／健康）
+    pick: -1,             // 那一類的四句話裡挑了哪一句（0–3）
+    cardLoss: 0,          // 挑那一句扣了多少（重挑的時候要還原）
     moves: [],            // 第一回合三回合各出了什麼招
     fightLoss: 0,         // 第一回合總共掉了多少（重跑的時候要還原）
     crossGain: 0,         // 十字架那一刻拿到多少（往回跳不退分，這裡只做紀錄）
@@ -135,18 +105,16 @@ export function addPlayer(s, name) {
     adjust: 0,
   };
   s.order.push(pid);
-  // 已經在抽卡那一頁了才進來的人，也要有三張卡
-  if (phaseId(s) === 'cards' || s.cardsOpen) dealCards(s, s.players[pid]);
   return pid;
 }
 
-// ── 三張困難卡 ──────────────────────────────────────────────────────────
-// 公布的那一刻才扣分。**挑了的人 −3，沒挑的人不動。**
+// ── 你現在扛的是哪一塊（兩步：挑一塊 → 挑一句）──────────────────────────
+// 公布的那一刻才扣分。**兩步都做完的人 −3，沒挑的人不動。**
 export function revealCards(s) {
   if (s.cardsOpen) return false;
   s.cardsOpen = true;
   alive(s).forEach((p) => {
-    if (p.outer === null || p.pick < 0) return;
+    if (p.outer === null || !p.aspect || p.pick < 0) return;
     const before = p.outer;
     p.outer = clamp(p.outer - CARD_LOSS);
     p.cardLoss = before - p.outer;
@@ -154,33 +122,28 @@ export function revealCards(s) {
   return true;
 }
 
-// 重發：分數還原，重新洗一輪牌。
+// 重挑：分數還原，剛剛挑的那一塊和那一句都清掉。
 export function redealCards(s) {
   alive(s).forEach((p) => {
     if (p.cardLoss && p.outer !== null) p.outer = clamp(p.outer + p.cardLoss);
     p.cardLoss = 0;
-    p.cards = [];
+    p.aspect = '';
     p.pick = -1;
   });
   s.cardsOpen = false;
   s.bossMerged = false;
   s.bossPicks = [];
-  dealAll(s);
 }
 
 // 最近讓你最累的是什麼：**只算人數，不印名字**。
 function tallyRows(s) {
   const ps = alive(s);
   return ASPECTS.map((a, k) => {
-    const picks = ps.filter((p) => {
-      const c = arr(p.cards)[p.pick];
-      return c && c.k === a.k;
-    });
-    // 被挑走的那幾張卡的原文（**不掛名字**）—— 主持人念那一句就是最好的接話點
+    const picks = ps.filter((p) => p.aspect === a.k && p.pick >= 0);
+    // 被挑走的那幾句的原文（**不掛名字**）—— 主持人念那一句就是最好的接話點
     const texts = [];
     picks.forEach((p) => {
-      const c = arr(p.cards)[p.pick];
-      const t = cardText(c.k, c.i);
+      const t = cardText(p.aspect, p.pick);
       if (t && texts.indexOf(t) < 0) texts.push(t);
     });
     return { k: a.k, t: a.t, n: picks.length, texts, order: k };
@@ -322,8 +285,6 @@ function energy(s) {
 // ── 階段切換 ────────────────────────────────────────────────────────────
 export function enterPhase(s, idx) {
   s.phaseIdx = Math.max(0, Math.min(PHASES.length - 1, idx));
-  // 走到抽卡那一頁就發牌（每個人三張，三個不同面向）
-  if (phaseId(s) === 'cards') dealAll(s);
   return null;
 }
 
@@ -349,11 +310,20 @@ export function applyAction(s, pid, msg) {
       p.innerStart = p.inner;
       break;
     }
-    // 三張裡挑一張最像自己的。公布之前隨時可以改。
+    // 先挑一個面向（最近哪一塊最有壓力）。換一個分類，那一類的四句話才跟著換。
+    case 'aspect': {
+      if (phaseId(s) !== 'cards' || s.cardsOpen) break;
+      const k = String(msg.k || '');
+      // 空字串＝手機上按了「換一塊」，退回第一步。**不能當成無效值擋掉。**
+      if (k && !ASPECTS.some((a) => a.k === k)) break;
+      if (p.aspect !== k) { p.aspect = k; p.pick = -1; }
+      break;
+    }
+    // 再從那一類的四句話裡挑一句最像自己的。公布之前隨時可以改。
     case 'pick': {
       if (phaseId(s) !== 'cards' || s.cardsOpen) break;
       const i = Math.floor(Number(msg.idx));
-      if (!(i >= 0 && i < arr(p.cards).length)) break;
+      if (!p.aspect || !(i >= 0 && i < (CARDS[p.aspect] || []).length)) break;
       p.pick = i;
       break;
     }
@@ -444,18 +414,20 @@ export function applyHost(s, msg) {
 }
 
 // ── 對外視圖 ────────────────────────────────────────────────────────────
-// 三張困難卡。公布之前**不送任何人挑了什麼** —— 送出去等於把答案印在手機上。
+// 你現在扛的是哪一塊。公布之前**不送任何人挑了什麼** —— 送出去等於把答案印在手機上。
 function cardsView(s) {
   const ps = alive(s);
+  const done = ps.filter((p) => p.aspect && p.pick >= 0);
   return {
     open: !!s.cardsOpen,
-    picked: ps.filter((p) => p.pick >= 0).length,
-    // 公布之後大螢幕上翻出每一張被挑走的卡（卡面 ＋ 挑的人的名字）
+    // **選了分類但還沒挑那一句的不算完成** —— 主持人等的是「已挑」。
+    chosen: ps.filter((p) => !!p.aspect).length,
+    picked: done.length,
+    // 公布之後大螢幕上翻出每一句被挑走的話（＋挑的人的名字）
     taken: s.cardsOpen
-      ? ps.filter((p) => p.pick >= 0).map((p) => {
-        const c = arr(p.cards)[p.pick];
-        return { name: p.name, aspect: aspectOf(c.k).t, k: c.k, text: cardText(c.k, c.i) };
-      })
+      ? done.map((p) => ({
+        name: p.name, aspect: aspectOf(p.aspect).t, k: p.aspect, text: cardText(p.aspect, p.pick),
+      }))
       : [],
   };
 }
@@ -547,6 +519,7 @@ function common(s) {
     good: GOOD,
     goodOpen: !!s.goodOpen,
     chase: CHASE,
+    aspects: ASPECTS,
     pickInfo: PICK,
     cardsNow: cardsView(s),
     tally: TALLY,
@@ -583,7 +556,7 @@ export function hostView(s, roomCode) {
       pid: p.pid, name: p.name,
       outer: p.outer, outerStart: p.outerStart, inner: p.inner || 0,
       visits: p.visits, newcomer: p.newcomer,
-      picked: p.pick >= 0,
+      picked: !!p.aspect && p.pick >= 0,
       moved: moveOf(p, s.fightRound) >= 0,
       hasBless: !!p.hasBless, prayed: !!p.prayed,
       receivedVerse: !!p.receivedVerse, cardDone: !!p.cardDone, adjust: p.adjust || 0,
@@ -592,7 +565,7 @@ export function hostView(s, roomCode) {
       count: ps.length,
       reconnected: sc.length,
       newcomers: ps.filter((p) => p.newcomer).length,
-      picked: ps.filter((p) => p.pick >= 0).length,
+      picked: ps.filter((p) => !!p.aspect && p.pick >= 0).length,
       moved: ps.filter((p) => moveOf(p, s.fightRound) >= 0).length,
       outerAvg: outers.length ? Math.round(outers.reduce((a, b) => a + b, 0) / outers.length) : null,
       startAvg: starts.length ? Math.round(starts.reduce((a, b) => a + b, 0) / starts.length) : null,
@@ -626,8 +599,10 @@ export function playerView(s, pid, roomCode) {
       outer: p.outer, outerStart: p.outerStart,
       inner: p.inner || 0, innerCap: INNER_CAP,
       visits: p.visits, newcomer: p.newcomer,
-      // 他自己的三張卡。**別人的卡誰也看不到。**
-      cards: arr(p.cards).map((c) => ({ aspect: aspectOf(c.k).t, k: c.k, text: cardText(c.k, c.i) })),
+      // 他挑的那一個面向，還有那一類的四句話。**別人挑了什麼誰也看不到。**
+      aspect: p.aspect || '',
+      aspectName: p.aspect ? aspectOf(p.aspect).t : '',
+      cards: p.aspect ? (CARDS[p.aspect] || []).map((t) => ({ aspect: aspectOf(p.aspect).t, k: p.aspect, text: t })) : [],
       pick: p.pick,
       cardLoss: p.cardLoss || 0,
       move: moveOf(p, r),

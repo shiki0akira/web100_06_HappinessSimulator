@@ -120,6 +120,17 @@
     font-family: var(--pixel); font-size: min(calc(150px * var(--u)), 22vh); color: var(--gold); }
   .goodcol.right.open { animation: unseal .6s ease-out; }
 
+  /* ── 你現在扛的是哪一塊：六塊排三欄兩列 ───────────────────────────── */
+  .aspectgrid { flex: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr)); gap: calc(20px * var(--u));
+    align-content: center; margin-top: min(calc(18px * var(--u)), 2.4vh); }
+  .ac { display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: min(calc(10px * var(--u)), 1.2vh); background: var(--surface);
+    border: 4px solid var(--edge); box-shadow: 5px 5px 0 var(--hard);
+    padding: min(calc(16px * var(--u)), 2vh) calc(18px * var(--u));
+    font-size: min(calc(32px * var(--u)), 4vh, 2.2vw); font-weight: 900; letter-spacing: .06em; }
+  .ac img { width: min(calc(72px * var(--u)), 8.5vh); height: auto; image-rendering: pixelated; }
+
   /* ── 三張困難卡 ───────────────────────────────────────────────────── */
   .cardgrid { flex: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: calc(20px * var(--u)); align-items: center; margin-top: min(calc(18px * var(--u)), 2.4vh); }
@@ -339,7 +350,7 @@
     <!-- 每一頁該有的控制鈕。現場不要靠鍵盤。 -->
     <span id="cardsctl" style="display:none;gap:8px;">
       <button class="btn primary" data-cmd="cardsReveal" id="creveal">公布結果</button>
-      <button class="btn" data-cmd="cardsRedeal">重發三張卡</button>
+      <button class="btn" data-cmd="cardsRedeal">重挑</button>
     </span>
     <span id="bossctl" style="display:none;gap:8px;">
       <button class="btn primary" data-cmd="bossMerge" id="bmerge">合體</button>
