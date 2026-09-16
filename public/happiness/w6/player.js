@@ -188,8 +188,7 @@
     bossIn: function () {
       return '<h2 class="center">' + esc(S.boss.name) + '</h2>' +
         '<img class="bossart" src="/happiness/shared/art/boss.svg" alt="">' +
-        '<div class="hpline">' + S.boss.hp + ' / ' + S.boss.hp + '</div>' +
-        '<p class="privacy center">' + esc(S.boss.sub) + '</p>';
+        '<div class="hpline">' + S.boss.hp + ' / ' + S.boss.hp + '</div>';
     },
 
     // 選職業。四張卡，選一張。

@@ -211,7 +211,6 @@
         '<div class="cinetitle">' + esc(S.boss.name) + '</div>' +
         '<div class="hpbar wide"><i class="fillup"></i></div>' +
         '<div class="hpnum">' + S.boss.hp + ' / ' + S.boss.hp + '</div>' +
-        '<div class="cinesub">' + esc(S.boss.sub) + '</div>' +
       '</div>';
     },
 
@@ -241,7 +240,6 @@
         '<div class="hpbar wide"><i style="width:100%"></i></div>' +
         '<div class="hpnum">' + S.boss.hp + ' / ' + S.boss.hp + '</div>' +
         '<div class="cinetitle down">' + esc(S.lost.line) + '</div>' +
-        '<div class="cinesub">' + esc(S.lost.sub) + '</div>' +
       '</div>';
     },
 
