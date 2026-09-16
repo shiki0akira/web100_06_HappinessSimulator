@@ -65,7 +65,9 @@ window.StageParts = (function () {
     // 誰願意講，主持人自己在現場問。
     prayer: function (opts) {
       opts = opts || {};
-      return '<h2>祝福禱告</h2>' +
+      // 第六關這一頁叫「得勝禱告」，其他關都是「祝福禱告」——
+      // 大螢幕和手機上的名字要一樣，不然全場會以為是兩件事。
+      return '<h2>' + esc(opts.title || '祝福禱告') + '</h2>' +
         '<p class="lede">' + esc(opts.lede || '領受經文之後，你有什麼想法？寫下來。只有你自己看得到。') + '</p>' +
         '<div class="receive">' +
           art('prayer.svg', 'small') +

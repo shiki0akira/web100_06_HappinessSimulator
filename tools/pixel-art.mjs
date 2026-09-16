@@ -793,3 +793,202 @@ function animatedSvg(w, h, css, body, label) {
   }
   console.log('第三關：quest-chain／quest-cross／quest-heaven.svg（第 14 頁的三格）');
 }
+
+// ── 第六關「十字架的勝利」 ────────────────────────────────────────────────
+// 大魔王「勞苦重擔」、碎掉的它、十字架的剪影、打開的墳墓，還有六個面向的小圖。
+//
+// ⚠️ **魔王不准畫成惡魔**：不准有角、不准有尾巴、不准冒火。
+// 它是帳單、鬧鐘、公事包疊出來的一隻巨人 —— 看起來有點好笑、有點累。
+// 可怕的地方不是長相，是它會一直回血。
+{
+  const OUT_SHARED = 'public/happiness/shared/art';
+  const box = (x, y, w, h, c) =>
+    `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`;
+
+  // 1 · 勞苦重擔本體（32×32）
+  {
+    let b = '';
+    b += box(4, 30, 24, 1, PAL.w);                       // 影子
+    // 鬧鐘（頭）：兩顆鈴鐺 ＋ 圓臉 ＋ 指針
+    b += box(11, 2, 2, 2, PAL.H) + box(19, 2, 2, 2, PAL.H);
+    b += box(13, 3, 6, 1, PAL.W) + box(12, 4, 8, 6, PAL.W) + box(13, 10, 6, 1, PAL.W);
+    b += box(12, 4, 8, 1, PAL.k);
+    b += box(15, 6, 1, 3, PAL.D) + box(16, 7, 3, 1, PAL.D);
+    // 帳單：從身體兩邊插出來
+    b += box(6, 11, 7, 3, PAL.G) + box(6, 11, 7, 1, PAL.S);
+    b += box(19, 10, 7, 4, PAL.G) + box(19, 10, 7, 1, PAL.S);
+    // 公事包（身體）
+    b += box(14, 11, 4, 1, PAL.D) + box(13, 12, 1, 2, PAL.D) + box(18, 12, 1, 2, PAL.D);
+    b += box(5, 14, 22, 14, PAL.n) + box(5, 14, 22, 1, PAL.o);
+    b += box(15, 21, 2, 2, PAL.o);                       // 鎖扣
+    // 累的表情：眉毛垂下來、眼睛兩點、嘴巴一條
+    b += box(10, 17, 4, 1, PAL.D) + box(18, 17, 4, 1, PAL.D);
+    b += box(11, 19, 2, 2, PAL.D) + box(19, 19, 2, 2, PAL.D);
+    b += box(13, 25, 6, 1, PAL.D);
+    // 藥袋：卡在左邊
+    b += box(2, 20, 3, 7, PAL.W) + box(2, 20, 3, 1, PAL.w);
+    write('boss.svg', '0 0 32 32', b, '勞苦重擔', OUT_SHARED);
+  }
+
+  // 2 · 碎掉的它。同樣那幾樣東西，散在地上 —— **不要畫成屍體**，就是一堆東西掉下來。
+  {
+    let b = '';
+    b += box(2, 30, 28, 1, PAL.w);
+    b += box(3, 24, 9, 5, PAL.n) + box(3, 24, 9, 1, PAL.o);
+    b += box(13, 26, 7, 3, PAL.n) + box(13, 26, 7, 1, PAL.o);
+    b += box(21, 25, 8, 4, PAL.n) + box(21, 25, 8, 1, PAL.o);
+    b += box(6, 20, 5, 4, PAL.W) + box(6, 20, 5, 1, PAL.k);   // 鬧鐘的一半
+    b += box(23, 20, 4, 4, PAL.W) + box(23, 20, 4, 1, PAL.k);
+    b += box(12, 21, 6, 2, PAL.G) + box(17, 18, 5, 2, PAL.G); // 飄下來的帳單
+    b += box(9, 17, 2, 1, PAL.w) + box(20, 15, 2, 1, PAL.w);  // 灰塵
+    write('boss-broken.svg', '0 0 32 32', b, '碎掉的勞苦重擔', OUT_SHARED);
+  }
+
+  // 3 · 十字架的剪影（暗場那一段）。**不准血腥** —— 只有一個形狀和一道光邊。
+  {
+    let b = '';
+    b += box(14, 3, 4, 24, PAL.d) + box(8, 9, 16, 4, PAL.d);
+    b += box(14, 3, 4, 1, PAL.o) + box(8, 9, 16, 1, PAL.o) + box(14, 13, 1, 14, PAL.o);
+    b += box(6, 28, 20, 1, PAL.D);
+    write('cross-dark.svg', '0 0 32 32', b, '十字架的剪影', OUT_SHARED);
+  }
+
+  // 4 · 打開的墳墓：石頭滾到旁邊，光從裡面出來。
+  {
+    let b = '';
+    b += box(2, 2, 28, 20, PAL.w) + box(2, 2, 28, 2, PAL.D);   // 石壁
+    b += box(9, 8, 11, 14, PAL.D);                              // 洞口
+    b += box(10, 7, 9, 1, PAL.D) + box(11, 6, 7, 1, PAL.D);
+    b += box(11, 10, 7, 12, PAL.k) + box(12, 8, 5, 2, PAL.k);   // 裡面的光
+    b += box(13, 12, 3, 10, '#FFF4B8');
+    b += box(21, 11, 8, 11, PAL.W) + box(22, 10, 6, 1, PAL.W);  // 滾開的石頭
+    b += box(21, 20, 8, 2, PAL.w);
+    [[7, 4], [12, 3], [17, 3], [22, 5]].forEach(([x, y]) => { b += box(x, y, 1, 1, PAL.G); });
+    b += box(2, 22, 28, 1, PAL.w);
+    write('tomb-open.svg', '0 0 32 24', b, '打開的墳墓', OUT_SHARED);
+  }
+
+  // 5 · 六個面向的小圖（16×16）。統計長條、魔王合體、玩家手機上的卡都用這一批。
+  const ICONS = {
+    // 財務：一枚有 S 記號的硬幣
+    money: [
+      '................',
+      '................',
+      '.....SSSSSS.....',
+      '...SSGGGGGGSS...',
+      '..SGGGGGGGGGGS..',
+      '.SGGGGSSSSGGGGS.',
+      '.SGGGGSGGGGGGGS.',
+      '.SGGGGSSSSGGGGS.',
+      '.SGGGGGGGGSGGGS.',
+      '.SGGGGSSSSGGGGS.',
+      '..SGGGGGGGGGGS..',
+      '...SSGGGGGGSS...',
+      '.....SSSSSS.....',
+      '................',
+      '................',
+      '................',
+    ],
+    // 工作：公事包
+    work: [
+      '................',
+      '................',
+      '......DDDD......',
+      '......D..D......',
+      '..nnnnnnnnnnnn..',
+      '..noooooooooon..',
+      '..nnnnnnnnnnnn..',
+      '..nnnnnoonnnnn..',
+      '..nnnnnoonnnnn..',
+      '..nnnnnnnnnnnn..',
+      '..nnnnnnnnnnnn..',
+      '..nnnnnnnnnnnn..',
+      '................',
+      '................',
+      '................',
+      '................',
+    ],
+    // 婚姻：兩個扣在一起的戒指
+    married: [
+      '................',
+      '................',
+      '................',
+      '.....GG...GG....',
+      '....G..G.G..G...',
+      '...G....G....G..',
+      '...G....G....G..',
+      '...G....G....G..',
+      '....G..G.G..G...',
+      '.....GG...GG....',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+    ],
+    // 感情：一顆心
+    love: [
+      '................',
+      '................',
+      '...hh......hh...',
+      '..hhhh....hhhh..',
+      '.hhhhhh..hhhhhh.',
+      '.hhhhhhhhhhhhhh.',
+      '.hhhhhhhhhhhhhh.',
+      '..hhhhhhhhhhhh..',
+      '...hhhhhhhhhh...',
+      '....hhhhhhhh....',
+      '.....hhhhhh.....',
+      '......hhhh......',
+      '.......hh.......',
+      '................',
+      '................',
+      '................',
+    ],
+    // 家庭：一間亮著燈的房子
+    family: [
+      '................',
+      '.......HH.......',
+      '......HHHH......',
+      '.....HHHHHH.....',
+      '....HHHHHHHH....',
+      '...HHHHHHHHHH...',
+      '..HHHHHHHHHHHH..',
+      '..WWWWWWWWWWWW..',
+      '..WWWWWWWWWWWW..',
+      '..WWWWGGGGWWWW..',
+      '..WWWWGGGGWWWW..',
+      '..WWWWWWWWWWWW..',
+      '..WWWWWWWWWWWW..',
+      '................',
+      '................',
+      '................',
+    ],
+    // 健康：十字（不是宗教的十字架，是醫療的那一種）
+    body: [
+      '................',
+      '................',
+      '......CCCC......',
+      '......CCCC......',
+      '..CCCCCCCCCCCC..',
+      '..CCCCCCCCCCCC..',
+      '..CCCCCCCCCCCC..',
+      '..CCCCCCCCCCCC..',
+      '......CCCC......',
+      '......CCCC......',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+    ],
+  };
+  const NAMES = { money: '財務', work: '工作', married: '婚姻', love: '感情', family: '家庭', body: '健康' };
+  Object.keys(ICONS).forEach((k) => {
+    write('aspect-' + k + '.svg', '0 0 16 16', sprite(ICONS[k], 0, 0), NAMES[k], OUT_SHARED);
+  });
+
+  console.log('第六關：boss／boss-broken／cross-dark／tomb-open ＋ 六個面向的小圖');
+}

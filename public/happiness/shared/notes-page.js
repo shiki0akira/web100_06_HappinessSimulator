@@ -157,6 +157,83 @@
       }
     }
 
+    // 第六關的三張困難卡：大家挑完你才公布（公布的那一刻才扣分）。
+    var pickc = el('pickctl');
+    if (pickc) {
+      pickc.hidden = S.phase.id !== 'cards' || !S.cardsNow;
+      if (!pickc.hidden) {
+        el('pickreveal').textContent = S.cardsNow.open
+          ? '已經公布了'
+          : '公布結果（' + S.stats.picked + '/' + S.stats.count + ' 已挑）';
+        el('pickreveal').disabled = S.cardsNow.open;
+      }
+    }
+
+    // 第六關的大魔王：統計念完，前三名合體。
+    var mergec = el('mergectl');
+    if (mergec) {
+      mergec.hidden = S.phase.id !== 'boss' || !S.bossNow;
+      if (!mergec.hidden) {
+        el('bossmerge').textContent = S.bossNow.merged ? '已經合體了' : '合體（前三名 → 大魔王）';
+        el('bossmerge').disabled = S.bossNow.merged;
+      }
+    }
+
+    // 第六關的靠自己打：大家出招完你才公布，公布完再開下一回合。
+    var fightc = el('fightctl');
+    if (fightc) {
+      fightc.hidden = S.phase.id !== 'fight' || !S.fightNow;
+      if (!fightc.hidden) {
+        var lastF = S.fightNow.round >= S.fightNow.total - 1;
+        el('fightprev').disabled = S.fightNow.round <= 0;
+        el('fightstep').textContent = !S.fightNow.revealed
+          ? '公布結果（' + S.stats.moved + '/' + S.stats.count + ' 已出招）'
+          : (lastF ? '都打完了，按下一頁' : '下一回合 →（' + (S.fightNow.round + 2) + '/' + S.fightNow.total + '）');
+        el('fightstep').disabled = S.fightNow.revealed && lastF;
+      }
+    }
+
+    // 第六關的十字架：四段一段一段走。**每一段的停頓都不准省。**
+    var crossc = el('crossctl');
+    if (crossc) {
+      crossc.hidden = S.phase.id !== 'cross';
+      if (!crossc.hidden) {
+        var st = S.crossStep || 0;
+        var LBL = ['下一步（他走到最前面）', '下一步（三天）', '下一步（復活）', '走完了，按下一頁'];
+        el('crossback').disabled = st <= 0;
+        el('crossnext').textContent = LBL[st];
+        el('crossnext').disabled = st >= 3;
+      }
+    }
+
+    // 第六關的在生活中得勝：你按「出招」才抽人；能量條一格一個被打中的人。
+    var togc = el('togetherctl');
+    if (togc) {
+      togc.hidden = S.phase.id !== 'together' || !S.togetherNow;
+      if (!togc.hidden) {
+        var t6 = S.togetherNow;
+        var lastT = t6.round >= t6.total - 1;
+        el('togprev').disabled = t6.round <= 0;
+        el('togstep').textContent = !t6.struck
+          ? '出招（' + (t6.round + 1) + '/' + t6.total + '）'
+          : (lastT ? '三回合都打完了，按下一頁' : '下一回合 →（' + (t6.round + 2) + '/' + t6.total + '）');
+        el('togstep').disabled = t6.struck && lastT;
+        el('wonallbtn').textContent = t6.energy.done
+          ? '能量條滿了'
+          : '全場得勝（' + t6.energy.lit + '/' + t6.energy.planned + '）';
+        el('wonallbtn').disabled = t6.energy.done;
+      }
+    }
+
+    // 第六關的收口：翻開開場那張蓋著的卡（在耶穌基督裡的好）。
+    var goodc = el('goodctl');
+    if (goodc) {
+      goodc.hidden = S.phase.id !== 'won';
+      if (!goodc.hidden) {
+        el('goodopen').textContent = S.goodOpen ? '蓋回去' : '翻開「在耶穌基督裡的好」';
+      }
+    }
+
     // 第二關的寶箱：主持人拿著手機也能打開它。
     var giftc = el('giftctl');
     if (giftc) {
@@ -229,6 +306,16 @@
     on('opennow', function () { post('openAll'); });
     on('seeknext', function () { post('seekNext'); });
     on('opengift', function () { post('openGift'); });
+    on('pickreveal', function () { post('cardsReveal'); });
+    on('bossmerge', function () { post('bossMerge'); });
+    on('fightprev', function () { post('fightPrev'); });
+    on('fightstep', function () { post('fightStep'); });
+    on('crossback', function () { post('crossBack'); });
+    on('crossnext', function () { post('crossNext'); });
+    on('togprev', function () { post('togetherPrev'); });
+    on('togstep', function () { post('togetherStep'); });
+    on('wonallbtn', function () { post('wonAll'); });
+    on('goodopen', function () { post('goodOpen'); });
   }
 
   if (!ROOM) {

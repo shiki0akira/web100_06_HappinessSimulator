@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="icon" type="image/svg+xml" href="/happiness/shared/logo.svg">
+<title>幸福模擬器 · 十字架的勝利</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Press+Start+2P&display=swap">
+<link rel="stylesheet" href="/happiness/shared/pixel.css">
+<script src="/happiness/shared/theme.js"></script>
+<style>
+  body { padding: 0 0 28px; }
+  .wrap { max-width: 520px; margin: 0 auto; padding: 0 16px; }
+
+  .status { position: sticky; top: 0; z-index: 5; background: var(--surface); border-bottom: 4px solid var(--edge); padding: 10px 16px 12px; }
+  .status .row1 { display: flex; align-items: center; gap: 8px; font-size: 15px; color: var(--ink-3); }
+  .status .row1 b { color: var(--ink); font-size: 20px; font-weight: 900; }
+  .gauge { margin-top: 9px; }
+  .gauge .lbl { display: flex; justify-content: space-between; font-family: var(--pixel); font-size: 13px; color: var(--ink-3); margin-bottom: 4px; }
+  .gauge .lbl b { font-size: 13px; color: var(--vol); }
+  .gauge + .gauge { margin-top: 7px; }
+  .gauge + .gauge .lbl b { color: var(--root-c); }
+
+  .screen { padding-top: 22px; }
+  .screen h2 { font-size: 28px; font-weight: 900; letter-spacing: .03em; }
+  .screen p { color: var(--ink-2); font-size: 18px; }
+  .wait { text-align: center; padding: 44px 0; color: var(--ink-3); }
+  .wait .dot { font-family: var(--pixel); font-size: 27px; letter-spacing: .3em; color: var(--root-c); }
+
+  .fullbtn { width: 100%; margin-top: 20px; padding: 18px; font-size: 21px; }
+  .numin { width: 100%; padding: 16px; font-size: 40px; font-weight: 700; text-align: center;
+    letter-spacing: .1em; font-family: var(--pixel); }
+
+  /* 接關那兩格 */
+  .screen p .sub { font-size: 16px; color: var(--ink-3); line-height: 1.7; font-weight: 500; }
+  .fieldlbl { margin: 22px 0 8px; font-size: 19px; font-weight: 900; color: var(--ink); }
+  .fieldlbl .sub { display: block; font-size: 15px; font-weight: 500; color: var(--ink-3); }
+
+  .qn { font-family: var(--pixel); font-size: 14px; color: var(--gold); }
+  .screen .center { text-align: center; }
+  .bigline { margin-top: 18px; font-size: 24px !important; font-weight: 900; line-height: 1.7; color: var(--gold) !important; }
+
+  /* 選項：一排一個大按鈕。選到的那一個變橘色。 */
+  .opts { display: grid; gap: 10px; margin-top: 18px; }
+  .opt { display: block; width: 100%; text-align: left; padding: 16px 18px; cursor: pointer;
+    border: 3px solid var(--edge); background: var(--surface); color: var(--ink);
+    font-family: var(--sans); font-size: 22px; font-weight: 900; box-shadow: 3px 3px 0 var(--hard); }
+  .opt:active { transform: translate(3px, 3px); box-shadow: none; }
+  .opt.on { border-color: var(--vol); background: var(--vol-soft); color: var(--vol); }
+  .opt small { display: block; margin-top: 4px; font-family: var(--pixel); font-size: 12px; color: var(--ink-3); font-weight: 400; }
+
+  /* 三張困難卡：一排一張，挑一張最像自己的 */
+  .pickcard { display: block; width: 100%; text-align: left; padding: 15px 17px; cursor: pointer;
+    border: 3px solid var(--edge); background: var(--surface); color: var(--ink);
+    font-family: var(--sans); box-shadow: 3px 3px 0 var(--hard); }
+  .pickcard + .pickcard { margin-top: 10px; }
+  .pickcard:active { transform: translate(3px, 3px); box-shadow: none; }
+  .pickcard .as { display: flex; align-items: center; gap: 8px; font-family: var(--pixel); font-size: 13px; color: var(--gold); }
+  .pickcard .as img { width: 26px; height: auto; image-rendering: pixelated; }
+  .pickcard .tx { margin-top: 8px; font-size: 20px; font-weight: 900; line-height: 1.6; }
+  .pickcard.on { border-color: var(--vol); background: var(--vol-soft); }
+  .pickcard.on .tx { color: var(--vol); }
+
+  .mine { margin-top: 16px; padding: 16px; border: 3px solid var(--gold); }
+  .mine .as { font-family: var(--pixel); font-size: 13px; color: var(--gold); }
+  .mine .tx { margin-top: 8px; font-size: 21px; font-weight: 900; line-height: 1.6; }
+
+  .reply { margin-top: 16px; padding: 18px; border: 3px solid var(--gold);
+    font-size: 20px; font-weight: 700; line-height: 1.8; }
+  .replyfrom { font-family: var(--pixel); font-size: 13px; color: var(--gold); }
+
+  .hit { margin-top: 16px; padding: 14px; border: 3px dashed var(--vol); color: var(--vol);
+    font-family: var(--pixel); font-size: 20px; text-align: center; }
+  .hit.up { border-color: var(--root-c); color: var(--root-c); }
+  .hit.zero { border-color: var(--edge-soft); color: var(--ink-3); }
+
+  /* 什麼才是「好」：兩欄，右邊蓋著 */
+  .goodtwo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+  .gcol { border: 3px solid var(--edge); background: var(--surface); padding: 12px; }
+  .gcol h3 { font-size: 15px; font-weight: 900; padding-bottom: 8px; border-bottom: 2px dashed var(--edge-soft); }
+  .gcol ul { list-style: none; margin: 10px 0 0; padding: 0; }
+  .gcol li { font-size: 16px; font-weight: 700; line-height: 1.7; }
+  .gcol.right { border-color: var(--gold); }
+  .gcol.right h3 { color: var(--gold); }
+  .gq { text-align: center; font-family: var(--pixel); font-size: 54px; color: var(--gold); padding: 18px 0; }
+
+  /* 大魔王 */
+  .bossart { display: block; width: 62%; max-width: 240px; margin: 16px auto 0; image-rendering: pixelated; }
+  .hpline { margin-top: 10px; text-align: center; font-family: var(--pixel); font-size: 16px; color: var(--vol); }
+  .hpline.zero { color: var(--root-c); }
+
+  /* 十字架：手機上沒有任何按鈕 */
+  .crossart { display: block; width: 52%; max-width: 200px; margin: 18px auto 0; image-rendering: pixelated; }
+  .days { display: flex; gap: 8px; justify-content: center; margin-top: 16px; }
+  .days span { flex: 1; text-align: center; padding: 10px 0; border: 3px solid var(--edge-soft);
+    color: var(--ink-3); font-size: 15px; font-weight: 900; }
+  .days span.on { border-color: var(--gold); color: var(--gold); }
+
+  /* 在生活中得勝：被打中的人、還有替他禱告的按鈕 */
+  .hitcard { margin-top: 14px; padding: 16px; border: 3px solid var(--vol); background: var(--vol-soft); }
+  .hitcard .who { font-size: 20px; font-weight: 900; color: var(--vol); }
+  .hitcard .what { margin-top: 6px; font-size: 18px; font-weight: 700; line-height: 1.6; }
+  .prayrow { margin-top: 12px; padding: 14px 16px; border: 3px solid var(--edge); background: var(--surface); }
+  .prayrow .who { font-size: 19px; font-weight: 900; }
+  .prayrow .what { margin-top: 4px; font-size: 16px; color: var(--ink-2); line-height: 1.6; }
+  .prayrow .btn { width: 100%; margin-top: 10px; padding: 13px; font-size: 18px; }
+  .prayrow.done { border-color: var(--root-c); }
+  .prayrow .ok { margin-top: 8px; font-family: var(--pixel); font-size: 14px; color: var(--root-c); }
+  .energy { margin-top: 16px; }
+  .energy .el { display: flex; justify-content: space-between; font-family: var(--pixel); font-size: 13px; color: var(--ink-3); margin-bottom: 5px; }
+  .energy .cells { display: flex; gap: 5px; }
+  .energy .cells i { flex: 1; height: 16px; border: 3px solid var(--edge); background: var(--surface-2); }
+  .energy .cells i.on { background: var(--root-c); border-color: var(--root-c); }
+
+  .verse-p { text-align: center; padding: 10px 0; }
+  .verse-p .ref { font-family: var(--pixel); font-size: 13px; color: var(--gold); }
+  .verse-p blockquote { font-size: 23px; font-weight: 700; line-height: 1.95; margin: 16px 0 0; letter-spacing: .02em; }
+
+  textarea { width: 100%; min-height: 108px; padding: 14px; font-size: 21px; font-weight: 500; resize: vertical; }
+
+  /* 領受／禱告之後那個「長出來了」的畫面 */
+  .grew { display: flex; align-items: center; gap: 14px; margin-top: 22px;
+    border: 3px solid var(--root-c); background: var(--root-soft); padding: 12px 14px; }
+  .grew img { width: 96px; height: auto; image-rendering: pixelated; flex: none; }
+  .grew p { margin: 0; font-size: 18px; line-height: 1.7; }
+  .grew b { font-family: var(--pixel); font-size: 20px; }
+  .privacy { margin-top: 12px; font-size: 16px; color: var(--ink-3); line-height: 1.8; }
+
+  .weekcard { width: 100%; border: 4px solid var(--edge); box-shadow: 6px 6px 0 var(--hard); display: block;
+    margin-top: 16px; position: relative; z-index: 95; }
+
+  .ok { color: var(--root-c); font-weight: 700; }
+  .mono { font-family: var(--pixel); }
+</style>
+</head>
+<body>
+  <div class="status" id="status" hidden>
+    <div class="row1"><b id="myname">—</b><span id="mystate"></span></div>
+    <div class="gauge">
+      <div class="lbl"><span>幸福指數</span><b id="outerv">—</b></div>
+      <span class="bar"><i id="outerbar" style="width:0%;background:var(--vol)"></i></span>
+    </div>
+    <div class="gauge">
+      <div class="lbl"><span>幸福根基</span><b id="innerv">0</b></div>
+      <span class="bar"><i id="innerbar" style="width:0%;background:var(--root-c)"></i></span>
+    </div>
+  </div>
+
+  <div class="wrap"><div class="screen" id="screen"></div></div>
+
+  <button class="themebtn floating" data-theme-toggle></button>
+
+<script src="/happiness/shared/card.js"></script>
+<script src="/happiness/shared/room-client.js"></script>
+<script src="/happiness/w6/player.js"></script>
+</body>
+</html>
