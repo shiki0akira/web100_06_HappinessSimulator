@@ -66,36 +66,41 @@
       '<div class="tx">' + esc(me.drawn.text) + '</div></div>';
   }
 
-  // 打鬥那兩頁共用：一顆「出手」、一顆「什麼都不做」。
+  function classOf(k) {
+    for (var i = 0; i < S.classes.length; i++) if (S.classes[i].k === k) return S.classes[i];
+    return null;
+  }
+
+  // 打鬥那兩頁共用：**每一回合**四個職業挑一個，或什麼都不做。
+  // 第一階段選的時候**看不到它代表什麼**，公布了才翻出來；第二階段已經知道了，照樣寫出來。
   function battleScreen(me, b, isWin) {
     var head = '<div class="qn">第 ' + (b.round + 1) + ' / ' + b.total + ' 回合 · ' + esc(b.aspect) + '</div>' +
       '<h2 style="margin-top:6px">' + esc(b.attack) + '</h2>';
-    var mine = isWin ? me.winAct : me.act;
-    var c = me.jobCard;
-
-    if (!c) return head + wait('看大螢幕', '你沒有選職業');
+    var mine = isWin ? me.winChoice : me.choice;
+    var c = classOf(mine);
 
     if (b.revealed) {
-      var went = mine === true;
+      if (!mine) return head + wait('看大螢幕', '這一回合你沒有選');
       return head +
-        '<div class="reply"><span class="replyfrom">' + esc(went ? c.act : S.idle.t) + '</span><br>' +
-          esc(went ? (isWin ? '這一次，它擋不住。' : c.d) : S.idle.d) + '</div>' +
+        '<div class="reply">' + (c ? '<img class="replyart" src="' + jobArt(c.art) + '" alt="">' : '') +
+          '<span class="replyfrom">' + esc(c ? c.t + '　' + c.act : S.idle.t) + '</span><br>' +
+          esc(c ? (isWin ? '這一次，它擋不住。' : c.d) : S.idle.d) + '</div>' +
         (isWin
-          ? '<div class="hit up">魔王 −' + (went ? c.dmg * S.winInfo.boost : 0) + '</div>'
-          : '<div class="hit">幸福指數 −' + (went ? c.loss : S.idle.loss) + '　魔王 −' + (went ? c.dmg : 0) + '</div>') +
+          ? '<div class="hit up">魔王 −' + (c ? c.dmg * S.winInfo.boost : 0) + '</div>'
+          : '<div class="hit">幸福指數 −' + (c ? c.loss : S.idle.loss) + '　魔王 −' + (c ? c.dmg : 0) + '</div>') +
         wait('看大螢幕');
     }
 
     return head +
-      '<div class="jobnow"><img src="' + jobArt(c.art) + '" alt=""><span>' + esc(c.t) + '</span></div>' +
-      '<div class="opts">' +
-        '<button class="opt' + (mine === true ? ' on' : '') + '" data-act="1">' + esc(c.act) +
-          '<small>傷害 ' + (isWin ? c.dmg * S.winInfo.boost : c.dmg) +
-          (isWin ? '' : '　幸福指數 −' + c.loss) + '</small></button>' +
-        '<button class="opt' + (mine === false ? ' on' : '') + '" data-act="0">' + esc(S.idle.t) +
-          '<small>' + (isWin ? '傷害 0' : '傷害 0　幸福指數 −' + S.idle.loss) + '</small></button>' +
+      '<div class="opts">' + S.classes.map(function (k) {
+        return '<button class="opt jobopt' + (mine === k.k ? ' on' : '') + '" data-pick="' + esc(k.k) + '">' +
+          '<img src="' + jobArt(k.art) + '" alt="">' + esc(k.t) +
+          (isWin ? '<small>' + esc(k.act) + '　傷害 ' + k.dmg * S.winInfo.boost + '</small>' : '') + '</button>';
+      }).join('') +
+        '<button class="opt' + (mine === 'idle' ? ' on' : '') + '" data-pick="idle">' + esc(S.idle.t) + '</button>' +
       '</div>' +
-      '<p class="privacy">' + (mine === undefined ? '選一個。主持人公布之前都可以改。' : '主持人公布之前都可以改。') + '</p>';
+      '<p class="privacy">' + (isWin ? '' : '選了、公布了才知道它代表什麼。') +
+        (mine === undefined ? '選一個。主持人公布之前都可以改。' : '主持人公布之前都可以改。') + '</p>';
   }
 
   var views = {
@@ -141,14 +146,22 @@
       return '<h2 class="center">' + esc(S.chase.line) + '</h2>' + wait('看大螢幕');
     },
 
-    // 挑一塊。**這一頁不抽卡，也看不到任何句子。**
+    // 挑一塊，挑完同一頁就抽。**抽了之後就不能換一塊。**
     cards: function (me) {
+      if (me.aspect && me.pick >= 0) {
+        return '<div class="qn">' + esc(me.aspectName) + ' · 你抽到的</div>' +
+          '<div class="mine"><div class="tx">' + esc(me.drawn.text) + '</div></div>' +
+          wait(S.drawInfo.waiting);
+      }
       if (me.aspect) {
-        return '<div class="qn">你挑的那一塊</div>' +
-          '<h2 style="margin-top:6px">' + esc(me.aspectName) + '</h2>' +
-          '<img class="bossart" src="' + aspectArt(me.aspect) + '" alt="" style="width:34%;max-width:120px">' +
-          '<button class="btn ghost fullbtn" id="backaspect">' + esc(S.pickInfo.change) + '</button>' +
-          wait('等主持人翻頁', '下一頁才抽卡');
+        var n = me.deck || 4;
+        var backs = '';
+        for (var i = 0; i < n; i++) backs += '<button class="drawcard" data-draw="' + i + '">？</button>';
+        return '<div class="qn">' + esc(me.aspectName) + '</div>' +
+          '<h2 style="margin-top:6px">抽一張</h2>' +
+          '<div class="deck">' + backs + '</div>' +
+          '<p class="privacy">' + esc(S.drawInfo.hint) + '</p>' +
+          '<button class="btn ghost fullbtn" id="backaspect">' + esc(S.pickInfo.change) + '</button>';
       }
       return '<h2>' + esc(S.pickInfo.title) + '</h2>' +
         '<p>' + esc(S.pickInfo.sub) + '</p>' +
@@ -159,26 +172,15 @@
         '<p class="privacy">' + esc(S.pickInfo.hint) + '只有你自己看得到。</p>';
     },
 
-    // 抽一張。點哪一張都一樣，是隨機的。
+    // 公布。翻到這一頁伺服器就公布了。
     draw: function (me) {
-      if (!me.aspect) {
+      if (!(me.aspect && me.pick >= 0)) {
         return '<h2>' + esc(S.drawInfo.title) + '</h2>' +
-          '<p>你上一頁沒有挑，所以這一頁沒有你的牌。</p>' + wait('看大螢幕');
+          '<p>你上一頁沒有抽，所以這一頁沒有你的牌。</p>' + wait('看大螢幕');
       }
-      if (me.pick >= 0) {
-        return '<div class="qn">' + esc(me.aspectName) + ' · 你抽到的</div>' +
-          '<div class="mine"><div class="tx">' + esc(me.drawn.text) + '</div></div>' +
-          (S.cardsNow.open
-            ? (me.cardLoss ? '<div class="hit">幸福指數 ' + fmt(-me.cardLoss) + '</div>' : '') + wait('看大螢幕')
-            : wait(S.drawInfo.waiting));
-      }
-      var n = me.deck || 4;
-      var backs = '';
-      for (var i = 0; i < n; i++) backs += '<button class="drawcard" data-draw="' + i + '">？</button>';
-      return '<div class="qn">' + esc(me.aspectName) + '</div>' +
-        '<h2 style="margin-top:6px">' + esc(S.drawInfo.title) + '</h2>' +
-        '<div class="deck">' + backs + '</div>' +
-        '<p class="privacy">' + esc(S.drawInfo.hint) + '</p>';
+      return '<div class="qn">' + esc(me.aspectName) + ' · 你抽到的</div>' +
+        '<div class="mine"><div class="tx">' + esc(me.drawn.text) + '</div></div>' +
+        (me.cardLoss ? '<div class="hit">幸福指數 ' + fmt(-me.cardLoss) + '</div>' : '') + wait('看大螢幕');
     },
 
     tally: function (me) {
@@ -191,16 +193,12 @@
         '<div class="hpline">' + S.boss.hp + ' / ' + S.boss.hp + '</div>';
     },
 
-    // 選職業。四張卡，選一張。
-    job: function (me) {
+    // 四個職業：只有圖和名字。**這一頁不用選**，每一回合打的時候才選。
+    job: function () {
       return '<h2>' + esc(S.jobInfo.title) + '</h2>' +
         '<p>' + esc(S.jobInfo.sub) + '</p>' +
-        '<div style="margin-top:16px">' + S.classes.map(function (c) {
-          return '<button class="pickcard' + (me.job === c.k ? ' on' : '') + '" data-job="' + esc(c.k) + '">' +
-            '<span class="as"><img src="' + jobArt(c.art) + '" alt="">' + esc(c.t) + '　' + esc(c.act) + '</span>' +
-            '<span class="tx">傷害 ' + c.dmg + '　幸福指數 −' + c.loss + '</span>' +
-            '<span class="dd">' + esc(c.d) + '</span>' +
-          '</button>';
+        '<div class="aspects">' + S.classes.map(function (c) {
+          return '<div class="ab"><img src="' + jobArt(c.art) + '" alt="">' + esc(c.t) + '</div>';
         }).join('') + '</div>' +
         '<p class="privacy">' + esc(S.jobInfo.hint) + '</p>';
     },
@@ -351,14 +349,10 @@
       b.onclick = function () { act('draw', {}); };
     });
 
-    document.querySelectorAll('[data-job]').forEach(function (b) {
-      b.onclick = function () { act('job', { k: b.dataset.job }); };
-    });
-
-    document.querySelectorAll('[data-act]').forEach(function (b) {
+    document.querySelectorAll('[data-pick]').forEach(function (b) {
       b.onclick = function () {
         var isWin = S.phase.id === 'win';
-        act('act', { round: isWin ? S.winNow.round : S.fightNow.round, go: b.dataset.act === '1' });
+        act('act', { round: isWin ? S.winNow.round : S.fightNow.round, k: b.dataset.pick });
       };
     });
 
@@ -471,8 +465,8 @@
       S.phase.id, S.cardsNow.open, S.crossStep,
       S.fightNow.round, S.fightNow.revealed, S.winNow.round, S.winNow.revealed,
       S.beatNow.done, S.hp,
-      me.outer, me.inner, me.visits, me.aspect, me.pick, me.job,
-      me.act, me.winAct, me.revived, me.beat,
+      me.outer, me.inner, me.visits, me.aspect, me.pick,
+      me.choice, me.winChoice, me.revived, me.beat,
       me.receivedVerse, me.cardDone, me.prayed,
       draft.byVisits,
     ].join('|');

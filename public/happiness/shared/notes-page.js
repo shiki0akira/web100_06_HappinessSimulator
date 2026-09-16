@@ -160,18 +160,6 @@
       }
     }
 
-    // 第六關的抽一張：大家抽完你才公布（公布的那一刻才扣分）。
-    var pickc = el('pickctl');
-    if (pickc) {
-      pickc.hidden = S.phase.id !== 'draw' || !S.cardsNow;
-      if (!pickc.hidden) {
-        el('pickreveal').textContent = S.cardsNow.open
-          ? '已經公布了'
-          : '公布結果（' + S.stats.picked + '/' + S.stats.count + ' 已抽）';
-        el('pickreveal').disabled = S.cardsNow.open;
-      }
-    }
-
     // 第六關的兩段打鬥：大家決定完你才公布，公布完再開下一回合。
     var fightc = el('fightctl');
     if (fightc) {
@@ -288,7 +276,6 @@
     on('opennow', function () { post('openAll'); });
     on('seeknext', function () { post('seekNext'); });
     on('opengift', function () { post('openGift'); });
-    on('pickreveal', function () { post('cardsReveal'); });
     // 兩段打鬥共用這兩顆 —— 在哪一頁就送哪一段的指令。
     on('fightprev', function () { post(S && S.phase.id === 'win' ? 'winPrev' : 'fightPrev'); });
     on('fightstep', function () { post(S && S.phase.id === 'win' ? 'winStep' : 'fightStep'); });

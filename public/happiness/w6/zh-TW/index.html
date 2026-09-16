@@ -168,9 +168,9 @@
   .jobcard { display: flex; flex-direction: column; align-items: center; text-align: center;
     background: var(--surface); border: 4px solid var(--edge); box-shadow: 5px 5px 0 var(--hard);
     padding: min(calc(16px * var(--u)), 2vh) calc(14px * var(--u)); }
-  .jobcard img { width: min(calc(84px * var(--u)), 10vh); height: auto; image-rendering: pixelated; }
+  .jobcard img { width: min(calc(120px * var(--u)), 16vh); height: auto; image-rendering: pixelated; }
   .jobcard b { margin-top: min(calc(8px * var(--u)), 1vh); font-size: min(calc(30px * var(--u)), 3.6vh, 2vw); letter-spacing: .06em; }
-  .jobcard .act { margin-top: min(calc(4px * var(--u)), .6vh); font-size: min(calc(21px * var(--u)), 2.6vh); font-weight: 900; color: var(--vol); }
+  .jobcard .act { margin-top: min(calc(4px * var(--u)), .6vh); font-size: min(calc(40px * var(--u)), 5vh); font-family: var(--pixel); color: var(--vol); }
   .jobcard .num { margin-top: min(calc(6px * var(--u)), .8vh); font-family: var(--pixel); font-size: min(calc(14px * var(--u)), 1.8vh); color: var(--ink-3); }
   .jobcard .d { margin-top: min(calc(8px * var(--u)), 1vh); font-size: min(calc(17px * var(--u)), 2.1vh); line-height: 1.5; color: var(--ink-2); }
 
@@ -181,7 +181,9 @@
     border: 4px solid var(--edge); box-shadow: 4px 4px 0 var(--hard);
     padding: min(calc(10px * var(--u)), 1.3vh) calc(14px * var(--u)); }
   .jc img { width: min(calc(42px * var(--u)), 5vh); height: auto; image-rendering: pixelated; }
+  .jc .nm { display: flex; flex-direction: column; min-width: 0; }
   .jc b { font-size: min(calc(22px * var(--u)), 2.7vh); white-space: nowrap; }
+  .jc .nm i { font-style: normal; font-size: min(calc(15px * var(--u)), 1.9vh); font-weight: 900; color: var(--vol); white-space: nowrap; }
   .jc .n { font-family: var(--pixel); font-size: min(calc(15px * var(--u)), 1.9vh); color: var(--ink-3); }
   .jc .dm { margin-left: auto; font-family: var(--pixel); font-size: min(calc(19px * var(--u)), 2.4vh); color: var(--vol); }
   .jc.zero { opacity: .4; }
@@ -416,7 +418,6 @@
     <select id="jump"></select>
     <!-- 每一頁該有的控制鈕。現場不要靠鍵盤。 -->
     <span id="cardsctl" style="display:none;gap:8px;">
-      <button class="btn primary" data-cmd="cardsReveal" id="creveal">公布結果</button>
       <button class="btn" data-cmd="cardsRedeal">重挑</button>
     </span>
     <span id="bossctl" style="display:none;gap:8px;">

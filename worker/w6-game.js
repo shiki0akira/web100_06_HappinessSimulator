@@ -30,12 +30,12 @@ export const PHASES = [
   // 開場的伏筆：右邊那一格蓋著，最後一頁才翻開。
   { id: 'good',      tag: '信息',     title: '什麼才是「好」？' },
   { id: 'chase',     tag: '信息',     title: '我們追求的方向，不能滿足生命真正的需要' },
-  // 挑分類和抽卡**分兩頁**：先全場挑完那一塊，翻頁才抽。
+  // 第 5 頁挑一塊＋抽一張，第 6 頁一翻過來就公布。
   { id: 'cards',     tag: '互動點 1', title: '你現在扛的是哪一塊？' },
-  { id: 'draw',      tag: '互動點 1', title: '抽一張' },
+  { id: 'draw',      tag: '公布',     title: '大家抽到的那一張' },
   { id: 'tally',     tag: '統計',     title: '最近讓你最累的是什麼？' },
   { id: 'bossIn',    tag: '過場',     title: '今晚的大魔王 · 勞苦重擔' },
-  { id: 'job',       tag: '互動點 2', title: '選一個職業' },
+  { id: 'job',       tag: '介紹',     title: '四個職業' },
   { id: 'fight',     tag: '主遊戲',   title: '靠自己打（五回合）' },
   { id: 'lost',      tag: '結算頁',   title: '沒有人打得倒它' },
   { id: 'cross',     tag: '過場',     title: '十字架' },
@@ -101,7 +101,6 @@ export function addPlayer(s, name) {
     aspect: '',           // 他挑的那一塊
     pick: -1,             // 從那一塊抽到第幾句（他選不了）
     cardLoss: 0,          // 抽到那一句扣了多少（重來的時候要還原）
-    job: '',              // 職業：騎士／法師／坦克／村民
     acts: [],             // 第一階段五回合各做了什麼（true＝出手、false＝什麼都不做）
     winActs: [],          // 第二階段三回合
     fightLoss: 0,         // 第一階段總共掉了多少（重跑的時候要還原）
@@ -118,8 +117,9 @@ export function addPlayer(s, name) {
   return pid;
 }
 
-// ── 挑一塊（第 5 頁）→ 抽一張（第 6 頁）────────────────────────────────
-// 公布的那一刻才扣分。**抽到的人 −3，沒抽的人不動。**
+// ── 挑一塊＋抽一張（第 5 頁）→ 公布（第 6 頁）──────────────────────────
+// 第 5 頁手機上挑完那一塊就直接抽；主持人在第 5 頁看到大家都抽好了才翻頁。
+// **翻到第 6 頁就是公布**（不用再按），那一刻才扣分。抽到的人 −3，沒抽的人不動。
 export function revealCards(s) {
   if (s.cardsOpen) return false;
   s.cardsOpen = true;
@@ -143,6 +143,9 @@ export function redealCards(s) {
   });
   s.cardsOpen = false;
   s.moves = [];
+  // 重來要回到第 5 頁重新挑、重新抽
+  const back = PHASES.findIndex((ph) => ph.id === 'cards');
+  if (back >= 0) s.phaseIdx = back;
 }
 
 // ── 魔王的五招 ──────────────────────────────────────────────────────────
@@ -179,13 +182,14 @@ const moveAt = (s, r) => movesOf(s)[r % movesOf(s).length];
 // ── 打鬥（兩個階段共用）──────────────────────────────────────────────────
 const openList = (s, key) => (Array.isArray(s[key]) ? s[key] : (s[key] = []));
 const shown = (s, key, r) => openList(s, key).indexOf(r) >= 0;
-const actOf = (p, r, key) => arr(p[key])[r] === true;
+// 每一回合選的：職業代號（knight／mage／tank／villager）或 'idle'（什麼都不做）
+const choiceOf = (p, r, key) => arr(p[key])[r];
+const actOf = (p, r, key) => classOf(choiceOf(p, r, key));
 
 // 這一回合全場打掉多少（職業的傷害；什麼都不做是 0）
 function damageOf(s, r, key, boost) {
   return alive(s).reduce((sum, p) => {
-    if (!actOf(p, r, key)) return sum;
-    const c = classOf(p.job);
+    const c = actOf(p, r, key);
     return sum + (c ? c.dmg : 0) * (boost || 1);
   }, 0);
 }
@@ -199,9 +203,9 @@ export function revealFight(s) {
   s.fightOpen.push(r);
   alive(s).forEach((p) => {
     if (p.outer === null) return;
-    const c = classOf(p.job);
-    // 出手照職業的代價扣；什麼都不做也扣 —— **問題不會自己走。**
-    const loss = actOf(p, r, 'acts') ? (c ? c.loss : IDLE.loss) : IDLE.loss;
+    const c = actOf(p, r, 'acts');
+    // 出手照那一回合選的職業扣；什麼都不做（或沒選）也扣 —— **問題不會自己走。**
+    const loss = c ? c.loss : IDLE.loss;
     const before = p.outer;
     p.outer = clamp(p.outer - loss);
     p.fightLoss = (p.fightLoss || 0) + (before - p.outer);
@@ -310,6 +314,8 @@ export function enterPhase(s, idx) {
   s.phaseIdx = Math.max(0, Math.min(PHASES.length - 1, idx));
   // 走到第二階段之前血條是滿的 —— 第一階段最後停在「它補滿了」。
   if (phaseId(s) === 'win' && !arr(s.winOpen).length) s.hp = BOSS.hp;
+  // 翻到「抽到的那一張」那一頁就是公布。只公布一次，往回翻再翻過來不會再扣。
+  if (phaseId(s) === 'draw') revealCards(s);
   return null;
 }
 
@@ -335,9 +341,9 @@ export function applyAction(s, pid, msg) {
       p.innerStart = p.inner;
       break;
     }
-    // 挑一塊。**這一頁只挑分類，不抽卡。**
+    // 挑一塊。挑完同一頁就抽。**抽了之後就不能換一塊。**
     case 'aspect': {
-      if (phaseId(s) !== 'cards') break;
+      if (phaseId(s) !== 'cards' || s.cardsOpen || p.pick >= 0) break;
       const k = String(msg.k || '');
       // 空字串＝手機上按了「換一塊」。**不能當成無效值擋掉。**
       if (k && !ASPECTS.some((a) => a.k === k)) break;
@@ -346,7 +352,7 @@ export function applyAction(s, pid, msg) {
     }
     // 抽。**抽到哪一句不是他選的** —— 點哪一張都一樣，伺服器隨機發。
     case 'draw': {
-      if (phaseId(s) !== 'draw' || s.cardsOpen) break;
+      if (phaseId(s) !== 'cards' || s.cardsOpen) break;
       if (!p.aspect || p.pick >= 0) break;
       const all = (CARDS[p.aspect] || []).map((_, i) => i);
       if (!all.length) break;
@@ -357,15 +363,8 @@ export function applyAction(s, pid, msg) {
       p.pick = from[Math.floor(Math.random() * from.length)];
       break;
     }
-    // 選職業。**開打之前隨時可以換。**
-    case 'job': {
-      if (phaseId(s) !== 'job') break;
-      const k = String(msg.k || '');
-      if (k && !CLASSES.some((c) => c.k === k)) break;
-      p.job = k;
-      break;
-    }
-    // 出手／什麼都不做。第一階段和第二階段共用這一個動作。
+    // 這一回合選哪一個職業（或什麼都不做）。第一階段和第二階段共用這一個動作。
+    // **每一回合都可以換，公布之前都可以改。**
     case 'act': {
       const id = phaseId(s);
       const key = id === 'fight' ? 'acts' : id === 'win' ? 'winActs' : '';
@@ -373,8 +372,10 @@ export function applyAction(s, pid, msg) {
       const r = id === 'fight' ? s.fightRound : s.winRound;
       if (Math.floor(Number(msg.round)) !== r) break;
       if (shown(s, id === 'fight' ? 'fightOpen' : 'winOpen', r)) break;
+      const k = String(msg.k || '');
+      if (k !== 'idle' && !classOf(k)) break;
       const rows = arr(p[key]).slice();
-      rows[r] = !!msg.go;
+      rows[r] = k;
       p[key] = rows;
       break;
     }
@@ -499,16 +500,16 @@ function battleView(s, id) {
     aspect: aspectOf(m.k).t, attack: cardText(m.k, m.i),
     acted: ps.filter((p) => arr(p[key])[r] !== undefined).length,
     went: ps.filter((p) => actOf(p, r, key)).length,
-    idle: ps.filter((p) => arr(p[key])[r] === false).length,
+    idle: ps.filter((p) => choiceOf(p, r, key) === 'idle').length,
     dmg: open ? damageOf(s, r, key, isWin ? WIN.boost : 1) : 0,
     hp: s.hp,
     maxHp: BOSS.hp,
     done: openList(s, openKey).length >= total,
-    // 公布之後才給：哪一個職業出手了幾個人
+    // 公布之後才給：每一個職業代表什麼、這一回合幾個人選
     byJob: open
       ? CLASSES.map((c) => ({
-        k: c.k, t: c.t, act: c.act,
-        n: ps.filter((p) => p.job === c.k && actOf(p, r, key)).length,
+        k: c.k, t: c.t, act: c.act, loss: c.loss,
+        n: ps.filter((p) => choiceOf(p, r, key) === c.k).length,
         dmg: c.dmg * (isWin ? WIN.boost : 1),
       }))
       : [],
@@ -580,7 +581,6 @@ export function hostView(s, roomCode) {
       visits: p.visits, newcomer: p.newcomer,
       chose: !!p.aspect,
       picked: !!p.aspect && p.pick >= 0,
-      job: p.job, jobName: p.job && classOf(p.job) ? classOf(p.job).t : '',
       acted: arr(p[key])[r] !== undefined,
       revived: !!p.revived,
       beat: !!p.beat,
@@ -593,7 +593,6 @@ export function hostView(s, roomCode) {
       newcomers: ps.filter((p) => p.newcomer).length,
       chose: ps.filter((p) => !!p.aspect).length,
       picked: ps.filter((p) => !!p.aspect && p.pick >= 0).length,
-      jobbed: ps.filter((p) => !!p.job).length,
       acted: ps.filter((p) => arr(p[key])[r] !== undefined).length,
       revived: ps.filter((p) => p.revived).length,
       beat: ps.filter((p) => p.beat).length,
@@ -620,7 +619,6 @@ export function playerView(s, pid, roomCode) {
     reconnected: alive(s).filter((x) => x.outer !== null).length,
   };
   if (!p) return { ...base, me: null };
-  const c = classOf(p.job);
   return {
     ...base,
     me: {
@@ -635,10 +633,8 @@ export function playerView(s, pid, roomCode) {
       drawn: p.pick >= 0 ? { aspect: aspectOf(p.aspect).t, k: p.aspect, text: cardText(p.aspect, p.pick) } : null,
       pick: p.pick,
       cardLoss: p.cardLoss || 0,
-      job: p.job || '',
-      jobCard: c ? { k: c.k, t: c.t, art: c.art, act: c.act, dmg: c.dmg, loss: c.loss, d: c.d } : null,
-      act: arr(p.acts)[s.fightRound],
-      winAct: arr(p.winActs)[s.winRound],
+      choice: arr(p.acts)[s.fightRound],
+      winChoice: arr(p.winActs)[s.winRound],
       fightLoss: p.fightLoss || 0,
       revived: !!p.revived,
       beat: !!p.beat,

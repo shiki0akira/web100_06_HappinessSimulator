@@ -51,8 +51,6 @@
       var chips = [];
       if (id === 'cards') chips.push('<span class="chip' + (p.chose ? ' on' : '') + '">' + (p.chose ? '已挑' : '還沒挑') + '</span>');
       if (id === 'draw') chips.push('<span class="chip' + (p.picked ? ' on' : '') + '">' + (p.picked ? '已抽' : '還沒抽') + '</span>');
-      if (id === 'job') chips.push('<span class="chip' + (p.job ? ' on' : '') + '">' + (p.job ? esc(p.jobName) : '還沒選') + '</span>');
-      else if (p.job && (id === 'fight' || id === 'win' || id === 'beat')) chips.push('<span class="chip">' + esc(p.jobName) + '</span>');
       if (onFight) chips.push('<span class="chip' + (p.acted ? ' on' : '') + '">' + (p.acted ? '已決定' : '還沒') + '</span>');
       if (id === 'verse' && p.revived) chips.push('<span class="chip on">已領受復活</span>');
       if (id === 'beat') chips.push('<span class="chip' + (p.beat ? ' on' : '') + '">' + (p.beat ? '已出手' : '還沒') + '</span>');
@@ -113,7 +111,7 @@
         ? '<div class="jobrow">' + b.byJob.map(function (j) {
             return '<div class="jc' + (j.n ? '' : ' zero') + '">' +
               '<img src="' + jobArt('job-' + j.k) + '" alt="">' +
-              '<b>' + esc(j.t) + '</b>' +
+              '<span class="nm"><b>' + esc(j.t) + '</b><i>' + esc(j.act) + '</i></span>' +
               '<span class="n">' + j.n + ' 人</span>' +
               '<span class="dm">−' + (j.dmg * j.n) + '</span>' +
             '</div>';
@@ -162,10 +160,10 @@
         '<div class="aspectgrid">' + S.aspects.map(function (a) {
           return '<div class="ac"><img src="' + aspectArt(a.k) + '" alt="">' + esc(a.t) + '</div>';
         }).join('') + '</div>' +
-        '<div class="kfoot">' + counter(S.stats.chose, '人已挑一塊') + '</div>';
+        '<div class="kfoot">' + counter(S.stats.picked, '人已挑好、抽好') + '</div>';
     },
 
-    // 抽一張。公布之前大螢幕上一句話都不顯示。
+    // 公布抽到的那一張。**翻到這一頁就是公布**；第 5 頁大螢幕上一句話都不顯示。
     draw: function () {
       var c = S.cardsNow;
       if (c.open) {
@@ -177,13 +175,8 @@
             }).join('')
             : '<p class="lede">沒有人抽。</p>') + '</div>';
       }
-      return '<h2>' + esc(S.drawInfo.title) + '</h2>' +
-        '<p class="lede">' + esc(S.drawInfo.sub) + '</p>' +
-        '<div class="cardgrid">' +
-          '<div class="cardback">？</div><div class="cardback">？</div>' +
-          '<div class="cardback">？</div><div class="cardback">？</div>' +
-        '</div>' +
-        '<div class="kfoot">' + counter(S.cardsNow.picked, '人已抽') + '</div>';
+      // 一翻到這一頁伺服器就公布了，這裡只會閃一下
+      return '<h2>' + esc(S.drawInfo.title) + '</h2>';
     },
 
     // 統計。**只有人數，沒有名字。**
@@ -214,7 +207,7 @@
       '</div>';
     },
 
-    // 選職業。四張卡：圖、名字、招式、傷害、代價。
+    // 四個職業：**只有圖和名字**。它代表什麼，打鬥那一頁每一回合公布了才翻出來。
     job: function () {
       return '<h2>' + esc(S.jobInfo.title) + '</h2>' +
         '<p class="lede">' + esc(S.jobInfo.sub) + '</p>' +
@@ -222,12 +215,10 @@
           return '<div class="jobcard">' +
             '<img src="' + jobArt(c.art) + '" alt="">' +
             '<b>' + esc(c.t) + '</b>' +
-            '<span class="act">' + esc(c.act) + '</span>' +
-            '<span class="num">傷害 ' + c.dmg + '　幸福指數 −' + c.loss + '</span>' +
-            '<span class="d">' + esc(c.d) + '</span>' +
+            '<span class="act">？</span>' +
           '</div>';
         }).join('') + '</div>' +
-        '<div class="kfoot">' + counter(S.stats.jobbed, '人已選職業') + '</div>';
+        '<div class="kfoot"><div class="qcount">' + esc(S.jobInfo.hint) + '</div></div>';
     },
 
     fight: function () { return battle(S.fightNow, false); },
@@ -435,11 +426,6 @@
     show('winctl', S.phase.id === 'win');
     show('beatctl', S.phase.id === 'beat');
 
-    if (S.phase.id === 'draw') {
-      var cr = document.getElementById('creveal');
-      cr.textContent = S.cardsNow.open ? '已經公布了' : '公布結果（' + S.stats.picked + '/' + S.stats.count + ' 已抽）';
-      cr.disabled = S.cardsNow.open;
-    }
     if (S.phase.id === 'fight' || S.phase.id === 'win') {
       var isWin = S.phase.id === 'win';
       var b = isWin ? S.winNow : S.fightNow;
