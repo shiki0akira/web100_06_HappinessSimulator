@@ -93,12 +93,6 @@
           (draft.byVisits ? '我有卡片，改填幸福根基' : '忘記帶卡片？改填「這是你第幾次來」') + '</button>';
     },
 
-    intro: function () {
-      return '<h2 class="center">' + esc(S.intro.title) + '</h2>' +
-        '<img class="crossart" src="/happiness/shared/art/quest-cross.svg" alt="">' +
-        wait('看大螢幕');
-    },
-
     // 什麼才是「好」？右邊那一格蓋著，最後一頁才翻開。
     good: function () {
       return '<h2>' + esc(S.good.title) + '</h2>' +

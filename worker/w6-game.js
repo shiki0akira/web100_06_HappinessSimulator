@@ -10,7 +10,7 @@
 // ⚠️ **那 +10 不准綁在按鈕上。** 一綁上按鈕就變成用分數換恩典（第二關拆寶箱同一條線）。
 // ⚠️ **幫別人禱告的人自己不加分。** 按的人也加分，全場就會搶著按。
 import {
-  INTRO, GOOD, CHASE, ASPECTS, CARDS, PICK, CARD_LOSS, TALLY, BOSS,
+  GOOD, CHASE, ASPECTS, CARDS, PICK, CARD_LOSS, TALLY, BOSS,
   MOVES, FIGHT_LOSS, ATTACKS, FIGHT, FIGHT_END, CROSS, POWER, VERSE,
   TOGETHER, WON, BLESS,
 } from './w6-data.js';
@@ -29,8 +29,7 @@ const DEAL = 3;                   // 抽幾張卡
 export const PHASES = [
   { id: 'lobby',     tag: '入場',     title: '掃碼進場' },
   { id: 'reconnect', tag: '接關',     title: '輸入幸福指數' },
-  { id: 'intro',     tag: '標題',     title: '十字架的勝利' },
-  // 開場的伏筆：右邊那一格蓋著，第 14 頁才翻開。
+  // 開場的伏筆：右邊那一格蓋著，第 13 頁才翻開。
   { id: 'good',      tag: '信息',     title: '什麼才是「好」？' },
   { id: 'chase',     tag: '信息',     title: '我們追求的方向，不能滿足生命真正的需要' },
   { id: 'cards',     tag: '互動點 1', title: '三張困難卡，挑一張' },
@@ -66,7 +65,7 @@ export function createState() {
     tStruck: [],          // 哪幾回合已經出招了
     hits: [],             // [{ round, pid, aspect, text, prays: [pid], back: true }]
     wonForced: false,     // 有人手機沒電：主持人把能量條補滿（**不動任何人的分**）
-    goodOpen: false,      // 第 14 頁翻開「在耶穌基督裡的好」
+    goodOpen: false,      // 第 13 頁翻開「在耶穌基督裡的好」
     seq: 0,
   };
 }
@@ -425,7 +424,7 @@ export function applyHost(s, msg) {
     case 'togetherPrev': togetherPrev(s); return null;
     // 有人手機沒電、或人太少扛不過來：**只把能量條補滿**，不替任何人補分。
     case 'wonAll': s.wonForced = true; return null;
-    // 第 14 頁：翻開「在耶穌基督裡的好」。再按一次蓋回去。
+    // 第 13 頁：翻開「在耶穌基督裡的好」。再按一次蓋回去。
     case 'goodOpen': s.goodOpen = !s.goodOpen; return null;
     case 'adjust': {
       const p = s.players[msg.pid];
@@ -545,7 +544,6 @@ function common(s) {
     week: 6,
     phase: PHASES[s.phaseIdx],
     phaseIdx: s.phaseIdx,
-    intro: INTRO,
     good: GOOD,
     goodOpen: !!s.goodOpen,
     chase: CHASE,

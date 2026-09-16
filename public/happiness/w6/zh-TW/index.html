@@ -92,9 +92,9 @@
     font-size: min(calc(30px * var(--u)), 3.8vh, 2.3vw); font-weight: 700;
     color: var(--ink-2); white-space: nowrap; }
 
-  /* ── 整頁只有一句話（第 5 頁：我們追求的方向…）**不准斷行** ────────── */
+  /* ── 整頁只有一句話（第 4 頁：我們追求的方向…）**不准斷行** ────────── */
   .solo { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-  .solo h2 { font-size: min(calc(58px * var(--u)), 9vh, 4.2vw); line-height: 1.45;
+  .solo h2 { font-size: min(calc(52px * var(--u)), 8vh, 3.3vw); line-height: 1.45;
     letter-spacing: .04em; white-space: nowrap; }
 
   /* ── 什麼才是「好」？兩欄，右邊蓋著 ───────────────────────────────── */
@@ -111,7 +111,7 @@
     display: flex; flex-direction: column; justify-content: center; gap: min(calc(10px * var(--u)), 1.4vh); flex: 1; }
   .goodcol li { font-size: min(calc(30px * var(--u)), 3.8vh, 2vw); font-weight: 900; line-height: 1.4; }
   .goodcol li::before { content: '▍'; color: var(--vol); margin-right: .4em; }
-  /* 右邊那一欄：翻開之前只有一個問號。**第 4 頁不准講出它是什麼。** */
+  /* 右邊那一欄：翻開之前只有一個問號。**第 3 頁不准講出它是什麼。** */
   .goodcol.right { border-color: var(--gold); }
   .goodcol.right h3 { color: var(--gold); }
   .goodcol.right li::before { color: var(--root-c); }
@@ -359,7 +359,7 @@
       <button class="btn primary" data-cmd="togetherStep" id="tstep">出招</button>
       <button class="btn" data-cmd="wonAll" id="wonall">全場得勝</button>
     </span>
-    <!-- 第 14 頁：翻開「在耶穌基督裡的好」 -->
+    <!-- 第 13 頁：翻開「在耶穌基督裡的好」 -->
     <span id="wonctl" style="display:none;gap:8px;">
       <button class="btn primary" data-cmd="goodOpen" id="gopen">翻開</button>
     </span>

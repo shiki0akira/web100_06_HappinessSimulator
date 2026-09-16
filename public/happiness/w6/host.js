@@ -127,16 +127,7 @@
       });
     },
 
-    // 教會投影片第 2 頁。標題頁沒有副標 —— 接第五關的那兩句在下一頁開頭講。
-    intro: function () {
-      return '<div class="teaser">' +
-        '<span class="kicker">今天的主題</span>' +
-        '<h2 class="big-title">' + esc(S.intro.title) + '</h2>' +
-        '<div class="teaseart"><img src="/happiness/shared/art/quest-cross.svg" alt=""></div>' +
-      '</div>';
-    },
-
-    // 什麼才是「好」？**右邊那一格蓋著**，第 14 頁才翻開。這一頁不准講出它是什麼。
+    // 什麼才是「好」？**右邊那一格蓋著**，第 13 頁才翻開。這一頁不准講出它是什麼。
     good: function () {
       return '<h2>' + esc(S.good.title) + '</h2>' +
         '<div class="goodsub">' + esc(S.good.sub) + '</div>' +
@@ -298,7 +289,7 @@
         '</div>';
     },
 
-    // 這一仗，全場一起打贏。按「翻開」之後換成第 4 頁那兩欄，右邊填滿。
+    // 這一仗，全場一起打贏。按「翻開」之後換成第 3 頁那兩欄，右邊填滿。
     won: function () {
       if (S.goodOpen) {
         return '<h2>' + esc(S.good.title) + '</h2>' +
@@ -392,6 +383,23 @@
     }
     healKey = '';
     healAnim();
+    fitSolo();
+  }
+
+  // 整頁一句話那幾頁**不准斷行**（第三關第 5 頁同一套），可是句子長度是文案決定的 ——
+  // CSS 的 vw 算的是整個視窗，扣掉側欄之後就爆出去了。所以畫完再量一次，
+  // **量到塞得下為止**。改文案的人不用回來算字級。
+  function fitSolo() {
+    var h = stage.querySelector('.solo h2');
+    if (!h) return;
+    h.style.fontSize = '';
+    var avail = stage.clientWidth - parseFloat(getComputedStyle(stage).paddingLeft) * 2;
+    var size = parseFloat(getComputedStyle(h).fontSize);
+    var guard = 0;
+    while (h.scrollWidth > avail && size > 18 && guard++ < 80) {
+      size -= 2;
+      h.style.fontSize = size + 'px';
+    }
   }
 
   function render() {
