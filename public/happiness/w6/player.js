@@ -60,18 +60,12 @@
       esc(msg) + '</p>' + (sub ? '<p style="font-size:17px">' + esc(sub) + '</p>' : '') + '</div>';
   };
 
-  function myCard(me) {
-    if (!me.drawn) return '';
-    return '<div class="mine"><div class="as">' + esc(me.drawn.aspect) + '</div>' +
-      '<div class="tx">' + esc(me.drawn.text) + '</div></div>';
-  }
-
   function classOf(k) {
     for (var i = 0; i < S.classes.length; i++) if (S.classes[i].k === k) return S.classes[i];
     return null;
   }
 
-  // 打鬥那兩頁共用：**每一回合**四個職業挑一個，或什麼都不做。
+  // 打鬥那兩頁共用：**每一回合**四個職業挑一個。手機上**沒有「什麼都不做」**（沒選的人照樣算什麼都沒做）。
   // 第一階段選的時候**看不到它代表什麼**，公布了才翻出來；第二階段已經知道了，照樣寫出來。
   function battleScreen(me, b, isWin) {
     var head = '<div class="qn">第 ' + (b.round + 1) + ' / ' + b.total + ' 回合 · ' + esc(b.aspect) + '</div>' +
@@ -97,7 +91,6 @@
           '<img src="' + jobArt(k.art) + '" alt="">' + esc(k.t) +
           (isWin ? '<small>' + esc(k.act) + '　傷害 ' + k.dmg * S.winInfo.boost + '</small>' : '') + '</button>';
       }).join('') +
-        '<button class="opt' + (mine === 'idle' ? ' on' : '') + '" data-pick="idle">' + esc(S.idle.t) + '</button>' +
       '</div>' +
       '<p class="privacy">' + (isWin ? '' : '選了、公布了才知道它代表什麼。') +
         (mine === undefined ? '選一個。主持人公布之前都可以改。' : '主持人公布之前都可以改。') + '</p>';
@@ -130,17 +123,8 @@
           (draft.byVisits ? '我有卡片，改填幸福根基' : '忘記帶卡片？改填「這是你第幾次來」') + '</button>';
     },
 
-    good: function () {
-      return '<h2>' + esc(S.good.title) + '</h2>' +
-        '<p>' + esc(S.good.sub) + '</p>' +
-        '<div class="goodtwo">' +
-          '<div class="gcol"><h3>' + esc(S.good.leftLabel) + '</h3><ul>' +
-            S.good.left.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') +
-          '</ul></div>' +
-          '<div class="gcol right"><h3>' + esc(S.good.rightLabel) + '</h3><div class="gq">？</div></div>' +
-        '</div>' +
-        '<p class="privacy">看大螢幕。</p>';
-    },
+    // 手機上只叫他看大螢幕
+    good: function () { return wait('看大螢幕'); },
 
     chase: function () {
       return '<h2 class="center">' + esc(S.chase.line) + '</h2>' + wait('看大螢幕');
@@ -183,9 +167,7 @@
         (me.cardLoss ? '<div class="hit">幸福指數 ' + fmt(-me.cardLoss) + '</div>' : '') + wait('看大螢幕');
     },
 
-    tally: function (me) {
-      return '<h2>' + esc(S.tally.title) + '</h2>' + myCard(me) + wait('看大螢幕');
-    },
+    tally: function () { return wait('看大螢幕'); },
 
     bossIn: function () {
       return '<h2 class="center">' + esc(S.boss.name) + '</h2>' +
@@ -193,15 +175,8 @@
         '<div class="hpline">' + S.boss.hp + ' / ' + S.boss.hp + '</div>';
     },
 
-    // 四個職業：只有圖和名字。**這一頁不用選**，每一回合打的時候才選。
-    job: function () {
-      return '<h2>' + esc(S.jobInfo.title) + '</h2>' +
-        '<p>' + esc(S.jobInfo.sub) + '</p>' +
-        '<div class="aspects">' + S.classes.map(function (c) {
-          return '<div class="ab"><img src="' + jobArt(c.art) + '" alt="">' + esc(c.t) + '</div>';
-        }).join('') + '</div>' +
-        '<p class="privacy">' + esc(S.jobInfo.hint) + '</p>';
-    },
+    // 四個職業：手機上只叫他看大螢幕（放圖會以為可以點）
+    job: function () { return wait('看大螢幕'); },
 
     fight: function (me) { return battleScreen(me, S.fightNow, false); },
 

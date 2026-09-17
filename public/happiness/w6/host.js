@@ -116,7 +116,7 @@
               '<span class="dm">−' + (j.dmg * j.n) + '</span>' +
             '</div>';
           }).join('') + '</div>' +
-          '<div class="qcount">出手 ' + b.went + ' 人　什麼都不做 ' + b.idle + ' 人' +
+          '<div class="qcount">出手 ' + b.went + ' 人' + (S.stats.count > b.went ? '　沒選 ' + (S.stats.count - b.went) + ' 人' : '') +
             (isWin ? '' : '　·　每個人掉 1–3 分') + '</div>'
         : '<div class="kfoot">' + counter(b.acted, '人已決定') + '</div>');
   }
@@ -167,9 +167,11 @@
       var c = S.cardsNow;
       if (c.open) {
         return '<h2>' + esc(S.drawInfo.title) + '</h2>' +
-          '<div class="taken">' + (c.taken.length
+          // 兩欄、從左上往下排；人多就排三欄，字跟著縮，整頁不捲動
+          '<div class="taken' + (c.taken.length > 12 ? ' lots' : c.taken.length > 6 ? ' many' : '') + '">' + (c.taken.length
             ? c.taken.map(function (t) {
-              return '<div class="tk"><div class="as">' + esc(t.aspect) + '<b>' + esc(t.name) + '</b></div>' +
+              return '<div class="tk"><div class="as">' + esc(t.aspect) + '<b>' + esc(t.name) + '</b>' +
+                  (t.loss ? '<span class="ls">幸福指數 −' + t.loss + '</span>' : '') + '</div>' +
                 '<p>' + esc(t.text) + '</p></div>';
             }).join('')
             : '<p class="lede">沒有人抽。</p>') + '</div>';
@@ -210,14 +212,14 @@
     job: function () {
       return '<h2>' + esc(S.jobInfo.title) + '</h2>' +
         '<p class="lede">' + esc(S.jobInfo.sub) + '</p>' +
+        '<p class="lede" style="margin-top:4px">' + esc(S.jobInfo.hint) + '</p>' +
         '<div class="jobgrid">' + S.classes.map(function (c) {
           return '<div class="jobcard">' +
             '<img src="' + jobArt(c.art) + '" alt="">' +
             '<b>' + esc(c.t) + '</b>' +
             '<span class="act">？</span>' +
           '</div>';
-        }).join('') + '</div>' +
-        '<div class="kfoot"><div class="qcount">' + esc(S.jobInfo.hint) + '</div></div>';
+        }).join('') + '</div>';
     },
 
     fight: function () { return battle(S.fightNow, false); },
@@ -456,11 +458,24 @@
     healAnim();
     beatNumbers();
     fitSolo();
+    fitTaken();
   }
 
   // 整頁一句話那幾頁**不准斷行**，可是句子長度是文案決定的 ——
   // CSS 的 vw 算的是整個視窗，扣掉側欄之後就爆出去了。所以畫完再量一次，
   // **量到塞得下為止**。改文案的人不用回來算字級。
+  // 公布抽到的那一張：人很多時卡片字一路縮到塞得下，**整頁不捲動**
+  function fitTaken() {
+    var box = stage.querySelector('.taken');
+    if (!box) return;
+    var k = 1;
+    box.style.setProperty('--tks', k);
+    while (stage.scrollHeight > stage.clientHeight + 1 && k > 0.45) {
+      k -= 0.05;
+      box.style.setProperty('--tks', k.toFixed(2));
+    }
+  }
+
   function fitSolo() {
     var list = stage.querySelectorAll('.solo h2, .cine .cinetitle, .cine .cineline, .cross .line');
     var avail = stage.clientWidth - parseFloat(getComputedStyle(stage).paddingLeft) * 2;

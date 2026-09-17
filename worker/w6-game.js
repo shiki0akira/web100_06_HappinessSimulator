@@ -36,7 +36,7 @@ export const PHASES = [
   { id: 'tally',     tag: '統計',     title: '最近讓你最累的是什麼？' },
   { id: 'bossIn',    tag: '過場',     title: '今晚的大魔王 · 勞苦重擔' },
   { id: 'job',       tag: '介紹',     title: '四個職業' },
-  { id: 'fight',     tag: '主遊戲',   title: '靠自己打（五回合）' },
+  { id: 'fight',     tag: '主遊戲',   title: '靠自己打面對勞苦重擔（五回合）' },
   { id: 'lost',      tag: '結算頁',   title: '沒有人打得倒它' },
   { id: 'cross',     tag: '過場',     title: '十字架' },
   { id: 'verse',     tag: '經文',     title: '領受經文 ＋ 領受復活' },
@@ -458,6 +458,7 @@ function cardsView(s) {
     taken: s.cardsOpen
       ? done.map((p) => ({
         name: p.name, aspect: aspectOf(p.aspect).t, k: p.aspect, text: cardText(p.aspect, p.pick),
+        loss: p.cardLoss || 0,
       }))
       : [],
   };

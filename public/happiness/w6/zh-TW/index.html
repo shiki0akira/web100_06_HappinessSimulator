@@ -266,13 +266,20 @@
     height: min(calc(360px * var(--u)), 46vh); border: 4px dashed var(--edge-soft); color: var(--ink-3);
     font-family: var(--pixel); font-size: min(calc(56px * var(--u)), 8vh); }
   /* 公布之後：每一張被挑走的卡（卡面 ＋ 挑的人） */
-  .taken { flex: 1; display: flex; flex-wrap: wrap; align-content: center; justify-content: center;
-    gap: calc(16px * var(--u)); margin-top: min(calc(16px * var(--u)), 2vh); }
-  .tk { flex: 0 1 calc(46% - 8px); min-width: 0; background: var(--surface);
+  .taken { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start;
+    gap: min(calc(16px * var(--u)), 2vh) calc(16px * var(--u)); margin-top: min(calc(16px * var(--u)), 2vh); }
+  .taken.many { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .taken.lots { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .taken.many .tk p, .taken.lots .tk p { font-size: min(calc(18px * var(--u)), 2.2vh, 1.2vw); }
+  /* 塞不下時 fitTaken() 會把 --tks 往下調，卡片字和間距跟著縮 */
+  .taken .tk { zoom: var(--tks, 1); }
+  .tk { min-width: 0; background: var(--surface);
     border: 4px solid var(--edge); box-shadow: 5px 5px 0 var(--hard);
     padding: min(calc(12px * var(--u)), 1.6vh) calc(18px * var(--u)); animation: unseal .45s ease-out; }
   .tk .as { font-family: var(--pixel); font-size: min(calc(16px * var(--u)), 2vh); color: var(--gold); }
-  .tk .as b { font-family: var(--sans); float: right; font-size: min(calc(17px * var(--u)), 2.1vh); color: var(--ink-2); }
+  .tk .as { display: flex; align-items: baseline; gap: calc(12px * var(--u)); }
+  .tk .as b { font-family: var(--sans); font-size: min(calc(17px * var(--u)), 2.1vh); color: var(--ink-2); }
+  .tk .as .ls { margin-left: auto; font-family: var(--pixel); font-size: min(calc(16px * var(--u)), 2vh); color: var(--vol); white-space: nowrap; }
   .tk p { margin: min(calc(6px * var(--u)), .8vh) 0 0; font-size: min(calc(23px * var(--u)), 2.8vh, 1.5vw);
     font-weight: 900; line-height: 1.5; }
 
