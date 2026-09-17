@@ -221,7 +221,7 @@
           return '<div class="jobcard">' +
             '<img src="' + jobArt(c.art) + '" alt="">' +
             '<b>' + esc(c.t) + '</b>' +
-            '<span class="act">？</span>' +
+            '<span class="act">' + esc(c.act) + '</span>' +
           '</div>';
         }).join('') + '</div>';
     },
@@ -337,6 +337,10 @@
             '<span class="bl"><img src="' + jobArt(r.art) + '" alt=""><span class="hn"><b>' + esc(r.t) + '</b><i>' + esc(r.act) + '</i></span></span>' +
             '<span class="bt"><i style="width:' + Math.round(r.n / h.max * 100) + '%"></i></span>' +
             '<span class="bn">' + r.n + ' 人</span>' +
+            // 誰最常用這一種、選了幾次
+            '<span class="who">' + r.who.map(function (x) {
+              return '<em>' + esc(x.name) + '<small>' + x.n + ' / ' + x.total + ' 次</small></em>';
+            }).join('') + '</span>' +
           '</div>';
         }).join('') + '</div>';
     },
@@ -521,6 +525,13 @@
   // **量到塞得下為止**。改文案的人不用回來算字級。
   // 公布抽到的那一張：人很多時卡片字一路縮到塞得下，**整頁不捲動**
   function fitTaken() {
+    // 「你最常用哪一種打法」名字多的時候也一樣縮
+    var hab = stage.querySelector('.bars.habits');
+    if (hab) {
+      var z = 1;
+      hab.style.zoom = z;
+      while (stage.scrollHeight > stage.clientHeight + 1 && z > 0.5) { z -= 0.05; hab.style.zoom = z.toFixed(2); }
+    }
     var box = stage.querySelector('.taken');
     if (!box) return;
     var k = 1;

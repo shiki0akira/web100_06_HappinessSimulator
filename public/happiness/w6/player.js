@@ -81,7 +81,7 @@
   }
 
   // 打鬥那兩頁共用：**每一回合**四個職業挑一個。手機上**沒有「什麼都不做」**（沒選的人照樣算什麼都沒做）。
-  // 第一階段選的時候**看不到它代表什麼**，公布了才翻出來；第二階段已經知道了，照樣寫出來。
+  // 選項上寫做法（正面衝上去…），**兩個階段都不印傷害數字**。
   function battleScreen(me, b, isWin) {
     var head = '<div class="qn">第 ' + (b.round + 1) + ' / ' + b.total + ' 回合 · ' + esc(b.aspect) + '</div>' +
       '<h2 style="margin-top:6px">' + esc(b.attack) + '</h2>';
@@ -96,9 +96,8 @@
         '<div class="reply">' + (c ? '<img class="replyart" src="' + jobArt(c.art) + '" alt="">' : '') +
           '<span class="replyfrom">' + esc(c ? c.t + '　' + c.act : S.idle.t) + '</span><br>' +
           esc(c ? (isWin ? how + ' 這一次，它擋不住。' : how) : S.idle.d) + '</div>' +
-        (isWin
-          ? '<div class="hit up">魔王 −' + (c ? c.dmg * S.winInfo.boost : 0) + '</div>'
-          : '<div class="hit">幸福指數 −' + (c ? c.loss : S.idle.loss) + '　魔王 −' + (c ? c.dmg : 0) + '</div>') +
+        // **手機上不印傷害數字**，不然下一回合他們會照數字選
+        (isWin ? '' : '<div class="hit">幸福指數 −' + (c ? c.loss : S.idle.loss) + '</div>') +
         wait('看大螢幕');
     }
 
@@ -106,11 +105,11 @@
       '<div class="opts">' + S.classes.map(function (k) {
         return '<button class="opt jobopt' + (mine === k.k ? ' on' : '') + '" data-pick="' + esc(k.k) + '">' +
           '<img src="' + jobArt(k.art) + '" alt="">' + esc(k.t) +
-          (isWin ? '<small>' + esc(k.act) + '　傷害 ' + k.dmg * S.winInfo.boost + '</small>' : '') + '</button>';
+          '<small>' + esc(k.act) + '</small></button>';
       }).join('') +
       '</div>' +
-      '<p class="privacy">' + (isWin ? '' : '選了、公布了才知道它代表什麼。') +
-        (mine === undefined ? '選一個。主持人公布之前都可以改。' : '主持人公布之前都可以改。') + '</p>';
+      '<p class="privacy">選你平常真的會怎麼做的那一個。' +
+        (mine === undefined ? '主持人公布之前都可以改。' : '主持人公布之前都可以改。') + '</p>';
   }
 
   var views = {

@@ -12,7 +12,7 @@
 // ⚠️ **領受復活不是門檻** —— 沒按的人照樣打得動，全場照樣一起贏。
 //     「信了才有能力」是這套設計明文避開的東西。
 import {
-  GOOD, CHASE, ASPECTS, CARDS, COPE, PICK, DRAW, CARD_LOSS, TALLY, BOSS,
+  GOOD, CHASE, ASPECTS, CARDS, COPE, COPE_DMG, PICK, DRAW, CARD_LOSS, TALLY, BOSS,
   CLASSES, JOB, HABIT, IDLE, FIGHT, LOST, CROSS, POWER, VERSE, WIN, BEAT, VICTORY, BLESS,
 } from './w6-data.js';
 
@@ -187,11 +187,19 @@ const shown = (s, key, r) => openList(s, key).indexOf(r) >= 0;
 const choiceOf = (p, r, key) => arr(p[key])[r];
 const actOf = (p, r, key) => classOf(choiceOf(p, r, key));
 
-// 這一回合全場打掉多少（職業的傷害；什麼都不做是 0）
+// 這一件事，這個職業打掉多少（跟著事情變；表裡沒有的才退回職業本身的數字）
+const CLASS_IDX = { knight: 0, mage: 1, tank: 2, villager: 3 };
+function dmgFor(s, r, c) {
+  const m = moveAt(s, r);
+  const row = ((COPE_DMG[m.k] || [])[m.i]) || null;
+  return row && row[CLASS_IDX[c.k]] != null ? row[CLASS_IDX[c.k]] : c.dmg;
+}
+
+// 這一回合全場打掉多少（什麼都不做是 0）
 function damageOf(s, r, key, boost) {
   return alive(s).reduce((sum, p) => {
     const c = actOf(p, r, key);
-    return sum + (c ? c.dmg : 0) * (boost || 1);
+    return sum + (c ? dmgFor(s, r, c) : 0) * (boost || 1);
   }, 0);
 }
 
@@ -532,14 +540,16 @@ function habitOf(p) {
   return { k: c.k, t: c.t, act: c.act, art: c.art, n: count[best], total };
 }
 
-// 統計：每個職業是幾個人「最常用」的，**只有人數**
+// 統計：每個職業是哪幾個人「最常用」的，**名字跟選了幾次**一起列出來
 function habitView(s) {
   const ps = alive(s);
-  const tops = ps.map(habitOf).filter(Boolean);
-  const rows = CLASSES.map((c, i) => ({
-    k: c.k, t: c.t, act: c.act, art: c.art, order: i,
-    n: tops.filter((h) => h.k === c.k).length,
-  }));
+  const tops = ps.map((p) => ({ p, h: habitOf(p) })).filter((x) => x.h);
+  const rows = CLASSES.map((c, i) => {
+    const who = tops.filter((x) => x.h.k === c.k)
+      .map((x) => ({ name: x.p.name, n: x.h.n, total: x.h.total }))
+      .sort((a, b) => b.n - a.n);
+    return { k: c.k, t: c.t, act: c.act, art: c.art, order: i, n: who.length, who };
+  });
   const max = rows.reduce((m, r) => Math.max(m, r.n), 0);
   rows.sort((a, b) => (b.n - a.n) || (a.order - b.order));
   return { rows, max: Math.max(max, 1), counted: tops.length };
@@ -578,7 +588,7 @@ function battleView(s, id) {
         k: c.k, t: c.t, act: c.act, loss: c.loss, art: c.art,
         how: ((COPE[m.k] || [])[m.i] || {})[c.k] || c.d,
         n: ps.filter((p) => choiceOf(p, r, key) === c.k).length,
-        dmg: c.dmg * (isWin ? WIN.boost : 1),
+        dmg: dmgFor(s, r, c) * (isWin ? WIN.boost : 1),
       }))
       : [],
   };

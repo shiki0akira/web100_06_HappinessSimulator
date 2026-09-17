@@ -213,7 +213,7 @@
     padding: min(calc(16px * var(--u)), 2vh) calc(14px * var(--u)); }
   .jobcard img { width: min(calc(120px * var(--u)), 16vh); height: auto; image-rendering: pixelated; }
   .jobcard b { margin-top: min(calc(8px * var(--u)), 1vh); font-size: min(calc(30px * var(--u)), 3.6vh, 2vw); letter-spacing: .06em; }
-  .jobcard .act { margin-top: min(calc(4px * var(--u)), .6vh); font-size: min(calc(40px * var(--u)), 5vh); font-family: var(--pixel); color: var(--vol); }
+  .jobcard .act { margin-top: min(calc(6px * var(--u)), .8vh); font-size: min(calc(26px * var(--u)), 3.2vh); font-weight: 900; color: var(--vol); }
   .jobcard .num { margin-top: min(calc(6px * var(--u)), .8vh); font-family: var(--pixel); font-size: min(calc(14px * var(--u)), 1.8vh); color: var(--ink-3); }
   .jobcard .d { margin-top: min(calc(8px * var(--u)), 1vh); font-size: min(calc(17px * var(--u)), 2.1vh); line-height: 1.5; color: var(--ink-2); }
 
@@ -312,6 +312,11 @@
   .bars.habits .hn i { font-style: normal; font-size: min(calc(20px * var(--u)), 2.5vh); color: var(--vol); }
   .bars.habits .bt { height: min(calc(44px * var(--u)), 5.4vh); }
   .bars.habits .bn { font-size: min(calc(26px * var(--u)), 3.2vh); }
+  .bars.habits .who { grid-column: 2 / 4; display: flex; flex-wrap: wrap; gap: 2px calc(14px * var(--u));
+    margin-top: calc(-6px * var(--u)); min-height: min(calc(26px * var(--u)), 3.2vh); }
+  .bars.habits .who em { font-style: normal; font-size: min(calc(20px * var(--u)), 2.5vh); font-weight: 900; white-space: nowrap; }
+  .bars.habits .who small { margin-left: 6px; font-family: var(--pixel); font-size: .75em; color: var(--ink-3); font-weight: 400; }
+  .bars.habits .bar2 { row-gap: 0; }
   /* 被挑走的那幾張卡的原文（**不掛名字**） */
   .quotes { margin-top: min(calc(12px * var(--u)), 1.6vh); display: flex; flex-wrap: wrap; gap: calc(10px * var(--u)); }
   .quotes span { padding: 2px calc(12px * var(--u)); border: 3px solid var(--edge-soft);
