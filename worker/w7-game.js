@@ -12,7 +12,7 @@
 import { FREE, BOUND, BILL, STORY, VERSE, REFUSE, TRUE_FREE, FULL, BLESS, HEAVEN } from './w7-data.js';
 
 // 幸福根基的規則七關都一樣。上限 95 不是 100 —— 你自己填不滿。
-// **第七關第 10 頁補滿之後才變成 100**（FULL_INNER）。
+// **第七關第 11 頁補滿之後才變成 100**（FULL_INNER）。
 export const INNER_CAP = 95;
 export const FULL_INNER = 100;
 export const INNER_PER_WEEK = 15;
@@ -27,7 +27,8 @@ export const PHASES = [
   { id: 'bound',     tag: '主遊戲',   title: '身不由己（五回合）' },
   { id: 'bill',      tag: '結算頁',   title: '罪的奴僕，身不由己' },
   { id: 'story',     tag: '見證',     title: '見證分享' },
-  { id: 'verse',     tag: '經文',     title: '約翰福音 8:36 · 斷鏈' },
+  { id: 'verse',     tag: '經文',     title: '領受經文' },
+  { id: 'faith',     tag: '信息',     title: '信而受洗 · 醫治與平安' },
   { id: 'refuse',    tag: '互動點 3', title: '拒絕的自由（三回合）' },
   { id: 'trueFree',  tag: '揭曉',     title: '耶穌裡的真自由' },
   { id: 'full',      tag: '補滿',     title: '補滿 100' },
@@ -52,7 +53,6 @@ export function createState() {
     boundOpen: [],
     billPaid: false,     // 帳單只扣一次
     billStep: 0,         // 0 帳單＋鎖鏈 → 1 生活沒有意義
-    verseStep: 0,        // 0 領受 → 1 信而受洗、醫治與平安
     refuseRound: 0,
     refuseOpen: [],
     filled: false,       // 補滿 100 了沒
@@ -119,7 +119,7 @@ function freeView(s) {
     rows: sorted,
     others: s.freeStep >= 1 ? others : [],
     max: Math.max(max, 1),
-    // 第 9 頁左欄：勾最多的三項（沒人勾的不算）
+    // 第 10 頁左欄：勾最多的三項（沒人勾的不算）
     top: sorted.filter((r) => r.n > 0).slice(0, 3).map((r) => r.t),
   };
 }
@@ -262,7 +262,6 @@ export function stepNext(s) {
     case 'free': if (s.freeStep < 2) { s.freeStep += 1; return true; } return false;
     case 'bound': return boundStep(s);
     case 'bill': if (s.billStep < 1) { s.billStep = 1; return true; } return false;
-    case 'verse': if (s.verseStep < 1) { s.verseStep = 1; return true; } return false;
     case 'refuse': return refuseStep(s);
     case 'full': return fill(s);
     case 'heaven': if (s.heavenStep < 2) { s.heavenStep += 1; return true; } return false;
@@ -275,7 +274,6 @@ export function stepBack(s) {
     case 'free': if (s.freeStep > 0) { s.freeStep -= 1; return true; } return false;
     case 'bound': return boundPrev(s);
     case 'bill': if (s.billStep > 0) { s.billStep = 0; return true; } return false;
-    case 'verse': if (s.verseStep > 0) { s.verseStep = 0; return true; } return false;
     case 'refuse': return refusePrev(s);
     case 'heaven': if (s.heavenStep > 0) { s.heavenStep -= 1; return true; } return false;
     default: return false;
@@ -298,10 +296,6 @@ function stepView(s) {
   if (id === 'bill') {
     return { back: s.billStep > 0, next: s.billStep < 1,
       label: s.billStep < 1 ? '下一段（生活沒有意義）' : '走完了，按下一頁' };
-  }
-  if (id === 'verse') {
-    return { back: s.verseStep > 0, next: s.verseStep < 1,
-      label: s.verseStep < 1 ? '下一段（信而受洗、醫治與平安）' : '走完了，按下一頁' };
   }
   if (id === 'refuse') {
     const r = s.refuseRound, open = shown(s, 'refuseOpen', r), last = r >= R_TOTAL - 1;
@@ -389,7 +383,7 @@ export function applyAction(s, pid, msg) {
       break;
     }
     // 「我想對它說『不』的是＿＿」。那句話留在玩家自己的手機上，這裡只收「有沒有寫」。
-    // **這一關不加分**（第 10 頁已經補滿 100）；按了照樣算 prayed。
+    // **這一關不加分**（第 11 頁已經補滿 100）；按了照樣算 prayed。
     case 'bless':
       p.hasBless = !!msg.has;
       p.prayed = true;
@@ -476,7 +470,6 @@ function common(s) {
     billTotal: ps.reduce((a, p) => a + (p.billLoss || 0), 0),
     story: STORY,
     verse: VERSE,
-    verseStep: s.verseStep || 0,
     refuseInfo: REFUSE,
     refuseNow: refuseView(s),
     saidNo: saidNo(s),

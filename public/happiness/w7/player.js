@@ -169,12 +169,11 @@
 
     story: function () { return wait('看大螢幕'); },
 
-    verse: function (me) {
-      if (S.verseStep >= 1) {
-        return '<h2 class="center">' + esc(S.verse.faith[0]) + '</h2>' +
-          '<h2 class="center" style="color:var(--root-c)">' + esc(S.verse.faith[1]) + '</h2>' + wait('看大螢幕');
-      }
-      return verseCard(me, false);
+    verse: function (me) { return verseCard(me, false); },
+
+    faith: function () {
+      return '<h2 class="center">' + esc(S.verse.faith[0]) + '</h2>' +
+        '<h2 class="center" style="color:var(--root-c)">' + esc(S.verse.faith[1]) + '</h2>' + wait('看大螢幕');
     },
 
     // 拒絕的自由。**還沒領受的人先回到經文卡。**「不要」是普通按鈕。
@@ -418,7 +417,7 @@
 
     // ⚠️ 正在打的字（其他、禱告）不能進這一行 —— 一變就整頁重畫，焦點會被踢掉。
     var next = [
-      S.phase.id, S.freeNow.step, S.boundNow.round, S.boundNow.revealed, S.billStep, S.verseStep,
+      S.phase.id, S.freeNow.step, S.boundNow.round, S.boundNow.revealed, S.billStep,
       S.refuseNow.round, S.refuseNow.revealed, S.filled, S.heavenStep,
       me.outer, me.inner, me.freeSent, me.free.join(','), me.boundChoice, me.chains.join(','),
       me.billLoss, me.broken, me.capped, me.refuseChoice, me.cardDone, me.prayed,

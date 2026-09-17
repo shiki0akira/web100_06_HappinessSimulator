@@ -155,24 +155,14 @@
       return StageParts.testimony({ title: S.story.title });
     },
 
-    // 約翰福音 8:36。0 經文＋一人一截鎖鏈，領受就變成鳥飛走 → 1 信而受洗、醫治與平安
+    // 領受經文：**跟前六關同一個畫面**（共用元件）。鎖鏈斷掉是手機上的事。
     verse: function () {
-      if (S.verseStep >= 1) {
-        return '<div class="faith">' + S.verse.faith.map(function (t) { return '<div>' + esc(t) + '</div>'; }).join('') + '</div>';
-      }
-      // 一截一截：**不照人排、不顯示誰還沒按** —— 斷掉的都排在前面
-      var total = S.stats.count, broke = S.stats.broken, links = '';
-      for (var i = 0; i < total; i++) {
-        links += i < broke
-          ? '<img class="bird" src="' + ART + 'bird.svg" alt="" data-i="' + i + '">'
-          : '<img src="' + ART + 'chain-link.svg" alt="">';
-      }
-      return '<h2>領受經文</h2>' +
-        '<div class="verse"><span class="ref">' + esc(S.verse.ref) + '</span>' +
-          '<blockquote>「' + esc(S.verse.text) + '」</blockquote></div>' +
-        '<div class="chainrow">' + links + '</div>' +
-        '<div class="qcount' + (total && broke >= total ? ' all' : '') + '" style="text-align:center">' +
-          broke + ' / ' + total + ' 已領受</div>';
+      return StageParts.verse({ ref: S.verse.ref, text: S.verse.text, done: S.stats.broken, total: S.stats.count });
+    },
+
+    // 信而受洗，必得釋放 · 相信耶穌，醫治與平安。**手機上沒有按鈕。**
+    faith: function () {
+      return '<div class="faith">' + S.verse.faith.map(function (t) { return '<div>' + esc(t) + '</div>'; }).join('') + '</div>';
     },
 
     // 拒絕的自由。**不計分**，大螢幕只出「說了幾次不」。
@@ -319,14 +309,7 @@
     stage.className = 'stage phase-' + S.phase.id +
       (S.phase.id === 'heaven' ? ' cinepage' + (S.heavenStep < 2 ? ' dark' : '') : '');
     var html = (views[S.phase.id] || function () { return ''; })();
-    // 經文那一頁：已經飛走的鳥不要每次重畫都再飛一次
-    var flown = stage.querySelectorAll('.chainrow img.bird').length;
     stage.innerHTML = html;
-    if (S.phase.id === 'verse') {
-      stage.querySelectorAll('.chainrow img.bird').forEach(function (b, i) {
-        if (i < flown) { b.style.animation = 'none'; b.style.opacity = '0'; }
-      });
-    }
 
     var qr = document.getElementById('qr');
     if (qr && ROOM) {
