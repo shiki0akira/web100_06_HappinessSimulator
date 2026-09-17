@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="/happiness/shared/logo.svg">
+<title>幸福模擬器 · 第七關 釋放與自由 · 主畫面</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Press+Start+2P&display=swap">
+<link rel="stylesheet" href="/happiness/shared/pixel.css">
+<script src="/happiness/shared/theme.js"></script>
+<style>
+  /* 主畫面會用 HDMI 接 43–75 吋電視，觀看距離 2–4 公尺。
+     字級隨畫面寬度整體放大，--u 是縮放係數。 */
+  :root { --u: 1; }
+  @media (min-width: 1500px) { :root { --u: 1.22; } }
+  @media (min-width: 1900px) { :root { --u: 1.5; } }
+  @media (min-width: 2560px) { :root { --u: 2; } }
+
+  body { overflow: hidden; }
+  .app { display: grid; grid-template-rows: auto 1fr auto auto; height: 100vh; }
+
+  .top {
+    display: flex; align-items: center; gap: 16px;
+    padding: 12px 24px; border-bottom: 4px solid var(--edge); background: var(--surface);
+  }
+  .top h1 { font-size: calc(19px * var(--u)); font-weight: 900; }
+  .top h1 a { color: inherit; text-decoration: none; border-bottom: 3px solid transparent; }
+  .top h1 a:hover, .top h1 a:focus-visible { color: var(--root-c); border-bottom-color: var(--root-c); }
+  .top .spacer { flex: 1; }
+  .top .count { font-family: var(--pixel); font-size: calc(15px * var(--u)); color: var(--ink-2); }
+  .notesbtn { font-family: var(--sans); font-size: calc(13px * var(--u)); font-weight: 700;
+    padding: calc(7px * var(--u)) calc(12px * var(--u));
+    border: 3px solid var(--gold); background: transparent; color: var(--gold); }
+  .notesbtn:hover { background: var(--gold); color: var(--surface); }
+  .top .themebtn { font-size: calc(13px * var(--u)); padding: calc(7px * var(--u)) calc(10px * var(--u)); }
+
+  .body { display: grid; grid-template-columns: calc(272px * var(--u)) 1fr; min-height: 0; }
+
+  .side { border-right: 4px solid var(--edge); background: var(--surface); overflow-y: auto; padding: calc(10px * var(--u)); }
+  .side h4 { font-family: var(--pixel); font-size: calc(15px * var(--u)); letter-spacing: .06em; color: var(--ink-3); margin: 0 0 calc(8px * var(--u)); text-transform: uppercase; }
+  .prow { padding: calc(5px * var(--u)) 0; border-bottom: 2px dashed var(--edge-soft); }
+  .prow .nm { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; line-height: 1.25;
+    font-size: calc(14px * var(--u)); font-weight: 700; }
+  .prow .g { display: flex; align-items: center; gap: 8px; margin-top: calc(3px * var(--u)); line-height: 1.15;
+    font-family: var(--pixel); font-size: calc(13px * var(--u)); color: var(--ink-3); }
+  .prow .g .lbl { flex: none; width: 4.4em; }
+  .prow .g .bar { flex: 1; min-width: 0; height: calc(10px * var(--u)); }
+  .prow .g b { flex: none; width: 2.6em; text-align: right; font-size: calc(14px * var(--u)); }
+  .chip { font-family: var(--sans); font-size: calc(13px * var(--u)); font-weight: 700; padding: 1px 6px; border: 2px solid var(--edge-soft); background: var(--surface-2); color: var(--ink-2); }
+  .chip.on { border-color: var(--root-c); background: var(--root-soft); color: var(--root-c); }
+  /* 被打中的人：**不加紅色、不加「危險」**（架構第十一節） */
+  .chip.hit { border-color: var(--gold); color: var(--gold); background: transparent; }
+
+  /* 每一頁都要在一個畫面裡看完 —— overflow 只是保險，不是排版手段 */
+  .stage { padding: calc(22px * var(--u)) calc(40px * var(--u)); overflow-y: auto; display: flex; flex-direction: column; }
+  .stage h2 { font-size: min(calc(40px * var(--u)), 5.6vh); font-weight: 900; letter-spacing: .02em; }
+  .stage .kicker, .col3 .kicker { font-size: calc(20px * var(--u)); color: var(--ink-2); margin-bottom: 10px; }
+  .stage .lede { font-size: calc(17px * var(--u)); color: var(--ink-2); max-width: 62ch; margin: 10px 0 0; }
+  .big { font-size: min(calc(76px * var(--u)), 10vh); font-family: var(--pixel); line-height: 1.1; }
+  .mono { font-family: var(--pixel); }
+  .muted { color: var(--ink-3); }
+
+  .receive { display: flex; align-items: center; gap: calc(24px * var(--u)); margin-top: calc(22px * var(--u)); }
+  .receive .stageart { margin: 0; }
+  .receive .stageart img { width: min(calc(200px * var(--u)), 22vh); }
+  .counter { margin-top: calc(18px * var(--u)); }
+  .receive .counter { margin-top: 0; }
+
+  .qrbox { display: flex; gap: 34px; align-items: center; margin-top: 22px; flex-wrap: wrap; }
+  .qrbox > div { flex: 1 1 280px; min-width: 0; }
+  .qrbox canvas { border: 4px solid var(--edge); background: #fff; padding: 6px;
+    image-rendering: pixelated; box-shadow: 8px 8px 0 var(--hard); position: relative; z-index: 95; }
+  .roomcode { font-family: var(--pixel); font-size: calc(64px * var(--u)); color: var(--gold); letter-spacing: .14em; margin-top: 8px; }
+  .url { font-family: var(--pixel); font-size: calc(24px * var(--u)); line-height: 1.8; color: var(--root-c); word-break: break-all; }
+  .names { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+  .names span { padding: 6px 12px; background: var(--surface); border: 3px solid var(--edge); box-shadow: 3px 3px 0 var(--hard); font-size: calc(15px * var(--u)); font-weight: 700; }
+
+  /* 「幾人已…」是給主持人等人的一行小字，不是這一頁的主角 */
+  .qcount { margin-top: calc(6px * var(--u)); font-family: var(--pixel);
+    font-size: calc(15px * var(--u)); color: var(--ink-3); }
+  .qcount.all { color: var(--root-c); }
+  .qcount b { font-family: var(--sans); font-size: calc(15px * var(--u)); }
+
+  /* ── 標題頁 ───────────────────────────────────────────────────────── */
+  .teaser { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .teaser .big-title { font-size: min(calc(72px * var(--u)), 9vh, 6vw); letter-spacing: .12em; white-space: nowrap; }
+  .teaseart img { display: block; width: min(calc(200px * var(--u)), 28vh); height: auto;
+    image-rendering: pixelated; margin: min(calc(14px * var(--u)), 2vh) auto 0; }
+  .teaser .teaseline { margin-top: min(calc(20px * var(--u)), 2.8vh);
+    font-size: min(calc(30px * var(--u)), 3.8vh, 2.3vw); font-weight: 700;
+    color: var(--ink-2); white-space: nowrap; }
+
+  /* ── 整頁只有一句話（第 4 頁：我們追求的方向…）**不准斷行** ────────── */
+  .solo { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .solo h2 { font-size: min(calc(52px * var(--u)), 8vh, 3.3vw); line-height: 1.45;
+    letter-spacing: .04em; white-space: nowrap; }
+
+  /* ── 整面動畫：大魔王登場／五回合過去了／得勝的力量 ──────────────────
+     跟第二關的時光機同一個等級 —— 這三頁是過場，不是資訊頁。 */
+  .stage.cinepage { overflow: hidden; }
+  .cine { flex: 1; position: relative; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center; }
+  .cine .rays { position: absolute; inset: 0; display: flex; justify-content: space-between; opacity: .35; }
+  .cine .rays i { width: calc(8px * var(--u)); background: linear-gradient(var(--vol), transparent);
+    animation: sweep 900ms linear infinite; }
+  .cine .rays i:nth-child(2n) { animation-duration: 600ms; opacity: .6; }
+  .cine .rays i:nth-child(3n) { animation-duration: 1300ms; opacity: .4; }
+  .cine .rays.gold i { background: linear-gradient(var(--gold), transparent); }
+  @keyframes sweep { from { transform: translateY(-100%); } to { transform: translateY(100%); } }
+  @media (prefers-reduced-motion: reduce) { .cine .rays i { animation: none; } }
+
+  .cine .cinelead { font-family: var(--pixel); font-size: min(calc(22px * var(--u)), 2.8vh);
+    color: var(--gold); letter-spacing: .12em; }
+  .cine .cinetitle { margin-top: min(calc(10px * var(--u)), 1.4vh); white-space: nowrap;
+    font-size: min(calc(72px * var(--u)), 9vh, 5vw); font-weight: 900; letter-spacing: .1em; }
+  .cine .cinetitle.big { font-size: min(calc(84px * var(--u)), 11vh, 5.6vw); }
+  .cine .cinetitle.down { color: var(--vol); }
+  .cine .cinesub { margin-top: min(calc(12px * var(--u)), 1.6vh);
+    font-size: min(calc(24px * var(--u)), 3vh); font-weight: 700; color: var(--ink-2); }
+  .cine .cineline { margin-top: min(calc(18px * var(--u)), 2.4vh); white-space: nowrap;
+    font-size: min(calc(34px * var(--u)), 4.2vh, 2.4vw); font-weight: 900; color: var(--gold); }
+  .cine img { display: block; image-rendering: pixelated; }
+  /* ── 統計 ＋ 大魔王合體 ───────────────────────────────────────────── */
+  .bars { display: flex; flex-direction: column; gap: min(calc(9px * var(--u)), 1.2vh);
+    margin-top: min(calc(14px * var(--u)), 2vh); }
+  .bar2 { display: grid; grid-template-columns: calc(170px * var(--u)) minmax(0, 1fr) calc(90px * var(--u));
+    align-items: center; gap: calc(14px * var(--u)); }
+  .bar2 .bl { display: flex; align-items: center; gap: calc(10px * var(--u));
+    font-size: min(calc(26px * var(--u)), 3.2vh); font-weight: 900; white-space: nowrap; }
+  .bar2 .bl img { width: min(calc(40px * var(--u)), 4.6vh); height: auto; image-rendering: pixelated; }
+  .bar2 .bt { height: min(calc(26px * var(--u)), 3.2vh); border: 3px solid var(--edge); background: var(--surface-2); }
+  .bar2 .bt i { display: block; height: 100%; background: var(--vol); transition: width .3s;
+    -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 8px, transparent 8px 10px);
+    mask-image: repeating-linear-gradient(90deg, #000 0 8px, transparent 8px 10px); }
+  .bar2 .bn { font-family: var(--pixel); font-size: min(calc(19px * var(--u)), 2.4vh); color: var(--ink-2); }
+  .bar2.zero { opacity: .4; }
+  /* 經文。用 em 限行長：ch 在中文字體上量的是數字寬度，會把整段擠成一條 */
+  .verse { margin-top: calc(10px * var(--u)); }
+  .verse blockquote { font-size: min(calc(38px * var(--u)), 4.4vh); font-weight: 900; line-height: 1.6;
+    margin: 18px 0 0; max-width: 22em; }
+  .verse .ref { font-family: var(--pixel); color: var(--gold); font-size: calc(20px * var(--u)); }
+  .verse blockquote .ref { display: block; margin-top: calc(14px * var(--u)); }
+
+  .cols3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 18px; }
+  .col3 { background: var(--surface); border: 4px solid var(--edge); box-shadow: 6px 6px 0 var(--hard); padding: min(18px, 2.4vh) 18px; }
+  .col3 h3 { display: flex; align-items: baseline; gap: 10px; font-size: calc(22px * var(--u)); margin-bottom: 8px; }
+  .col3 h3.next { font-size: calc(26px * var(--u)); }
+  .col3 .who { font-size: calc(28px * var(--u)); font-weight: 900; display: block; margin: 0; }
+  .col3 .delta { margin: calc(6px * var(--u)) 0 0; font-family: var(--pixel);
+    font-size: calc(15px * var(--u)); color: var(--ink-3); }
+  .col3 .delta b { margin-left: 10px; font-size: calc(17px * var(--u)); }
+  .nextbox { margin-top: calc(16px * var(--u)); }
+
+  .note { background: var(--surface); border: 3px solid var(--edge); border-left-width: 10px; border-left-color: var(--gold);
+    padding: 14px 16px; margin-top: calc(16px * var(--u)); max-width: 70ch; font-size: calc(14px * var(--u)); color: var(--ink-2); box-shadow: 5px 5px 0 var(--hard); }
+  .note b { color: var(--ink); }
+
+  /* HUD 控制列：固定深底淺字，不隨主題翻轉 */
+  .controls { display: flex; gap: 10px; align-items: center; padding: 12px 20px;
+    background: var(--bar-bg); border-top: 4px solid var(--bar-edge); flex-wrap: wrap; }
+  .controls .btn { padding: 9px 14px; font-size: calc(13px * var(--u)); background: #1D2A2C; border: 3px solid var(--bar-edge);
+    color: var(--bar-ink); box-shadow: 3px 3px 0 #000; }
+  .controls .btn:active { transform: translate(3px, 3px); box-shadow: none; }
+  .controls .btn.primary { background: var(--root-c); border-color: #9CF0D6; color: var(--on-primary); }
+  .controls select { background: #1D2A2C; color: var(--bar-ink); border: 3px solid var(--bar-edge);
+    padding: 9px 10px; font-family: var(--sans); font-weight: 700; font-size: calc(13px * var(--u)); }
+  .controls .sp { flex: 1; }
+  .controls .hint { color: #8FA8A1; font-size: calc(13px * var(--u)); font-family: var(--pixel); }
+
+  /* ── 第七關 ──────────────────────────────────────────────────────────── */
+  @keyframes unseal { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+  .sub2 { margin-top: min(calc(6px * var(--u)), .8vh); font-size: min(calc(24px * var(--u)), 3vh); font-weight: 700; color: var(--ink-2); }
+
+  /* 自由是什麼：作答中的選項 → 長條 → 底下浮出那一行 */
+  .freeopts { flex: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: calc(18px * var(--u));
+    align-content: center; margin-top: min(calc(16px * var(--u)), 2vh); }
+  .freeopts div { background: var(--surface); border: 4px solid var(--edge); box-shadow: 5px 5px 0 var(--hard);
+    padding: min(calc(22px * var(--u)), 2.8vh) calc(18px * var(--u)); text-align: center;
+    font-size: min(calc(32px * var(--u)), 4vh, 2.2vw); font-weight: 900; }
+  .freeopts div.other { border-style: dashed; color: var(--ink-3); }
+  .bars.free { flex: 1; justify-content: center; gap: min(calc(16px * var(--u)), 2vh); }
+  .bars.free .bar2 { grid-template-columns: calc(300px * var(--u)) minmax(0, 1fr) calc(90px * var(--u)); }
+  .bars.free .bl { font-size: min(calc(30px * var(--u)), 3.8vh); }
+  .bars.free .bt { height: min(calc(36px * var(--u)), 4.4vh); }
+  .others { display: flex; flex-wrap: wrap; gap: calc(10px * var(--u)); margin-top: min(calc(10px * var(--u)), 1.2vh); }
+  .others span { padding: 2px calc(12px * var(--u)); border: 3px dashed var(--edge-soft);
+    font-size: min(calc(20px * var(--u)), 2.5vh); font-weight: 700; color: var(--ink-2); }
+  .saybig { margin-top: min(calc(18px * var(--u)), 2.4vh); text-align: center; white-space: nowrap;
+    font-size: min(calc(52px * var(--u)), 6.4vh, 3.4vw); font-weight: 900; color: var(--gold); animation: unseal .7s ease-out both; }
+
+  /* 身不由己 */
+  .ev { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .ev .as { font-family: var(--pixel); font-size: min(calc(20px * var(--u)), 2.5vh); color: var(--gold); }
+  .ev .line { margin-top: min(calc(12px * var(--u)), 1.5vh); font-size: min(calc(52px * var(--u)), 6.4vh, 3.4vw); font-weight: 900; line-height: 1.4; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: calc(24px * var(--u)); margin-top: min(calc(26px * var(--u)), 3.2vh); }
+  .two > div { background: var(--surface); border: 4px solid var(--edge); box-shadow: 5px 5px 0 var(--hard);
+    padding: min(calc(18px * var(--u)), 2.2vh) calc(24px * var(--u)); }
+  .two .k { font-family: var(--pixel); font-size: min(calc(16px * var(--u)), 2vh); color: var(--ink-3); }
+  .two .t { display: block; margin-top: min(calc(6px * var(--u)), .8vh); font-size: min(calc(30px * var(--u)), 3.8vh, 2.1vw); font-weight: 900; }
+  .two .n { display: block; margin-top: min(calc(10px * var(--u)), 1.2vh); font-family: var(--pixel);
+    font-size: min(calc(34px * var(--u)), 4.2vh); color: var(--vol); animation: unseal .45s ease-out; }
+  .two .no .n { color: var(--ink-2); }
+  .two .n small { font-size: .5em; color: var(--ink-3); }
+
+  /* 被綁住的一排人 */
+  .billwrap { flex: 1; min-height: 0; position: relative; display: flex; flex-direction: column; }
+  .crowd { flex: 1; min-height: 0; display: flex; flex-wrap: wrap; justify-content: center; align-content: center;
+    gap: min(calc(18px * var(--u)), 2.2vh) calc(20px * var(--u)); margin-top: min(calc(12px * var(--u)), 1.5vh); transition: opacity .8s; }
+  .crowd .pp { display: flex; flex-direction: column; align-items: center; width: calc(110px * var(--u) * var(--cz, 1)); }
+  .crowd img { width: calc(min(calc(96px * var(--u)), 13vh) * var(--cz, 1)); height: auto; image-rendering: pixelated; }
+  .crowd b { margin-top: 4px; font-size: calc(min(calc(18px * var(--u)), 2.2vh) * var(--cz, 1)); white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+  .crowd.dim { opacity: .15; }
+  .billline { font-family: var(--pixel); font-size: min(calc(22px * var(--u)), 2.7vh); color: var(--vol); margin-top: min(calc(6px * var(--u)), .8vh); }
+  .overline { position: absolute; left: 0; right: 0; top: 44%; text-align: center; white-space: nowrap;
+    font-size: min(calc(60px * var(--u)), 7.4vh, 4vw); font-weight: 900; animation: unseal 1s ease-out both; }
+
+  /* 經文 ＋ 全場一大串鎖鏈 */
+  .chainrow { display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+    gap: calc(4px * var(--u)); margin-top: min(calc(26px * var(--u)), 3.2vh); min-height: min(calc(70px * var(--u)), 9vh); }
+  .chainrow img { height: min(calc(34px * var(--u)), 4.4vh); width: auto; image-rendering: pixelated; }
+  .chainrow img.bird { height: min(calc(30px * var(--u)), 3.8vh); animation: flyaway 2.4s ease-in both; }
+  @keyframes flyaway { 0% { transform: none; opacity: 1; } 100% { transform: translate(calc(30px * var(--u)), calc(-160px * var(--u))); opacity: 0; } }
+  .faith { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: min(calc(30px * var(--u)), 4vh); }
+  .faith div { font-size: min(calc(64px * var(--u)), 8vh, 4.4vw); font-weight: 900; letter-spacing: .08em; white-space: nowrap; animation: unseal .8s ease-out both; }
+  .faith div + div { animation-delay: .5s; color: var(--root-c); }
+
+  /* 真自由：兩欄 */
+  .goodgrid { flex: 1; display: grid; grid-template-columns: 2fr 3fr; gap: calc(28px * var(--u));
+    margin-top: min(calc(16px * var(--u)), 2.2vh); }
+  .goodcol { display: flex; flex-direction: column; background: var(--surface); border: 4px solid var(--edge);
+    box-shadow: 6px 6px 0 var(--hard); padding: min(calc(20px * var(--u)), 2.6vh) calc(28px * var(--u)); min-width: 0; }
+  .goodcol h3 { font-size: min(calc(30px * var(--u)), 3.6vh); font-weight: 900; padding-bottom: min(calc(10px * var(--u)), 1.2vh); border-bottom: 3px dashed var(--edge-soft); }
+  .goodcol ul { list-style: none; margin: min(calc(14px * var(--u)), 1.8vh) 0 0; padding: 0; display: flex; flex-direction: column; justify-content: center; gap: min(calc(12px * var(--u)), 1.6vh); flex: 1; }
+  .goodcol li { font-size: min(calc(28px * var(--u)), 3.4vh, 1.9vw); font-weight: 900; line-height: 1.4; }
+  .goodcol li::before { content: '▍'; color: var(--ink-3); margin-right: .4em; }
+  .goodcol.left { opacity: .45; box-shadow: none; border-color: var(--edge-soft); }
+  .goodcol.right { border-color: var(--gold); border-width: 6px; box-shadow: 8px 8px 0 var(--gold); animation: unseal .6s ease-out; }
+  .goodcol.right h3 { color: var(--gold); font-size: min(calc(38px * var(--u)), 4.6vh); }
+  .goodcol.right li { font-size: min(calc(44px * var(--u)), 5.4vh, 2.8vw); }
+  .goodcol.right li::before { color: var(--root-c); }
+  .nofoot { margin-top: min(calc(14px * var(--u)), 1.8vh); text-align: center; font-size: min(calc(28px * var(--u)), 3.4vh); font-weight: 900; }
+  .nofoot b { font-family: var(--pixel); color: var(--root-c); }
+
+  /* 補滿 100：全場兩條線並排（人多就排兩欄、三欄，字跟著縮） */
+  .fullgrid { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(var(--fc, 1), minmax(0, 1fr));
+    align-content: center; gap: min(calc(12px * var(--u)), 1.5vh) calc(24px * var(--u)); margin-top: min(calc(12px * var(--u)), 1.5vh); }
+  .fr { background: var(--surface); border: 4px solid var(--edge); box-shadow: 4px 4px 0 var(--hard);
+    padding: min(calc(8px * var(--u)), 1vh) calc(16px * var(--u)); zoom: var(--fz, 1); }
+  .fr .nm { font-size: min(calc(20px * var(--u)), 2.5vh); font-weight: 900; }
+  .fr .ln { display: grid; grid-template-columns: 5.2em minmax(0, 1fr) 3em; align-items: center; gap: calc(10px * var(--u)); margin-top: min(calc(4px * var(--u)), .6vh);
+    font-family: var(--pixel); font-size: min(calc(14px * var(--u)), 1.8vh); color: var(--ink-3); }
+  .fr .ln .tr { height: min(calc(20px * var(--u)), 2.5vh); border: 3px solid var(--edge); background: var(--surface-2); }
+  .fr .ln .tr i { display: block; height: 100%; }
+  .fr .ln b { text-align: right; font-size: min(calc(17px * var(--u)), 2.1vh); }
+  .fr .ln.o i { background: var(--vol); } .fr .ln.o b { color: var(--vol); }
+  .fr .ln.n i { background: var(--root-c); transition: width 2.6s cubic-bezier(.3,.8,.3,1); } .fr .ln.n b { color: var(--root-c); }
+  .fullnote { display: flex; justify-content: center; gap: calc(40px * var(--u)); margin-top: min(calc(12px * var(--u)), 1.5vh);
+    font-size: min(calc(26px * var(--u)), 3.2vh); font-weight: 900; animation: unseal .8s 2.8s ease-out both; }
+  .fullnote .o { color: var(--vol); } .fullnote .n { color: var(--root-c); }
+
+  /* 天上的教會 */
+  .heaven { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .heaven .hl { font-size: min(calc(48px * var(--u)), 6vh, 3.2vw); font-weight: 900; letter-spacing: .06em; white-space: nowrap; margin-top: min(calc(22px * var(--u)), 2.8vh); animation: unseal 1s ease-out both; }
+  .timeline { width: min(calc(900px * var(--u)), 80%); height: min(calc(16px * var(--u)), 2vh); border: 4px solid var(--edge); background: var(--surface-2); }
+  .timeline i { display: block; height: 100%; background: var(--ink-3); animation: tl 2.4s ease-out both; }
+  @keyframes tl { from { width: 0; } to { width: 100%; } }
+  .rests { display: flex; gap: calc(26px * var(--u)); margin-top: min(calc(34px * var(--u)), 4vh); }
+  .rests img { width: min(calc(90px * var(--u)), 12vh); image-rendering: pixelated; animation: dimin 1.2s ease-out both; }
+  .rests img:nth-child(2) { animation-delay: .3s; } .rests img:nth-child(3) { animation-delay: .6s; }
+  .rests img:nth-child(4) { animation-delay: .9s; } .rests img:nth-child(5) { animation-delay: 1.2s; }
+  @keyframes dimin { from { opacity: 1; } to { opacity: .5; } }
+  .stage.phase-heaven.dark { background: #070B0C; }
+  .stage.phase-heaven.dark .hl { color: #E9F1EC; }
+  .heaven .tomb { width: min(calc(420px * var(--u)), 44vh, 34vw); image-rendering: pixelated; animation: unseal 1.4s ease-out both; }
+  .heaven .church { width: min(calc(900px * var(--u)), 60vw, 44vh * 64 / 40); image-rendering: pixelated; animation: unseal 1.2s ease-out both; }
+  .heaven .vref { margin-top: min(calc(12px * var(--u)), 1.5vh); font-size: min(calc(26px * var(--u)), 3.2vh); font-weight: 700; color: var(--ink-2); }
+  .heaven .fin { margin-top: min(calc(12px * var(--u)), 1.5vh); font-size: min(calc(40px * var(--u)), 5vh); font-weight: 900; color: var(--gold); letter-spacing: .1em; animation: unseal 1s 1.2s ease-out both; }
+
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <h1><a href="/happiness/zh-TW/" id="home" title="回系列頁">幸福模擬器</a> · 第七關 <b>釋放與自由</b></h1>
+    <span class="tag" id="ptag">入場</span>
+    <span class="spacer"></span>
+    <button class="notesbtn" id="notesbtn" title="用手機掃，備忘錄會跟著大螢幕走">📱 主持人備忘錄</button>
+    <button class="themebtn" data-theme-toggle></button>
+    <span class="count" id="pcount">0 人在場</span>
+  </div>
+
+  <div class="body">
+    <aside class="side">
+      <h4>玩家狀態</h4>
+      <div id="plist"></div>
+    </aside>
+    <main class="stage" id="stage"></main>
+  </div>
+
+  <div class="controls">
+    <button class="btn" data-cmd="prev">← 上一頁</button>
+    <button class="btn primary" data-cmd="next">下一頁 →</button>
+    <select id="jump"></select>
+    <!-- 每一頁該有的控制鈕。現場不要靠鍵盤。按鈕上的字由伺服器給（step）。 -->
+    <span id="stepctl" style="display:none;gap:8px;">
+      <button class="btn" data-cmd="stepBack" id="sback">← 上一步</button>
+      <button class="btn primary" data-cmd="stepNext" id="snext">下一步</button>
+      <button class="btn" data-cmd="boundRestart" id="srestart">重跑五回合</button>
+    </span>
+    <span class="sp"></span>
+    <span class="hint" id="hint"></span>
+    <button class="btn" data-cmd="reset" id="resetbtn">全部重置</button>
+  </div>
+</div>
+
+<!-- 主持人備忘錄的 QR：按 N 叫出來，平常收著 -->
+<div class="notesqr" id="notesqr">
+  <canvas id="notesqrc"></canvas>
+  <div class="t">
+    <h3>主持人備忘錄</h3>
+    <p>用你自己的手機掃。這一頁會跟著大螢幕走，每一頁該念什麼、該做什麼、不要做什麼都在上面，也可以直接翻頁。</p>
+    <div class="u" id="notesurl"></div>
+    <div class="esc">再按一次 N 或 Esc 收起來</div>
+  </div>
+</div>
+
+<script src="/happiness/shared/qr.js"></script>
+<script src="/happiness/shared/room-client.js"></script>
+<script src="/happiness/shared/stage-parts.js"></script>
+<script src="/happiness/w7/host.js"></script>
+</body>
+</html>

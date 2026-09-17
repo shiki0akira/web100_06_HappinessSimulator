@@ -79,7 +79,7 @@ window.StageParts = (function () {
     keepsake: function (opts) {
       opts = opts || {};
       return '<h2>儲存模擬回憶</h2>' +
-        '<p class="lede">長按手機上的圖片存進相簿。這張卡是下一關的入場券。</p>' +
+        '<p class="lede">' + esc(opts.lede || '長按手機上的圖片存進相簿。這張卡是下一關的入場券。') + '</p>' +
         counter(opts.done, opts.total, '已生成') +
         '<div class="note">卡片上有：這一週的經文、你的兩條指數' +
           (opts.extra ? '、' + esc(opts.extra) : '') + '。寫了心情的人也會印在上面。</div>';

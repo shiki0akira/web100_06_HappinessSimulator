@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="icon" type="image/svg+xml" href="/happiness/shared/logo.svg">
+<title>幸福模擬器 · 釋放與自由</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Press+Start+2P&display=swap">
+<link rel="stylesheet" href="/happiness/shared/pixel.css">
+<script src="/happiness/shared/theme.js"></script>
+<style>
+  body { padding: 0 0 28px; }
+  .wrap { max-width: 520px; margin: 0 auto; padding: 0 16px; }
+
+  .status { position: sticky; top: 0; z-index: 5; background: var(--surface); border-bottom: 4px solid var(--edge); padding: 10px 16px 12px; }
+  .status .row1 { display: flex; align-items: center; gap: 8px; font-size: 15px; color: var(--ink-3); }
+  .status .row1 b { color: var(--ink); font-size: 20px; font-weight: 900; }
+  .gauge { margin-top: 9px; }
+  .gauge .lbl { display: flex; justify-content: space-between; font-family: var(--pixel); font-size: 13px; color: var(--ink-3); margin-bottom: 4px; }
+  .gauge .lbl b { font-size: 13px; color: var(--vol); }
+  .gauge + .gauge { margin-top: 7px; }
+  .gauge + .gauge .lbl b { color: var(--root-c); }
+
+  .screen { padding-top: 22px; }
+  .screen h2 { font-size: 28px; font-weight: 900; letter-spacing: .03em; }
+  .screen p { color: var(--ink-2); font-size: 18px; }
+  .wait { text-align: center; padding: 44px 0; color: var(--ink-3); }
+  .wait .dot { font-family: var(--pixel); font-size: 27px; letter-spacing: .3em; color: var(--root-c); }
+
+  .fullbtn { width: 100%; margin-top: 20px; padding: 18px; font-size: 21px; }
+  .numin { width: 100%; padding: 16px; font-size: 40px; font-weight: 700; text-align: center;
+    letter-spacing: .1em; font-family: var(--pixel); }
+
+  /* 接關那兩格 */
+  .screen p .sub { font-size: 16px; color: var(--ink-3); line-height: 1.7; font-weight: 500; }
+  .fieldlbl { margin: 22px 0 8px; font-size: 19px; font-weight: 900; color: var(--ink); }
+  .fieldlbl .sub { display: block; font-size: 15px; font-weight: 500; color: var(--ink-3); }
+
+  .qn { font-family: var(--pixel); font-size: 14px; color: var(--gold); }
+  .screen .center { text-align: center; }
+  .bigline { margin-top: 18px; font-size: 24px !important; font-weight: 900; line-height: 1.7; color: var(--gold) !important; }
+
+  /* 選項：一排一個大按鈕。選到的那一個變橘色。 */
+  .opts { display: grid; gap: 10px; margin-top: 18px; }
+  .opt { display: block; width: 100%; text-align: left; padding: 16px 18px; cursor: pointer;
+    border: 3px solid var(--edge); background: var(--surface); color: var(--ink);
+    font-family: var(--sans); font-size: 22px; font-weight: 900; box-shadow: 3px 3px 0 var(--hard); }
+  .opt:active { transform: translate(3px, 3px); box-shadow: none; }
+  .opt.on { border-color: var(--vol); background: var(--vol-soft); color: var(--vol); }
+  .opt small { display: block; margin-top: 4px; font-family: var(--pixel); font-size: 12px; color: var(--ink-3); font-weight: 400; }
+
+  .mine { margin-top: 16px; padding: 16px; border: 3px solid var(--gold); }
+  .mine .as { font-family: var(--pixel); font-size: 13px; color: var(--gold); }
+  .mine .tx { margin-top: 8px; font-size: 21px; font-weight: 900; line-height: 1.6; }
+
+  .reply { margin-top: 16px; padding: 18px; border: 3px solid var(--gold);
+    font-size: 20px; font-weight: 700; line-height: 1.8; }
+  .replyfrom { font-family: var(--pixel); font-size: 13px; color: var(--gold); }
+
+  .hit { margin-top: 16px; padding: 14px; border: 3px dashed var(--vol); color: var(--vol);
+    font-family: var(--pixel); font-size: 20px; text-align: center; }
+  .hit.up { border-color: var(--root-c); color: var(--root-c); }
+  .hit.zero { border-color: var(--edge-soft); color: var(--ink-3); }
+
+  .verse-p { text-align: center; padding: 10px 0; }
+  .verse-p .ref { font-family: var(--pixel); font-size: 13px; color: var(--gold); }
+  .verse-p blockquote { font-size: 23px; font-weight: 700; line-height: 1.95; margin: 16px 0 0; letter-spacing: .02em; }
+
+  textarea { width: 100%; min-height: 108px; padding: 14px; font-size: 21px; font-weight: 500; resize: vertical; }
+
+  /* 領受／禱告之後那個「長出來了」的畫面 */
+  .grew { display: flex; align-items: center; gap: 14px; margin-top: 22px;
+    border: 3px solid var(--root-c); background: var(--root-soft); padding: 12px 14px; }
+  .grew img { width: 96px; height: auto; image-rendering: pixelated; flex: none; }
+  .grew p { margin: 0; font-size: 18px; line-height: 1.7; }
+  .grew b { font-family: var(--pixel); font-size: 20px; }
+  .privacy { margin-top: 12px; font-size: 16px; color: var(--ink-3); line-height: 1.8; }
+
+  .weekcard { width: 100%; border: 4px solid var(--edge); box-shadow: 6px 6px 0 var(--hard); display: block;
+    margin-top: 16px; position: relative; z-index: 95; }
+
+  .ok { color: var(--root-c); font-weight: 700; }
+  .mono { font-family: var(--pixel); }
+
+  /* ── 第七關 ─────────────────────────────────────────────── */
+  .opt.on2 { border-color: var(--root-c); background: var(--root-soft); color: var(--root-c); }
+  .opt.check.on::after { content: ' ✓'; }
+  /* 長按「不要」：按住的時候底下那一條慢慢填滿 */
+  .opt.hold { position: relative; overflow: hidden; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: manipulation; }
+  .opt.hold span, .opt.hold small { position: relative; }
+  .opt.hold .fillbar { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--root-soft); }
+  .opt.hold.holding .fillbar { animation-name: holdfill; animation-timing-function: linear; animation-fill-mode: forwards; }
+  @keyframes holdfill { from { width: 0; } to { width: 100%; } }
+  .chains { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .chains span { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 3px solid var(--edge-soft);
+    font-size: 16px; font-weight: 700; color: var(--ink-2); }
+  .chains img { width: 30px; height: auto; image-rendering: pixelated; }
+  .freeart { display: block; width: 40%; max-width: 160px; margin: 14px auto 0; image-rendering: pixelated; }
+  .freeart.wide { width: 70%; max-width: 280px; }
+  .freeart.dim { opacity: .55; }
+  .churchart { display: block; width: 100%; margin-top: 10px; image-rendering: pixelated; }
+  .birds { display: flex; justify-content: center; gap: 14px; margin-top: 10px; height: 34px; }
+  .birds img { width: 34px; image-rendering: pixelated; opacity: 0; }
+  .birds.fly img { animation: fly 2.4s ease-in both; }
+  @keyframes fly { 0% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translate(20px, -120px); } }
+  .said { margin-top: 16px; padding: 14px; border: 3px dashed var(--edge-soft); font-size: 20px; font-weight: 900; text-align: center; color: var(--ink-2); }
+  .said.no { border: 3px solid var(--root-c); background: var(--root-soft); color: var(--root-c); font-size: 26px; }
+  .hundred { margin-top: 26px; text-align: center; font-family: var(--pixel); font-size: 72px; color: var(--root-c); animation: pop .8s ease-out both; }
+  @keyframes pop { from { transform: scale(.4); opacity: 0; } to { transform: none; opacity: 1; } }
+</style>
+</head>
+<body>
+  <div class="status" id="status" hidden>
+    <div class="row1"><b id="myname">—</b><span id="mystate"></span></div>
+    <div class="gauge">
+      <div class="lbl"><span>幸福指數</span><b id="outerv">—</b></div>
+      <span class="bar"><i id="outerbar" style="width:0%;background:var(--vol)"></i></span>
+    </div>
+    <div class="gauge">
+      <div class="lbl"><span>幸福根基</span><b id="innerv">0</b></div>
+      <span class="bar"><i id="innerbar" style="width:0%;background:var(--root-c)"></i></span>
+    </div>
+  </div>
+
+  <div class="wrap"><div class="screen" id="screen"></div></div>
+
+  <button class="themebtn floating" data-theme-toggle></button>
+
+<script src="/happiness/shared/card.js"></script>
+<script src="/happiness/shared/room-client.js"></script>
+<script src="/happiness/w7/player.js"></script>
+</body>
+</html>

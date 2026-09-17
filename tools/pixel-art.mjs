@@ -1082,3 +1082,135 @@ function animatedSvg(w, h, css, body, label) {
   });
   console.log('第六關：四個職業（騎士／法師／坦克／村民）');
 }
+
+// ── 第七關「釋放與自由」 ──────────────────────────────────────────────────
+// 被綁住的小人（0–5 條鎖鏈）、閉上眼睛的小人、飛走的鳥、一截鎖鏈、天上的教會。
+//
+// ⚠️ 鎖鏈用**中灰和深灰交錯**：亮色主題的白底、暗色主題的深底都看得到。
+// ⚠️ 天上的教會是**一群人，不掛名字、不照人數**。不准畫審判、不准畫地獄。
+{
+  const OUT_SHARED = 'public/happiness/shared/art';
+  const box = (x, y, w, h, c) =>
+    `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`;
+  PAL.L = '#F7F4E8';   // 白袍
+  PAL.y = '#FFF4B8';   // 門裡的光
+
+  // 16 × 20 的一個人。eyes 換成閉著的就是最後一格那一張。
+  const person = (closed) => [
+    '......nnnn......',
+    '.....nnnnnn.....',
+    '.....kkkkkk.....',
+    closed ? '.....ddkkdd.....' : '.....kdkkdk.....',
+    '.....kkkkkk.....',
+    '......kkkk......',
+    '....CCCCCCCC....',
+    '...CCCCCCCCCC...',
+    '..kCCCCCCCCCCk..',
+    '..kCCCCCCCCCCk..',
+    '..kCCCCCCCCCCk..',
+    '...CCCCCCCCCC...',
+    '....CCCCCCCC....',
+    '....CCCCCCCC....',
+    '....cccccccc....',
+    '.....cc..cc.....',
+    '.....cc..cc.....',
+    '.....cc..cc.....',
+    '....DDD..DDD....',
+    '................',
+  ];
+
+  // 一條鎖鏈橫過身體：一環三格，深淺交錯
+  const band = (y) => {
+    let b = '';
+    for (let i = 0; i < 5; i++) {
+      const x = 1 + i * 3;
+      const c = i % 2 ? PAL.D : PAL.w;
+      b += box(x, y, 3, 1, c) + box(x, y + 1, 1, 1, c) + box(x + 2, y + 1, 1, 1, c);
+    }
+    return b;
+  };
+  // 第幾條綁在哪裡：手臂、腿、腰、胸、脖子
+  const BANDS = [9, 15, 12, 7, 5];
+  for (let n = 0; n <= 5; n++) {
+    let b = sprite(person(false), 0, 0);
+    BANDS.slice(0, n).forEach((y) => { b += band(y); });
+    write('bound-' + n + '.svg', '0 0 16 20', b, n ? '身上有 ' + n + ' 條鎖鏈的人' : '沒有鎖鏈的人', OUT_SHARED);
+  }
+  write('rest.svg', '0 0 16 20', sprite(person(true), 0, 0), '閉上眼睛的人', OUT_SHARED);
+
+  // 一截鎖鏈（大螢幕上一個人一截）
+  {
+    const LINK = ['.wwww.', 'ww..ww', 'ww..ww', '.wwww.'];
+    const DARK = LINK.map((r) => r.replace(/w/g, 'D'));
+    write('chain-link.svg', '0 0 10 4', sprite(LINK, 0, 0) + sprite(DARK, 4, 0), '一截鎖鏈', OUT_SHARED);
+  }
+
+  // 飛走的鳥
+  write('bird.svg', '0 0 9 5', sprite([
+    'w.......w',
+    'ww.....ww',
+    '.ww...ww.',
+    '..wwDww..',
+    '....D....',
+  ], 0, 0), '飛走的鳥', OUT_SHARED);
+
+  // 天上的教會：門開著、光從裡面出來，耶穌站在門前，一群穿白衣的人圍著。
+  // **一群人不掛名字**；門和光是第三關「到父那裡去」那一扇。
+  {
+    const W = 64, H = 40;
+    let body = '';
+    // 光：一圈一圈往外淡
+    let glow = '';
+    for (let r = 0; r < 6; r++) {
+      glow += `<rect x="${24 - r * 4}" y="${2 + r}" width="${16 + r * 8}" height="${30 - r}" fill="${PAL.G}" opacity="${(0.22 - r * 0.03).toFixed(2)}"/>`;
+    }
+    body += `<g class="glow">${glow}</g>`;
+    // 門（上緣是圓的）＋門裡的光
+    body += box(29, 3, 6, 1, PAL.G) + box(27, 4, 10, 2, PAL.G) + box(26, 6, 12, 22, PAL.G);
+    body += box(30, 5, 4, 1, PAL.y) + box(28, 6, 8, 22, PAL.y);
+    // 門前的耶穌：長髮、白袍、紅色斜披肩
+    const HIM = [
+      '..nnnn..',
+      '.nkkkkn.',
+      '.nkdkdn.',
+      '.nnkknn.',
+      '..nnnn..',
+      '.LLLLLL.',
+      'kLLLLLLk',
+      'kLLLLLLk',
+      '.LLLLLL.',
+      '.LLLLLL.',
+      '.LLLLLL.',
+      '.LLLLLL.',
+      '.wwwwww.',
+    ];
+    body += sprite(HIM, 28, 17);
+    for (let i = 0; i < 5; i++) body += box(29 + i, 22 + i, 1, 1, PAL.H);
+    // 一群人：三排，越後面越小越淡。**舉起手的**跟**站著的**交錯。
+    const small = (x, y, up) =>
+      box(x + 1, y, 2, 2, PAL.k) + box(x, y + 2, 4, 5, PAL.L) + box(x, y + 7, 4, 1, PAL.w) +
+      (up ? box(x - 1, y, 1, 3, PAL.k) + box(x + 4, y, 1, 3, PAL.k) : '');
+    const crowd = [];
+    [4, 11, 18, 41, 48, 55].forEach((x, i) => crowd.push([x, 22, i % 2 === 0]));
+    [1, 8, 15, 21, 38, 44, 51, 58].forEach((x, i) => crowd.push([x, 29, i % 2 === 1]));
+    let people = '';
+    crowd.forEach(([x, y, up], i) => {
+      people += `<g class="hop" style="animation-delay:${(i % 4) * 0.3}s">${small(x, y, up)}</g>`;
+    });
+    body += people;
+    // 雲：大家踩在上面，整條連起來
+    body += box(0, 37, 64, 3, PAL.W) + box(0, 39, 64, 1, PAL.w);
+    body += box(6, 36, 10, 1, PAL.W) + box(26, 36, 12, 1, PAL.W) + box(48, 36, 10, 1, PAL.W);
+    // 星星
+    [[6, 6], [14, 12], [50, 8], [58, 14]].forEach(([x, y]) => {
+      body += `<g class="tw">${box(x, y, 1, 1, PAL.G)}${box(x - 1, y + 1, 3, 1, PAL.G)}${box(x, y + 2, 1, 1, PAL.G)}</g>`;
+    });
+    const css =
+      '.glow{animation:gl 2.4s steps(1) infinite}@keyframes gl{0%,49%{opacity:.75}50%,100%{opacity:1}}' +
+      '.hop{animation:hop 1.6s steps(1) infinite}@keyframes hop{0%,49%{transform:translateY(0)}50%,100%{transform:translateY(-1px)}}' +
+      '.tw{animation:tk 2s steps(1) infinite}@keyframes tk{0%,45%{opacity:.2}50%,100%{opacity:1}}' +
+      '@media (prefers-reduced-motion:reduce){.glow,.hop,.tw{animation:none}}';
+    fs.writeFileSync(OUT_SHARED + '/heaven-church.svg', animatedSvg(W, H, css, body, '天上的教會：門開著，一群穿白衣的人和耶穌在一起'));
+  }
+  console.log('第七關：bound-0～5／rest／chain-link／bird／heaven-church.svg');
+}

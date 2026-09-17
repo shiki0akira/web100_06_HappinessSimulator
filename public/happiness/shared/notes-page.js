@@ -201,6 +201,18 @@
       }
     }
 
+    // 第七關：需要一步一步走的那幾頁（公布、下一段、補滿 100）共用一組按鈕。
+    // **按鈕上的字由伺服器給**（S.step），大螢幕控制列和這裡永遠寫一樣的字。
+    var stepc = el('stepctl');
+    if (stepc) {
+      stepc.hidden = !S.step;
+      if (S.step) {
+        el('stepback').disabled = !S.step.back;
+        el('stepnext').textContent = S.step.label;
+        el('stepnext').disabled = !S.step.next;
+      }
+    }
+
     // 第二關的寶箱：主持人拿著手機也能打開它。
     var giftc = el('giftctl');
     if (giftc) {
@@ -282,6 +294,8 @@
     on('crossback', function () { post('crossBack'); });
     on('crossnext', function () { post('crossNext'); });
     on('beatall', function () { post('beatAll'); });
+    on('stepback', function () { post('stepBack'); });
+    on('stepnext', function () { post('stepNext'); });
   }
 
   if (!WEEK) {
