@@ -75,10 +75,12 @@
 
     if (b.revealed) {
       if (!mine) return head + wait('看大螢幕', '這一回合你沒有選');
+      var how = '';
+      (b.byJob || []).forEach(function (j) { if (c && j.k === c.k) how = j.how; });
       return head +
         '<div class="reply">' + (c ? '<img class="replyart" src="' + jobArt(c.art) + '" alt="">' : '') +
           '<span class="replyfrom">' + esc(c ? c.t + '　' + c.act : S.idle.t) + '</span><br>' +
-          esc(c ? (isWin ? '這一次，它擋不住。' : c.d) : S.idle.d) + '</div>' +
+          esc(c ? (isWin ? how + ' 這一次，它擋不住。' : how) : S.idle.d) + '</div>' +
         (isWin
           ? '<div class="hit up">魔王 −' + (c ? c.dmg * S.winInfo.boost : 0) + '</div>'
           : '<div class="hit">幸福指數 −' + (c ? c.loss : S.idle.loss) + '　魔王 −' + (c ? c.dmg : 0) + '</div>') +

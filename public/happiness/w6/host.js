@@ -108,16 +108,20 @@
         '<span class="line">' + esc(b.attack) + '</span></div>' +
       bossBar(true, false) +
       (b.revealed
+        // 每個職業一大塊：這一件事**實際怎麼做**、幾個人選、每人扣多少幸福指數、對魔王打了多少
         ? '<div class="jobrow">' + b.byJob.map(function (j) {
             return '<div class="jc' + (j.n ? '' : ' zero') + '">' +
-              '<img src="' + jobArt('job-' + j.k) + '" alt="">' +
-              '<span class="nm"><b>' + esc(j.t) + '</b><i>' + esc(j.act) + '</i></span>' +
-              '<span class="n">' + j.n + ' 人</span>' +
-              '<span class="dm">−' + (j.dmg * j.n) + '</span>' +
+              '<div class="jh"><img src="' + jobArt(j.art || 'job-' + j.k) + '" alt="">' +
+                '<span class="nm"><b>' + esc(j.t) + '</b><i>' + esc(j.act) + '</i></span>' +
+                '<span class="n">' + j.n + ' 人</span></div>' +
+              '<p class="how">' + esc(j.how) + '</p>' +
+              '<div class="jf">' +
+                (isWin ? '' : '<span class="ls">幸福指數 −' + j.loss + '</span>') +
+                '<span class="dm">魔王 −' + (j.dmg * j.n) + '</span></div>' +
             '</div>';
           }).join('') + '</div>' +
           '<div class="qcount">出手 ' + b.went + ' 人' + (S.stats.count > b.went ? '　沒選 ' + (S.stats.count - b.went) + ' 人' : '') +
-            (isWin ? '' : '　·　每個人掉 1–3 分') + '</div>'
+            '　·　這一回合一共打掉 ' + b.dmg + '</div>'
         : '<div class="kfoot">' + counter(b.acted, '人已決定') + '</div>');
   }
 
@@ -368,8 +372,20 @@
     var num = document.getElementById('hpnum');
     if (!fill || !num) return;
     var max = S.boss.hp;
-    fill.style.width = Math.round(b.hp / max * 100) + '%';
-    num.textContent = b.hp + ' / ' + max + '　（−' + b.dmg + '）';
+    fill.style.width = (b.hp / max * 100) + '%';
+    // 打掉的那一截閃一下（最少畫 1.5%，不然一個人打的 110 在畫面上看不見），魔王被打得晃一下
+    var bar = fill.parentNode, old = bar.querySelector('.hitchunk');
+    if (old) old.remove();
+    if (b.dmg > 0) {
+      var chunk = document.createElement('span');
+      chunk.className = 'hitchunk';
+      chunk.style.left = (b.hp / max * 100) + '%';
+      chunk.style.width = Math.max(1.5, b.dmg / max * 100) + '%';
+      bar.appendChild(chunk);
+      var img = document.getElementById('bossimg');
+      if (img) { img.classList.remove('hurt'); void img.offsetWidth; img.classList.add('hurt'); }
+    }
+    num.textContent = b.hp + ' / ' + max + '　−' + b.dmg;
     if (id === 'win') {
       num.className = 'hpnum win';
       num.textContent = b.hp + ' / ' + max + '　（−' + b.dmg + '）　' + S.winInfo.noheal;
@@ -381,9 +397,11 @@
       var nm = document.getElementById('hpnum');
       if (!fl || !nm) return;
       fl.style.width = '100%';
+      var ch = fl.parentNode.querySelector('.hitchunk');
+      if (ch) ch.remove();
       nm.className = 'hpnum heal';
-      nm.textContent = max + ' / ' + max + '　' + S.fight.heal;
-    }, 1400);
+      nm.textContent = max + ' / ' + max;
+    }, 3200);
   }
 
   // ── 最後一擊的動畫 ─────────────────────────────────────────────────

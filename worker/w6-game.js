@@ -12,7 +12,7 @@
 // ⚠️ **領受復活不是門檻** —— 沒按的人照樣打得動，全場照樣一起贏。
 //     「信了才有能力」是這套設計明文避開的東西。
 import {
-  GOOD, CHASE, ASPECTS, CARDS, PICK, DRAW, CARD_LOSS, TALLY, BOSS,
+  GOOD, CHASE, ASPECTS, CARDS, COPE, PICK, DRAW, CARD_LOSS, TALLY, BOSS,
   CLASSES, JOB, IDLE, FIGHT, LOST, CROSS, POWER, VERSE, WIN, BEAT, VICTORY, BLESS,
 } from './w6-data.js';
 
@@ -509,7 +509,8 @@ function battleView(s, id) {
     // 公布之後才給：每一個職業代表什麼、這一回合幾個人選
     byJob: open
       ? CLASSES.map((c) => ({
-        k: c.k, t: c.t, act: c.act, loss: c.loss,
+        k: c.k, t: c.t, act: c.act, loss: c.loss, art: c.art,
+        how: ((COPE[m.k] || [])[m.i] || {})[c.k] || c.d,
         n: ps.filter((p) => choiceOf(p, r, key) === c.k).length,
         dmg: c.dmg * (isWin ? WIN.boost : 1),
       }))
