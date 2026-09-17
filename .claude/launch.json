@@ -6,12 +6,6 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["wrangler", "dev", "--port", "8787"],
       "port": 8787
-    },
-    {
-      "name": "happiness-alt",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["--yes", "--cache", "C:/Users/shiki/AppData/Local/npm-cache-alt", "wrangler@4", "dev", "--port", "8797", "--inspector-port", "9239"],
-      "port": 8797
     }
   ]
 }
