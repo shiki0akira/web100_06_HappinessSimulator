@@ -324,6 +324,7 @@
   .hpbar i { display: block; height: 100%; background: var(--vol); transition: width .45s ease; }
   /* 這一回合打掉的那一截：閃白光，三秒後血條補滿就拿掉 */
   .hpbar { position: relative; }
+  .hpbar i.refill { transition: none; }
   .hpbar .hitchunk { position: absolute; top: 0; bottom: 0; background: #FFF3C4;
     animation: hitblink .25s steps(1) infinite; }
   @keyframes hitblink { 0% { background: #FFF3C4; } 50% { background: #F0C64B; } }

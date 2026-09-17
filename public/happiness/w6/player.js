@@ -184,7 +184,7 @@
 
     lost: function (me) {
       return '<h2 class="center">' + esc(S.lost.line) + '</h2>' +
-        '<div class="hpline">' + S.boss.hp + ' / ' + S.boss.hp + '　血條補滿了</div>' +
+        '<div class="hpline">' + S.boss.hp + ' / ' + S.boss.hp + '　它補滿了</div>' +
         (me.fightLoss ? '<div class="hit">這五回合你掉了 ' + me.fightLoss + ' 分</div>' : '') +
         wait('看大螢幕');
     },

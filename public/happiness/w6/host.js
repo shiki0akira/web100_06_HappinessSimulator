@@ -233,8 +233,10 @@
       return '<div class="cine lost">' +
         '<div class="cinelead">' + esc(S.lost.title) + '</div>' +
         '<img class="stand" src="/happiness/shared/art/boss.svg" alt="">' +
-        '<div class="hpbar wide"><i style="width:100%"></i></div>' +
-        '<div class="hpnum">' + S.boss.hp + ' / ' + S.boss.hp + '</div>' +
+        // 五回合打剩的血，在這一頁慢慢補回滿血（lostRefill）
+        '<div class="hpbar wide"><i id="lostfill" class="refill" style="width:' + (S.fightEndHp / S.boss.hp * 100) + '%;' +
+          '--from:' + (S.fightEndHp / S.boss.hp * 100) + '%"></i></div>' +
+        '<div class="hpnum" id="lostnum">' + S.fightEndHp + ' / ' + S.boss.hp + '</div>' +
         '<div class="cinetitle down">' + esc(S.lost.line) + '</div>' +
       '</div>';
     },
@@ -382,8 +384,13 @@
     var num = document.getElementById('hpnum');
     if (!fill || !num) return;
     var max = S.boss.hp;
+    // 從這一回合開打前的血往下掉 —— **打掉的血不會回來**
+    fill.style.transition = 'none';
+    fill.style.width = (b.hpBefore / max * 100) + '%';
+    void fill.offsetWidth;
+    fill.style.transition = '';
     fill.style.width = (b.hp / max * 100) + '%';
-    // 打掉的那一截閃一下（最少畫 1.5%，不然一個人打的 110 在畫面上看不見），魔王被打得晃一下
+    // 打掉的那一截閃三秒（最少畫 1.5%，不然一個人打的 110 在畫面上看不見），魔王被打得晃一下
     var bar = fill.parentNode, old = bar.querySelector('.hitchunk');
     if (old) old.remove();
     if (b.dmg > 0) {
@@ -392,26 +399,32 @@
       chunk.style.left = (b.hp / max * 100) + '%';
       chunk.style.width = Math.max(1.5, b.dmg / max * 100) + '%';
       bar.appendChild(chunk);
+      healTimer = setTimeout(function () { if (chunk.parentNode) chunk.remove(); }, 3000);
       var img = document.getElementById('bossimg');
       if (img) { img.classList.remove('hurt'); void img.offsetWidth; img.classList.add('hurt'); }
     }
-    num.textContent = b.hp + ' / ' + max + '　−' + b.dmg;
-    if (id === 'win') {
-      num.className = 'hpnum win';
-      num.textContent = b.hp + ' / ' + max + '　（−' + b.dmg + '）　' + S.winInfo.noheal;
-      return;
-    }
     num.className = 'hpnum';
-    healTimer = setTimeout(function () {
-      var fl = document.getElementById('hpfill');
-      var nm = document.getElementById('hpnum');
-      if (!fl || !nm) return;
-      fl.style.width = '100%';
-      var ch = fl.parentNode.querySelector('.hitchunk');
-      if (ch) ch.remove();
-      nm.className = 'hpnum heal';
-      nm.textContent = max + ' / ' + max;
-    }, 3200);
+    num.textContent = b.hp + ' / ' + max + '　−' + b.dmg;
+  }
+
+  // 「沒有人打得倒它」：打剩的血一進這一頁就慢慢補滿（第一次進來才播，重畫不重播）
+  var lostAt = 0, lostTick = null;
+  function lostRefill() {
+    clearInterval(lostTick);
+    if (S.phase.id !== 'lost') { lostAt = 0; return; }
+    if (!lostAt) lostAt = Date.now() + 800;
+    var from = S.fightEndHp, max = S.boss.hp, DUR = 2200;
+    var step = function () {
+      var fl = document.getElementById('lostfill'), nm = document.getElementById('lostnum');
+      if (!fl || !nm) { clearInterval(lostTick); return; }
+      var t = Math.max(0, Math.min(1, (Date.now() - lostAt) / DUR));
+      var hp = Math.round(from + (max - from) * (1 - Math.pow(1 - t, 2)));
+      fl.style.width = (hp / max * 100) + '%';
+      nm.textContent = hp + ' / ' + max;
+      if (t >= 1) clearInterval(lostTick);
+    };
+    step();
+    lostTick = setInterval(step, 50);
   }
 
   // ── 最後一擊的動畫 ─────────────────────────────────────────────────
@@ -485,6 +498,7 @@
     healKey = '';
     healAnim();
     beatNumbers();
+    lostRefill();
     fitSolo();
     fitTaken();
   }

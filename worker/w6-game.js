@@ -196,7 +196,22 @@ function damageOf(s, r, key, boost) {
 
 // ── 第一階段：靠自己打（五回合）─────────────────────────────────────────
 // 一顆按鈕按到底：還沒公布就公布，公布過了才換下一回合。
-// **公布的時候血條真的會掉，換下一回合的時候它補滿。**
+// **打掉的血不會回來** —— 五回合一路往下掉，**可是怎麼打都打不到底**：
+// 第一階段最多只能打到剩 FIGHT_FLOOR（人再多、全選騎士也一樣），剩下的留給十字架之後。
+const FIGHT_FLOOR = Math.round(BOSS.hp * 0.3);
+
+// 打完第 0～upto 回合（只算公布過的）之後魔王剩多少血，和每一回合**實際**打掉多少
+function fightTrack(s, upto) {
+  let hp = BOSS.hp;
+  const drop = [];
+  for (let r = 0; r <= upto && r < FIGHT_ROUNDS; r++) {
+    if (!shown(s, 'fightOpen', r)) { drop[r] = 0; continue; }
+    const next = Math.max(FIGHT_FLOOR, hp - damageOf(s, r, 'acts', 1));
+    drop[r] = hp - next;
+    hp = next;
+  }
+  return { hp, drop };
+}
 export function revealFight(s) {
   const r = s.fightRound;
   if (r >= FIGHT_ROUNDS || shown(s, 'fightOpen', r)) return false;
@@ -210,7 +225,7 @@ export function revealFight(s) {
     p.outer = clamp(p.outer - loss);
     p.fightLoss = (p.fightLoss || 0) + (before - p.outer);
   });
-  s.hp = Math.max(1, BOSS.hp - damageOf(s, r, 'acts', 1));
+  s.hp = fightTrack(s, r).hp;
   return true;
 }
 
@@ -218,7 +233,7 @@ export function fightStep(s) {
   if (!shown(s, 'fightOpen', s.fightRound)) return revealFight(s);
   if (s.fightRound < FIGHT_ROUNDS - 1) {
     s.fightRound += 1;
-    s.hp = BOSS.hp;     // **補滿血。** 這一段全部的重量就在這一行。
+    s.hp = fightTrack(s, s.fightRound).hp;   // **不補血**，上一回合打掉的留著
     return true;
   }
   return false;
@@ -227,7 +242,7 @@ export function fightStep(s) {
 export function fightPrev(s) {
   if (s.fightRound <= 0) return false;
   s.fightRound -= 1;
-  s.hp = BOSS.hp;
+  s.hp = fightTrack(s, s.fightRound).hp;
   return true;
 }
 
@@ -264,21 +279,34 @@ export function revealWin(s) {
   const r = s.winRound;
   if (r >= WIN_ROUNDS || shown(s, 'winOpen', r)) return false;
   s.winOpen.push(r);
-  // 打到剩一點點就好 —— **最後那一擊留給全場一起出手。**
-  const floor = Math.round(BOSS.hp * 0.08);
-  s.hp = Math.max(floor, s.hp - damageOf(s, r, 'winActs', WIN.boost));
+  s.hp = winTrack(s, r).hp;
   return true;
+}
+
+// 第二階段：從滿血往下打，**一樣不回血**。打到剩一點點就好 —— 最後那一擊留給全場一起出手。
+function winTrack(s, upto) {
+  const floor = Math.round(BOSS.hp * 0.08);
+  let hp = BOSS.hp;
+  const drop = [];
+  for (let r = 0; r <= upto && r < WIN_ROUNDS; r++) {
+    if (!shown(s, 'winOpen', r)) { drop[r] = 0; continue; }
+    const next = Math.max(floor, hp - damageOf(s, r, 'winActs', WIN.boost));
+    drop[r] = hp - next;
+    hp = next;
+  }
+  return { hp, drop };
 }
 
 export function winStep(s) {
   if (!shown(s, 'winOpen', s.winRound)) return revealWin(s);
-  if (s.winRound < WIN_ROUNDS - 1) { s.winRound += 1; return true; }
+  if (s.winRound < WIN_ROUNDS - 1) { s.winRound += 1; s.hp = winTrack(s, s.winRound).hp; return true; }
   return false;
 }
 
 export function winPrev(s) {
   if (s.winRound <= 0) return false;
   s.winRound -= 1;
+  s.hp = winTrack(s, s.winRound).hp;
   return true;
 }
 
@@ -312,7 +340,9 @@ function settleBeat(s) {
 // ── 階段切換 ────────────────────────────────────────────────────────────
 export function enterPhase(s, idx) {
   s.phaseIdx = Math.max(0, Math.min(PHASES.length - 1, idx));
-  // 走到第二階段之前血條是滿的 —— 第一階段最後停在「它補滿了」。
+  // 五回合打掉的血一路留著；**到「沒有人打得倒它」那一頁才補滿**，第二階段從滿血開始
+  if (phaseId(s) === 'fight') s.hp = fightTrack(s, s.fightRound).hp;
+  if (phaseId(s) === 'lost') s.hp = BOSS.hp;
   if (phaseId(s) === 'win' && !arr(s.winOpen).length) s.hp = BOSS.hp;
   // 翻到「抽到的那一張」那一頁就是公布。只公布一次，往回翻再翻過來不會再扣。
   if (phaseId(s) === 'draw') revealCards(s);
@@ -502,7 +532,9 @@ function battleView(s, id) {
     acted: ps.filter((p) => arr(p[key])[r] !== undefined).length,
     went: ps.filter((p) => actOf(p, r, key)).length,
     idle: ps.filter((p) => choiceOf(p, r, key) === 'idle').length,
-    dmg: open ? damageOf(s, r, key, isWin ? WIN.boost : 1) : 0,
+    dmg: open ? (isWin ? winTrack(s, r) : fightTrack(s, r)).drop[r] : 0,
+    // 這一回合開打之前魔王的血（公布時血條從這裡往下掉）
+    hpBefore: (isWin ? winTrack(s, r - 1) : fightTrack(s, r - 1)).hp,
     hp: s.hp,
     maxHp: BOSS.hp,
     done: openList(s, openKey).length >= total,
@@ -549,6 +581,7 @@ function common(s) {
     fight: FIGHT,
     fightNow: battleView(s, 'fight'),
     lost: LOST,
+    fightEndHp: fightTrack(s, FIGHT_ROUNDS - 1).hp,   // 五回合打剩多少（結算頁從這裡補滿）
     cross: CROSS,
     crossStep: Math.min(s.crossStep || 0, CROSS_LAST),
     power: POWER,
