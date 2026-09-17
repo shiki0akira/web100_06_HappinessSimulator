@@ -173,20 +173,24 @@
   @keyframes unseal { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
   .sub2 { margin-top: min(calc(6px * var(--u)), .8vh); font-size: min(calc(24px * var(--u)), 3vh); font-weight: 700; color: var(--ink-2); }
 
-  /* 自由是什麼：作答中的選項 → 長條 → 底下浮出那一行 */
-  .freeopts { flex: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: calc(18px * var(--u));
-    align-content: center; margin-top: min(calc(16px * var(--u)), 2vh); }
-  .freeopts div { background: var(--surface); border: 4px solid var(--edge); box-shadow: 5px 5px 0 var(--hard);
-    padding: min(calc(22px * var(--u)), 2.8vh) calc(18px * var(--u)); text-align: center;
-    font-size: min(calc(32px * var(--u)), 4vh, 2.2vw); font-weight: 900; }
-  .freeopts div.other { border-style: dashed; color: var(--ink-3); }
-  .bars.free { flex: 1; justify-content: center; gap: min(calc(16px * var(--u)), 2vh); }
-  .bars.free .bar2 { grid-template-columns: calc(300px * var(--u)) minmax(0, 1fr) calc(90px * var(--u)); }
-  .bars.free .bl { font-size: min(calc(30px * var(--u)), 3.8vh); }
-  .bars.free .bt { height: min(calc(36px * var(--u)), 4.4vh); }
-  .others { display: flex; flex-wrap: wrap; gap: calc(10px * var(--u)); margin-top: min(calc(10px * var(--u)), 1.2vh); }
-  .others span { padding: 2px calc(12px * var(--u)); border: 3px dashed var(--edge-soft);
-    font-size: min(calc(20px * var(--u)), 2.5vh); font-weight: 700; color: var(--ink-2); }
+  /* O/X：題目一行，底下左 O 右 X，公布之後名字站到那一邊 */
+  .oxq { margin-top: min(calc(14px * var(--u)), 1.8vh); }
+  .oxq .as { font-family: var(--pixel); font-size: min(calc(20px * var(--u)), 2.5vh); color: var(--gold); }
+  .oxq .line { margin-top: min(calc(8px * var(--u)), 1vh); font-size: min(calc(46px * var(--u)), 5.8vh, 3vw); font-weight: 900; line-height: 1.4; }
+  .oxgrid { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: calc(24px * var(--u)); margin-top: min(calc(16px * var(--u)), 2vh); }
+  .oxside { display: flex; flex-direction: column; align-items: center; min-height: 0; overflow: hidden; background: var(--surface);
+    border: 4px solid var(--edge); box-shadow: 6px 6px 0 var(--hard); padding: min(calc(10px * var(--u)), 1.3vh) calc(18px * var(--u)); }
+  .oxside .mark { font-family: var(--pixel); font-size: min(calc(96px * var(--u)), 13vh); line-height: 1.1; }
+  .oxside.o { border-color: var(--root-c); } .oxside.o .mark { color: var(--root-c); }
+  .oxside.x { border-color: var(--vol); } .oxside.x .mark { color: var(--vol); }
+  .oxside .cnt { font-family: var(--pixel); font-size: min(calc(22px * var(--u)), 2.7vh); color: var(--ink-2); margin-top: min(calc(4px * var(--u)), .5vh); }
+  .oxside .who { display: flex; flex-wrap: wrap; justify-content: center; gap: min(calc(8px * var(--u)), 1vh) calc(10px * var(--u)); margin-top: min(calc(10px * var(--u)), 1.2vh); zoom: var(--oz, 1); }
+  .oxside .who span { padding: 2px calc(12px * var(--u)); border: 3px solid var(--edge-soft); font-size: min(calc(24px * var(--u)), 3vh); font-weight: 900; animation: unseal .45s ease-out both; }
+  .bars.oxbars { flex: 1; justify-content: center; gap: min(calc(10px * var(--u)), 1.1vh); }
+  .bars.oxbars .bar2 { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) calc(80px * var(--u)); }
+  .bars.oxbars .bl { font-size: min(calc(22px * var(--u)), 2.7vh, 1.5vw); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+  .bars.oxbars .bt { height: min(calc(24px * var(--u)), 2.9vh); }
+  .bars.oxbars .bt i { background: var(--root-c); }
   .saybig { margin-top: min(calc(18px * var(--u)), 2.4vh); text-align: center; white-space: nowrap;
     font-size: min(calc(52px * var(--u)), 6.4vh, 3.4vw); font-weight: 900; color: var(--gold); animation: unseal .7s ease-out both; }
 

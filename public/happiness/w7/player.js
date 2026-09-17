@@ -45,7 +45,7 @@
   function join(name) { if (src) src.join(name); }
 
   // 送出之前只活在這支手機上的暫存
-  var draft = { byVisits: false, free: null, other: null };
+  var draft = { byVisits: false };
 
   var wait = function (msg, sub) {
     return '<div class="wait"><div class="dot">. . .</div><p style="font-size:21px;color:var(--ink-2)">' +
@@ -115,21 +115,27 @@
           (draft.byVisits ? '我有卡片，改填幸福根基' : '忘記帶卡片？改填「這是你第幾次來」') + '</button>';
     },
 
-    // 你覺得自由是什麼？複選 ＋ 其他。長條公布之前都可以改。
-    free: function (me) {
-      if (S.freeNow.step >= 1) return wait('看大螢幕');
-      var info = S.freeInfo;
-      var picked = draft.free || me.free;
-      var other = draft.other == null ? me.freeOther : draft.other;
-      return '<h2>' + esc(info.title) + '</h2>' +
-        '<p>' + esc(info.sub) + '</p>' +
-        '<div class="opts">' + info.options.map(function (o) {
-          return '<button class="opt check' + (picked.indexOf(o.k) >= 0 ? ' on' : '') + '" data-free="' + esc(o.k) + '">' + esc(o.t) + '</button>';
-        }).join('') + '</div>' +
-        '<p class="fieldlbl">' + esc(info.otherLabel) + '<span class="sub">' + esc(info.otherHint) + '</span></p>' +
-        '<input id="fo" maxlength="20" value="' + esc(other) + '" placeholder="（可以不填）" style="width:100%;padding:14px;font-size:20px;font-weight:700">' +
-        '<button class="btn primary fullbtn" id="sendfree">' + (me.freeSent ? '更新' : '送出') + '</button>' +
-        (me.freeSent ? '<p class="ok center" style="margin-top:12px">已送出。主持人公布之前都可以改。</p>' : '');
+    // O/X：兩顆大按鈕。公布之前都可以改。
+    ox: function (me) {
+      var o = S.oxNow, mine = me.oxChoice;
+      var head = '<div class="qn">' + esc(S.oxInfo.title) + ' · 第 ' + (o.round + 1) + ' / ' + o.total + ' 題</div>' +
+        '<h2 style="margin-top:6px">' + esc(o.q) + '</h2>';
+      if (o.revealed) {
+        if (!mine) return head + wait('看大螢幕', '這一題你沒有選');
+        var same = (mine === 'o' ? o.o : o.x).length - 1;
+        return head + '<div class="oxmine ' + mine + '">' + (mine === 'o' ? 'O' : 'X') + '</div>' +
+          '<p class="center">' + (same > 0 ? '跟你一樣的還有 ' + same + ' 個人' : '只有你選這一邊') + '</p>' + wait('看大螢幕');
+      }
+      return head +
+        '<div class="oxbtns">' +
+          '<button class="oxbtn o' + (mine === 'o' ? ' on' : '') + '" data-ox="o">O</button>' +
+          '<button class="oxbtn x' + (mine === 'x' ? ' on' : '') + '" data-ox="x">X</button>' +
+        '</div>' +
+        '<p class="privacy center">' + esc(S.oxInfo.sub) + '。公布之後大螢幕會出現名字。</p>';
+    },
+
+    oxTally: function (me) {
+      return (me.oxN ? '<p class="bigline center">八題裡，你有 ' + me.oxO + ' 個 O</p>' : '') + wait('看大螢幕');
     },
 
     // 身不由己。**第 3 回合起「不要」要長按；第 4 回合起「好過一點」自己亮著。**
@@ -293,23 +299,9 @@
     }
 
     // 自由是什麼：勾選只改暫存，按送出才上去
-    document.querySelectorAll('[data-free]').forEach(function (b) {
-      b.onclick = function () {
-        var fo = document.getElementById('fo');
-        if (fo) draft.other = fo.value;
-        var list = (draft.free || me.free).slice();
-        var k = b.dataset.free, at = list.indexOf(k);
-        if (at >= 0) list.splice(at, 1); else list.push(k);
-        draft.free = list;
-        sig = ''; render();
-      };
+    document.querySelectorAll('[data-ox]').forEach(function (b) {
+      b.onclick = function () { act('ox', { round: S.oxNow.round, k: b.dataset.ox }); };
     });
-    var sf = document.getElementById('sendfree');
-    if (sf) sf.onclick = function () {
-      var fo = document.getElementById('fo');
-      act('free', { keys: draft.free || me.free, other: fo ? fo.value : '' });
-      draft.free = null; draft.other = null;
-    };
 
     document.querySelectorAll('[data-bound]').forEach(function (b) {
       var send = function () { act('bound', { round: S.boundNow.round, k: b.dataset.bound }); };
@@ -417,9 +409,9 @@
 
     // ⚠️ 正在打的字（其他、禱告）不能進這一行 —— 一變就整頁重畫，焦點會被踢掉。
     var next = [
-      S.phase.id, S.freeNow.step, S.boundNow.round, S.boundNow.revealed, S.billStep,
+      S.phase.id, S.oxNow.round, S.oxNow.revealed, S.boundNow.round, S.boundNow.revealed, S.billStep,
       S.refuseNow.round, S.refuseNow.revealed, S.filled, S.heavenStep,
-      me.outer, me.inner, me.freeSent, me.free.join(','), me.boundChoice, me.chains.join(','),
+      me.outer, me.inner, me.oxChoice, me.oxO, me.boundChoice, me.chains.join(','),
       me.billLoss, me.broken, me.capped, me.refuseChoice, me.cardDone, me.prayed,
       draft.byVisits, !!flying(),
     ].join('|');

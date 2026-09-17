@@ -46,10 +46,9 @@
     }
     var id = S.phase.id;
     var onBound = id === 'bound' && !S.boundNow.revealed;
-    var onRefuse = id === 'refuse' && !S.refuseNow.revealed;
+    var onRefuse = (id === 'refuse' && !S.refuseNow.revealed) || (id === 'ox' && !S.oxNow.revealed);
     el.innerHTML = S.players.map(function (p) {
       var chips = [];
-      if (id === 'free' && S.freeNow.step === 0) chips.push('<span class="chip' + (p.freeSent ? ' on' : '') + '">' + (p.freeSent ? '已送出' : '還沒') + '</span>');
       if (onBound || onRefuse) chips.push('<span class="chip' + (p.acted ? ' on' : '') + '">' + (p.acted ? '已決定' : '還沒') + '</span>');
       if (p.prayed) chips.push('<span class="chip">已寫下</span>');
       return '' +
@@ -96,28 +95,37 @@
       return StageParts.reconnect({ done: S.stats.reconnected, total: S.stats.count });
     },
 
-    // 你覺得自由是什麼？ 0 作答 → 1 長條 → 2 浮出「還有一種自由：我可以說不。」
-    free: function () {
-      var f = S.freeNow, info = S.freeInfo;
-      if (f.step === 0) {
-        return '<h2>' + esc(info.title) + '</h2>' +
-          '<div class="sub2">' + esc(info.sub) + '</div>' +
-          '<div class="freeopts">' + info.options.map(function (o) {
-            return '<div>' + esc(o.t) + '</div>';
-          }).join('') + '<div class="other">' + esc(info.otherLabel) + '⋯⋯</div></div>' +
-          counter(f.sent, '人已送出');
-      }
-      // **只有人數，不掛名字**
+    // O/X：一題一題。公布之後**名字站到 O 或 X 那一邊**。
+    ox: function () {
+      var o = S.oxNow, info = S.oxInfo;
+      var side = function (mark, cls, names) {
+        return '<div class="oxside ' + cls + '"><div class="mark">' + mark + '</div>' +
+          (o.revealed
+            ? '<div class="cnt">' + names.length + ' 人</div><div class="who">' +
+                names.map(function (n, i) { return '<span style="animation-delay:' + (i * 0.06) + 's">' + esc(n) + '</span>'; }).join('') + '</div>'
+            : '') + '</div>';
+      };
       return '<h2>' + esc(info.title) + '</h2>' +
-        '<div class="bars free">' + f.rows.map(function (r) {
-          return '<div class="bar2' + (r.n ? '' : ' zero') + '">' +
-            '<span class="bl">' + esc(r.t) + '</span>' +
-            '<span class="bt"><i style="width:' + Math.round(r.n / f.max * 100) + '%"></i></span>' +
-            '<span class="bn">' + r.n + ' 人</span>' +
+        '<div class="sub2">' + esc(info.sub) + '</div>' +
+        '<div class="oxq"><span class="as">第 ' + (o.round + 1) + ' / ' + o.total + ' 題</span>' +
+          '<div class="line">' + esc(o.q) + '</div></div>' +
+        '<div class="oxgrid">' + side('O', 'o', o.o) + side('X', 'x', o.x) + '</div>' +
+        (o.revealed ? '' : counter(o.acted, '人已選'));
+    },
+
+    // 統計：八題各幾個人選 O → 浮出「還有一種自由：我可以說不。」
+    oxTally: function () {
+      var t = S.oxTally, info = S.oxInfo;
+      return '<h2>' + esc(info.tallyTitle) + '</h2>' +
+        '<div class="sub2">' + esc(info.tallySub) + '</div>' +
+        '<div class="bars oxbars">' + t.rows.map(function (r) {
+          return '<div class="bar2' + (r.o ? '' : ' zero') + '">' +
+            '<span class="bl">' + esc(r.q) + '</span>' +
+            '<span class="bt"><i style="width:' + Math.round(r.o / t.max * 100) + '%"></i></span>' +
+            '<span class="bn">' + r.o + ' 人</span>' +
           '</div>';
         }).join('') + '</div>' +
-        (f.others.length ? '<div class="others">' + f.others.map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('') + '</div>' : '') +
-        (f.step >= 2 ? '<div class="saybig">' + esc(info.reveal) + '</div>' : '');
+        (t.step >= 1 ? '<div class="saybig">' + esc(info.reveal) + '</div>' : '');
     },
 
     // 身不由己。公布之後**只有數字，不掛名字**。
@@ -185,7 +193,7 @@
     },
 
     trueFree: function () {
-      var t = S.trueFree, top = S.freeNow.top.length ? S.freeNow.top : S.freeInfo.options.slice(0, 3).map(function (o) { return o.t; });
+      var t = S.trueFree, top = t.left;
       return '<h2>' + esc(t.title) + '</h2>' +
         '<div class="goodgrid">' +
           '<div class="goodcol left"><h3>' + esc(t.leftLabel) + '</h3><ul>' +
@@ -340,6 +348,18 @@
       var z = 1;
       cr.style.setProperty('--cz', z);
       while (stage.scrollHeight > stage.clientHeight + 1 && z > 0.4) { z -= 0.05; cr.style.setProperty('--cz', z.toFixed(2)); }
+    }
+    // O/X 兩邊的名字：人多的時候名字一起縮，框子不准被撐破
+    var sides = stage.querySelectorAll('.oxside');
+    if (sides.length) {
+      var oz = 1, tooTall = function () {
+        return [].some.call(sides, function (sd) { return sd.scrollHeight > sd.clientHeight + 1; });
+      };
+      sides.forEach(function (sd) { var w = sd.querySelector('.who'); if (w) w.style.setProperty('--oz', 1); });
+      while (tooTall() && oz > 0.4) {
+        oz -= 0.05;
+        sides.forEach(function (sd) { var w = sd.querySelector('.who'); if (w) w.style.setProperty('--oz', oz.toFixed(2)); });
+      }
     }
     var fg = stage.querySelector('.fullgrid');
     if (fg) {

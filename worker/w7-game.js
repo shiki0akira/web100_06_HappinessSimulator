@@ -9,10 +9,10 @@
 //
 // ⚠️ **這是最後一關。** 補滿 100 之後幸福根基鎖在 100，禱告不再加。
 // ⚠️ 領受經文是**領受**，不是「我相信」按鈕。沒按的人翻到拒絕的自由時手機先跳回經文卡。
-import { FREE, BOUND, BILL, STORY, VERSE, REFUSE, TRUE_FREE, FULL, BLESS, HEAVEN } from './w7-data.js';
+import { OX, BOUND, BILL, STORY, VERSE, REFUSE, TRUE_FREE, FULL, BLESS, HEAVEN } from './w7-data.js';
 
 // 幸福根基的規則七關都一樣。上限 95 不是 100 —— 你自己填不滿。
-// **第七關第 11 頁補滿之後才變成 100**（FULL_INNER）。
+// **第七關第 12 頁補滿之後才變成 100**（FULL_INNER）。
 export const INNER_CAP = 95;
 export const FULL_INNER = 100;
 export const INNER_PER_WEEK = 15;
@@ -23,7 +23,8 @@ export const NEWCOMER_INNER = 15;
 export const PHASES = [
   { id: 'lobby',     tag: '入場',     title: '掃碼進場' },
   { id: 'reconnect', tag: '接關',     title: '輸入幸福指數' },
-  { id: 'free',      tag: '互動點 1', title: '你覺得自由是什麼？' },
+  { id: 'ox',        tag: '互動點 1', title: '身不由己 O/X（八題）' },
+  { id: 'oxTally',   tag: '統計',     title: '我們都有點身不由己' },
   { id: 'bound',     tag: '主遊戲',   title: '身不由己（五回合）' },
   { id: 'bill',      tag: '結算頁',   title: '罪的奴僕，身不由己' },
   { id: 'story',     tag: '見證',     title: '見證分享' },
@@ -48,7 +49,9 @@ export function createState() {
     phaseIdx: 0,
     players: {},
     order: [],
-    freeStep: 0,         // 0 作答 → 1 長條 → 2 浮出「我可以說不」
+    oxRound: 0,
+    oxOpen: [],
+    oxTallyStep: 0,      // 0 長條 → 1 浮出「還有一種自由：我可以說不」
     boundRound: 0,
     boundOpen: [],
     billPaid: false,     // 帳單只扣一次
@@ -84,9 +87,7 @@ export function addPlayer(s, name) {
     innerStart: 0,
     visits: 0,
     newcomer: false,
-    free: [],             // 自由是什麼（勾了哪幾個）
-    freeOther: '',        // 其他（**會上大螢幕，不掛名字**）
-    freeSent: false,
+    ox: [],               // O/X 八題各選了什麼：'o'／'x'
     bound: [],            // 五回合各選了什麼：'ease'／'no'
     boundDelta: [],       // 每一回合公布時幸福指數動了多少（重跑的時候要還原）
     billLoss: 0,
@@ -104,24 +105,46 @@ export function addPlayer(s, name) {
   return pid;
 }
 
-// ── 你覺得自由是什麼？────────────────────────────────────────────────────
-function freeView(s) {
+// ── 身不由己 O/X ───────────────────────────────────────────────────────
+const OX_TOTAL = OX.questions.length;
+const oxAt = (p, r) => arr(p.ox)[r];
+
+export function oxStep(s) {
+  const r = s.oxRound;
+  if (!shown(s, 'oxOpen', r)) { s.oxOpen.push(r); return true; }
+  if (r < OX_TOTAL - 1) { s.oxRound += 1; return true; }
+  return false;
+}
+export function oxPrev(s) {
+  if (s.oxRound <= 0) return false;
+  s.oxRound -= 1;
+  return true;
+}
+
+// 這一題：**公布之後**才給 O、X 兩邊的名字（照進場順序）
+function oxView(s) {
   const ps = alive(s);
-  const rows = FREE.options.map((o, i) => ({
-    k: o.k, t: o.t, order: i, n: ps.filter((p) => arr(p.free).indexOf(o.k) >= 0).length,
-  }));
-  const others = ps.map((p) => String(p.freeOther || '').trim()).filter(Boolean);
-  const max = rows.reduce((m, r) => Math.max(m, r.n), 0);
-  const sorted = rows.slice().sort((a, b) => (b.n - a.n) || (a.order - b.order));
+  const r = s.oxRound;
+  const open = shown(s, 'oxOpen', r);
   return {
-    step: s.freeStep || 0,
-    sent: ps.filter((p) => p.freeSent).length,
-    rows: sorted,
-    others: s.freeStep >= 1 ? others : [],
-    max: Math.max(max, 1),
-    // 第 10 頁左欄：勾最多的三項（沒人勾的不算）
-    top: sorted.filter((r) => r.n > 0).slice(0, 3).map((r) => r.t),
+    round: r, total: OX_TOTAL, revealed: open,
+    q: OX.questions[r],
+    acted: ps.filter((p) => oxAt(p, r) !== undefined).length,
+    o: open ? ps.filter((p) => oxAt(p, r) === 'o').map((p) => p.name) : [],
+    x: open ? ps.filter((p) => oxAt(p, r) === 'x').map((p) => p.name) : [],
   };
+}
+
+// 統計：每一題幾個人選 O（照 O 的人數排）
+function oxTallyView(s) {
+  const ps = alive(s);
+  const rows = OX.questions.map((q, i) => ({
+    q, order: i,
+    o: ps.filter((p) => oxAt(p, i) === 'o').length,
+    n: ps.filter((p) => oxAt(p, i) !== undefined).length,
+  }));
+  rows.sort((a, b) => (b.o - a.o) || (a.order - b.order));
+  return { rows, max: Math.max(1, rows.reduce((m, r) => Math.max(m, r.n), 0)), step: s.oxTallyStep || 0 };
 }
 
 // ── 身不由己 ────────────────────────────────────────────────────────────
@@ -192,7 +215,7 @@ function chainsOf(s, p) {
 // 公布過幾回合（＝斷鏈之前每個人身上有幾條）
 const boundCount = (s) => openList(s, 'boundOpen').length;
 
-// ── 帳單（第 5 頁一進來就扣，只扣一次）─────────────────────────────────
+// ── 帳單（第 6 頁一進來就扣，只扣一次）─────────────────────────────────
 function payBill(s) {
   if (s.billPaid) return;
   s.billPaid = true;
@@ -259,7 +282,8 @@ export function fill(s) {
 // 大螢幕控制列和主持人備忘錄都用這一組（stepNext／stepBack），標籤由 stepView 給。
 export function stepNext(s) {
   switch (phaseId(s)) {
-    case 'free': if (s.freeStep < 2) { s.freeStep += 1; return true; } return false;
+    case 'ox': return oxStep(s);
+    case 'oxTally': if (s.oxTallyStep < 1) { s.oxTallyStep = 1; return true; } return false;
     case 'bound': return boundStep(s);
     case 'bill': if (s.billStep < 1) { s.billStep = 1; return true; } return false;
     case 'refuse': return refuseStep(s);
@@ -271,7 +295,8 @@ export function stepNext(s) {
 
 export function stepBack(s) {
   switch (phaseId(s)) {
-    case 'free': if (s.freeStep > 0) { s.freeStep -= 1; return true; } return false;
+    case 'ox': return oxPrev(s);
+    case 'oxTally': if (s.oxTallyStep > 0) { s.oxTallyStep = 0; return true; } return false;
     case 'bound': return boundPrev(s);
     case 'bill': if (s.billStep > 0) { s.billStep = 0; return true; } return false;
     case 'refuse': return refusePrev(s);
@@ -282,10 +307,15 @@ export function stepBack(s) {
 
 function stepView(s) {
   const id = phaseId(s);
-  if (id === 'free') {
-    const st = s.freeStep || 0;
-    return { back: st > 0, next: st < 2,
-      label: ['公布長條', '浮出「還有一種自由」', '都出來了，按下一頁'][st] };
+  if (id === 'ox') {
+    const r = s.oxRound, open = shown(s, 'oxOpen', r), last = r >= OX_TOTAL - 1;
+    return { back: r > 0, next: !(open && last),
+      label: !open ? '公布（' + (r + 1) + '/' + OX_TOTAL + '）'
+        : (last ? '八題都公布了，按下一頁' : '下一題 →（' + (r + 2) + '/' + OX_TOTAL + '）') };
+  }
+  if (id === 'oxTally') {
+    return { back: s.oxTallyStep > 0, next: s.oxTallyStep < 1,
+      label: s.oxTallyStep < 1 ? '浮出「還有一種自由」' : '出來了，按下一頁' };
   }
   if (id === 'bound') {
     const r = s.boundRound, open = shown(s, 'boundOpen', r), last = r >= B_TOTAL - 1;
@@ -344,13 +374,16 @@ export function applyAction(s, pid, msg) {
       if (s.filled) { p.innerBeforeFill = p.inner; p.inner = FULL_INNER; }
       break;
     }
-    // 自由是什麼。**送出之後還可以改**（長條公布之前）。
-    case 'free': {
-      if (phaseId(s) !== 'free' || s.freeStep >= 1) break;
-      const keys = arr(msg.keys).map(String).filter((k) => FREE.options.some((o) => o.k === k));
-      p.free = keys.filter((k, i) => keys.indexOf(k) === i);
-      p.freeOther = String(msg.other || '').trim().slice(0, 20);
-      p.freeSent = true;
+    // O/X：這一題選 O 還是 X。公布之前都可以改。
+    case 'ox': {
+      if (phaseId(s) !== 'ox') break;
+      const r = s.oxRound;
+      if (Math.floor(Number(msg.round)) !== r || shown(s, 'oxOpen', r)) break;
+      const k = String(msg.k || '');
+      if (k !== 'o' && k !== 'x') break;
+      const rows = arr(p.ox).slice();
+      rows[r] = k;
+      p.ox = rows;
       break;
     }
     // 身不由己：這一回合選什麼。公布之前都可以改。
@@ -383,7 +416,7 @@ export function applyAction(s, pid, msg) {
       break;
     }
     // 「我想對它說『不』的是＿＿」。那句話留在玩家自己的手機上，這裡只收「有沒有寫」。
-    // **這一關不加分**（第 11 頁已經補滿 100）；按了照樣算 prayed。
+    // **這一關不加分**（第 12 頁已經補滿 100）；按了照樣算 prayed。
     case 'bless':
       p.hasBless = !!msg.has;
       p.prayed = true;
@@ -460,8 +493,9 @@ function common(s) {
     week: 7,
     phase: PHASES[s.phaseIdx],
     phaseIdx: s.phaseIdx,
-    freeInfo: FREE,
-    freeNow: freeView(s),
+    oxInfo: OX,
+    oxNow: oxView(s),
+    oxTally: oxTallyView(s),
     boundInfo: BOUND,
     boundNow: boundView(s),
     chainTotal: boundCount(s),
@@ -498,9 +532,8 @@ export function hostView(s, roomCode) {
       outer: p.outer, outerStart: p.outerStart, inner: p.inner || 0,
       innerBeforeFill: p.innerBeforeFill,
       visits: p.visits, newcomer: p.newcomer,
-      freeSent: !!p.freeSent,
-      acted: id === 'refuse'
-        ? arr(p.refuse)[s.refuseRound] !== undefined
+      acted: id === 'refuse' ? arr(p.refuse)[s.refuseRound] !== undefined
+        : id === 'ox' ? oxAt(p, s.oxRound) !== undefined
         : choiceAt(p, s.boundRound) !== undefined,
       chains: chainsOf(s, p).length,
       broken: !!p.broken,
@@ -511,8 +544,7 @@ export function hostView(s, roomCode) {
       count: ps.length,
       reconnected: sc.length,
       newcomers: ps.filter((p) => p.newcomer).length,
-      freeSent: ps.filter((p) => p.freeSent).length,
-      acted: id === 'refuse' ? refuseView(s).acted : boundView(s).acted,
+      acted: id === 'refuse' ? refuseView(s).acted : id === 'ox' ? oxView(s).acted : boundView(s).acted,
       broken: ps.filter((p) => p.broken).length,
       capped: ps.filter((p) => p.capped).length,
       notBroken: ps.filter((p) => !p.broken).length,
@@ -548,7 +580,9 @@ export function playerView(s, pid, roomCode) {
       inner: p.inner || 0, innerCap: capOf(s),
       innerBeforeFill: p.innerBeforeFill,
       visits: p.visits, newcomer: p.newcomer,
-      free: arr(p.free), freeOther: p.freeOther || '', freeSent: !!p.freeSent,
+      oxChoice: oxAt(p, s.oxRound),
+      oxO: arr(p.ox).filter((k) => k === 'o').length,
+      oxN: arr(p.ox).filter((k) => k).length,
       boundChoice: choiceAt(p, s.boundRound),
       boundDelta: arr(p.boundDelta)[s.boundRound],
       chains: chainsOf(s, p),
