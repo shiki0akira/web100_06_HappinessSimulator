@@ -64,7 +64,7 @@ export function createState() {
     fightOpen: [],
     winRound: 0,          // 第二階段（三回合）
     winOpen: [],
-    crossStep: 0,         // 十字架：0–2（2 是復活的大能）
+    crossStep: 0,         // 十字架：0–3（3 是復活的大能）
     beaten: false,        // 最後一擊打完了沒
     beatPaid: false,      // +15 只給一次
     beatForced: false,    // 有人手機沒電：主持人替大螢幕收尾（**不替任何人按**）
@@ -243,8 +243,8 @@ export function fightRestart(s) {
 }
 
 // ── 十字架 ──────────────────────────────────────────────────────────────
-// 三段一段一段走。**這一段一分都不加** —— 加分在最後那一擊。
-export const CROSS_LAST = 2;
+// 四段一段一段走。**這一段一分都不加** —— 加分在最後那一擊。
+export const CROSS_LAST = 3;
 export function crossNext(s) {
   if (s.crossStep >= CROSS_LAST) return false;
   s.crossStep += 1;

@@ -188,16 +188,16 @@
       }
     }
 
-    // 第六關的十字架：三段一段一段走（最後一段是復活的大能）。**每一段的停頓都不准省。**
+    // 第六關的十字架：四段一段一段走（最後一段是復活的大能）。**每一段的停頓都不准省。**
     var crossc = el('crossctl');
     if (crossc) {
       crossc.hidden = S.phase.id !== 'cross';
       if (!crossc.hidden) {
         var st = S.crossStep || 0;
-        var LBL = ['下一步（他替他們挨了那一擊）', '下一步（復活的大能）', '走完了，按下一頁'];
+        var LBL = ['下一步（有一個人走到最前面）', '下一步（他替所有人挨了那一擊）', '下一步（復活的大能）', '走完了，按下一頁'];
         el('crossback').disabled = st <= 0;
         el('crossnext').textContent = LBL[st];
-        el('crossnext').disabled = st >= 2;
+        el('crossnext').disabled = st >= 3;
       }
     }
 

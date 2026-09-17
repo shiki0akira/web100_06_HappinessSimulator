@@ -189,17 +189,8 @@
         wait('看大螢幕');
     },
 
-    // 十字架。**手機上沒有任何按鈕。** 最後一段就是「復活的大能」。
-    cross: function () {
-      var st = S.crossStep || 0;
-      if (st >= 2) {
-        return '<img class="bossart" src="/happiness/shared/art/' + esc(S.power.art) + '.svg" alt="">' +
-          '<h2 class="center" style="margin-top:14px">' + esc(S.power.title) + '</h2>';
-      }
-      return '<h2 class="center">' + esc(S.cross.steps[st].t) + '</h2>' +
-        '<img class="crossart" src="/happiness/shared/art/' + (st === 0 ? 'boss' : 'cross-dark') + '.svg" alt="">' +
-        wait('看大螢幕');
-    },
+    // 十字架。**手機上沒有任何按鈕，只叫他看大螢幕。**
+    cross: function () { return wait('看大螢幕'); },
 
     // 領受經文 ＋ 領受復活。兩顆分開按。
     // ⚠️ 領受復活**不是門檻** —— 沒按的人第二階段照樣打得動。

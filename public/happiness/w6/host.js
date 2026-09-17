@@ -239,24 +239,34 @@
       '</div>';
     },
 
-    // 十字架。三段一段一段走，最後一段就是「復活的大能」。**手機上沒有任何按鈕。**
+    // 十字架。四段一段一段走，最後一段就是「復活的大能」。**手機上沒有任何按鈕。**
     cross: function () {
       var st = S.crossStep || 0;
+      // 1. 打不贏：只剩魔王站著
       if (st === 0) {
+        return '<div class="cross">' +
+          '<img class="boss" src="/happiness/shared/art/boss.svg" alt="">' +
+          '<div class="line" style="margin-top:min(calc(18px * var(--u)),2.4vh)">' + esc(S.cross.steps[0].t) + '</div>' +
+        '</div>';
+      }
+      // 2. 有一個人走到最前面
+      if (st === 1) {
         return '<div class="cross">' +
           '<div style="display:flex;align-items:flex-end;gap:calc(40px * var(--u))">' +
             '<img class="him" src="/happiness/shared/art/superstar.svg" alt="">' +
             '<img class="boss" src="/happiness/shared/art/boss.svg" alt="">' +
           '</div>' +
-          '<div class="line" style="margin-top:min(calc(18px * var(--u)),2.4vh)">' + esc(S.cross.steps[0].t) + '</div>' +
-        '</div>';
-      }
-      if (st === 1) {
-        return '<div class="cross">' +
-          '<img class="crossart" src="/happiness/shared/art/cross-dark.svg" alt="">' +
           '<div class="line" style="margin-top:min(calc(18px * var(--u)),2.4vh)">' + esc(S.cross.steps[1].t) + '</div>' +
         '</div>';
       }
+      // 3. 十字架，三天後復活
+      if (st === 2) {
+        return '<div class="cross">' +
+          '<img class="crossart" src="/happiness/shared/art/cross-dark.svg" alt="">' +
+          '<div class="line" style="margin-top:min(calc(18px * var(--u)),2.4vh)">' + esc(S.cross.steps[2].t) + '</div>' +
+        '</div>';
+      }
+      // 4. 復活的大能成為我們得勝的能力
       return '<div class="teaser">' +
         '<div class="powerart"><img src="/happiness/shared/art/' + esc(S.power.art) + '.svg" alt=""></div>' +
         '<h2 class="big-title" style="font-size:min(calc(48px * var(--u)),6vh,3.6vw);letter-spacing:.04em">' +
@@ -552,9 +562,9 @@
       var st = S.crossStep || 0;
       document.getElementById('cback').disabled = st <= 0;
       var cn = document.getElementById('cnext');
-      var LABELS = ['下一步（他替他們挨了那一擊）', '下一步（復活的大能）', '走完了，按下一頁'];
+      var LABELS = ['下一步（有一個人走到最前面）', '下一步（他替所有人挨了那一擊）', '下一步（復活的大能）', '走完了，按下一頁'];
       cn.textContent = LABELS[st];
-      cn.disabled = st >= 2;
+      cn.disabled = st >= 3;
     }
     if (S.phase.id === 'beat') {
       var ba = document.getElementById('beatall');
