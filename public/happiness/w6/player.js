@@ -60,6 +60,21 @@
       esc(msg) + '</p>' + (sub ? '<p style="font-size:17px">' + esc(sub) + '</p>' : '') + '</div>';
   };
 
+  // 最後一擊：**在這一頁親眼看到它倒下**才要等大螢幕播完（血條歸零 2.6 秒 ＋ 倒下 3 秒，跟 host.js 一樣）。
+  // 重新整理或晚進來的時候已經倒了，就直接給勝利畫面。
+  var BEAT_HOLD = 5600, beatSeenUp = false, beatDoneAt = 0, beatHoldTimer = null;
+  function beatHolding() { return !!beatDoneAt && Date.now() - beatDoneAt < BEAT_HOLD; }
+  function beatWatch() {
+    if (S.phase.id !== 'beat') { beatSeenUp = false; beatDoneAt = 0; return; }
+    if (!S.beatNow.done) { beatSeenUp = true; beatDoneAt = 0; return; }
+    if (beatSeenUp && !beatDoneAt) {
+      beatSeenUp = false;
+      beatDoneAt = Date.now();
+      clearTimeout(beatHoldTimer);
+      beatHoldTimer = setTimeout(render, BEAT_HOLD + 50);
+    }
+  }
+
   function classOf(k) {
     for (var i = 0; i < S.classes.length; i++) if (S.classes[i].k === k) return S.classes[i];
     return null;
@@ -211,6 +226,8 @@
 
     // 最後一擊。**每個人都按得到。**
     beat: function (me) {
+      // 大螢幕還在播血條歸零、魔王倒下：手機先停在「看大螢幕」，**播完才跳勝利畫面和 +15**
+      if (S.beatNow.done && beatHolding()) return '<h2 class="center">' + esc(S.beatInfo.title) + '</h2>' + wait('看大螢幕');
       if (S.beatNow.done) {
         return '<div class="qn center">' + esc(S.beatInfo.done) + '</div>' +
           '<img class="bossart" src="/happiness/shared/art/victory-party.svg" alt="" style="width:100%;max-width:360px">' +
@@ -219,24 +236,15 @@
           '<h2 class="center" style="margin-top:6px">' + esc(S.victory.title) + '</h2>' +
           '<p class="bigline center">' + esc(S.victory.line) + '</p>';
       }
-      if (me.beat) return '<h2 class="center">' + esc(S.beatInfo.title) + '</h2>' + wait('等其他人出手');
+      if (me.beat) return '<h2 class="center">' + esc(S.beatInfo.title) + '</h2>' + wait('看大螢幕', '等其他人出手');
       return '<h2 class="center">' + esc(S.beatInfo.title) + '</h2>' +
         '<p class="center">' + esc(S.beatInfo.sub) + '</p>' +
         '<img class="bossart" src="/happiness/shared/art/boss.svg" alt="">' +
         '<button class="btn primary fullbtn" id="beat">' + esc(S.beatInfo.button) + '</button>';
     },
 
-    goodOpen: function () {
-      return '<h2>' + esc(S.good.title) + '</h2>' +
-        '<div class="goodtwo">' +
-          '<div class="gcol" style="opacity:.4"><h3>' + esc(S.good.leftLabel) + '</h3><ul>' +
-            S.good.left.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') +
-          '</ul></div>' +
-          '<div class="gcol right"><h3>' + esc(S.good.rightLabel) + '</h3>' +
-            '<ul>' + S.good.right.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' +
-          '</div>' +
-        '</div>' + wait('看大螢幕');
-    },
+    // 手機上只叫他看大螢幕
+    goodOpen: function () { return wait('看大螢幕'); },
 
     // 得勝禱告。**什麼都沒寫也按得下去。**
     bless: function (me) {
@@ -420,11 +428,15 @@
       return;
     }
 
+    // 最後一擊的 +15：大螢幕動畫播完之前，上面的幸福指數先顯示加分前的數字
+    beatWatch(me);
+    var shownOuter = me.outer == null ? null : me.outer - (S.phase.id === 'beat' && beatHolding() ? (me.beatGain || 0) : 0);
+
     statusEl.hidden = false;
     document.getElementById('myname').textContent = me.name;
     document.getElementById('mystate').textContent = S.phase.title;
-    document.getElementById('outerv').textContent = me.outer == null ? '—' : me.outer;
-    document.getElementById('outerbar').style.width = (me.outer == null ? 0 : me.outer) + '%';
+    document.getElementById('outerv').textContent = shownOuter == null ? '—' : shownOuter;
+    document.getElementById('outerbar').style.width = (shownOuter == null ? 0 : shownOuter) + '%';
     document.getElementById('innerv').textContent = me.inner ? me.inner : '—';
     document.getElementById('innerbar').style.width = me.inner + '%';
 
@@ -432,7 +444,7 @@
     var next = [
       S.phase.id, S.cardsNow.open, S.crossStep,
       S.fightNow.round, S.fightNow.revealed, S.winNow.round, S.winNow.revealed,
-      S.beatNow.done, S.hp,
+      S.beatNow.done, beatHolding(), S.hp,
       me.outer, me.inner, me.visits, me.aspect, me.pick,
       me.choice, me.winChoice, me.revived, me.beat,
       me.receivedVerse, me.cardDone, me.prayed,
