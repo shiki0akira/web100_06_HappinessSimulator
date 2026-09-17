@@ -31,7 +31,7 @@ export const PHASES = [
   { id: 'good',      tag: '信息',     title: '什麼才是「好」？' },
   { id: 'chase',     tag: '信息',     title: '我們追求的方向，不能滿足生命真正的需要' },
   // 第 5 頁挑一塊＋抽一張，第 6 頁一翻過來就公布。
-  { id: 'cards',     tag: '互動點 1', title: '你現在扛的是哪一塊？' },
+  { id: 'cards',     tag: '互動點 1', title: '有沒有哪件事讓你很有壓力？' },
   { id: 'draw',      tag: '公布',     title: '大家抽到的那一張' },
   { id: 'tally',     tag: '統計',     title: '最近讓你最累的是什麼？' },
   { id: 'bossIn',    tag: '過場',     title: '今晚的大魔王 · 勞苦重擔' },

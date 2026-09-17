@@ -88,7 +88,7 @@ export const CARDS = {
 };
 
 export const PICK = {
-  title: '你現在扛的是哪一塊？',
+  title: '有沒有哪件事讓你很有壓力？',
   sub: '挑一塊，然後從那一塊裡抽一張。',
   hint: '挑你這禮拜真的最有壓力的那一塊。',
   change: '換一塊',

@@ -156,7 +156,6 @@
     // 挑一塊。大螢幕上只有六塊的名字，**誰挑了哪一塊一律不顯示**。
     cards: function () {
       return '<h2>' + esc(S.pickInfo.title) + '</h2>' +
-        '<p class="lede">' + esc(S.pickInfo.sub) + '</p>' +
         '<div class="aspectgrid">' + S.aspects.map(function (a) {
           return '<div class="ac"><img src="' + aspectArt(a.k) + '" alt="">' + esc(a.t) + '</div>';
         }).join('') + '</div>' +
