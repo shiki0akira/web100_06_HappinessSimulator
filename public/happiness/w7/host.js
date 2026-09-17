@@ -263,10 +263,24 @@
         '<img class="church" src="' + ART + 'heaven-church.svg" alt="">' +
         '<div class="hl" style="margin-top:min(calc(12px * var(--u)),1.5vh)">' + esc(h.steps[2]) + '</div>' +
         '<div class="vref">「' + esc(S.verse.text) + '」' + esc(S.verse.ref) + '</div>' +
+        avgRow() +
         '<div class="fin">' + esc(h.end) + '</div>' +
       '</div>';
     },
   };
+
+  // 今晚全場平均（跟前六關下週預告那一排一樣）：一條被推來推去，一條只往上
+  function avgRow() {
+    var st = S.stats;
+    var one = function (label, v, from, cls) {
+      var d = (v == null || from == null) ? null : v - from;
+      return '<div class="avg ' + cls + '"><span class="l">' + label + '</span><b>' + (v == null ? '—' : v) + '</b>' +
+        (d == null ? '' : '<span class="d">開場 ' + from + '　' + (d > 0 ? '+' : d === 0 ? '±' : '') + d + '</span>') + '</div>';
+    };
+    return '<div class="avgrow"><span class="k">今晚全場平均</span>' +
+      one('幸福指數', st.outerAvg, st.startAvg, 'o') +
+      one('幸福根基', st.innerAvg || null, st.innerStartAvg, 'n') + '</div>';
+  }
 
   // ── 補滿 100 的動畫 ─────────────────────────────────────────────────
   // **在這一頁親眼看到它從沒補變成補滿**才播：全場的幸福根基同一秒一起往上長。

@@ -525,6 +525,9 @@ export function hostView(s, roomCode) {
       notBroken: ps.filter((p) => !p.broken).length,
       outerAvg: outers.length ? Math.round(outers.reduce((a, b) => a + b, 0) / outers.length) : null,
       innerAvg: ps.length ? Math.round(ps.reduce((a, b) => a + (b.inner || 0), 0) / ps.length) : 0,
+      // 謝幕那一頁的全場平均：今晚一進來自己打的那兩個數字
+      startAvg: sc.length ? Math.round(sc.reduce((a, b) => a + b.outerStart, 0) / sc.length) : null,
+      innerStartAvg: sc.length ? Math.round(sc.reduce((a, b) => a + (b.innerStart || 0), 0) / sc.length) : null,
       saidNo: saidNo(s),
       billTotal: ps.reduce((a, p) => a + (p.billLoss || 0), 0),
       cardsDone: ps.filter((p) => p.cardDone).length,
