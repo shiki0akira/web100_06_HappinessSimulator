@@ -43,26 +43,35 @@
     background: rgba(6, 12, 11, .94); }
   .modal.on { display: flex; }
   .modal .box { background: var(--surface); border: 4px solid var(--edge);
-    box-shadow: 8px 8px 0 var(--hard); padding: 28px 24px; width: 100%; max-width: 460px;
+    box-shadow: 8px 8px 0 var(--hard); padding: 20px 22px; width: 100%; max-width: 460px;
     /* 保險：小螢幕上七關還是撐不破這張紙 */
     max-height: calc(100vh - 40px); overflow-y: auto; }
-  .modal h3 { font-size: 26px; font-weight: 900; letter-spacing: .03em; }
-  .modal p { color: var(--ink-2); font-size: 16px; margin-top: 10px; }
-  .modal input { width: 100%; margin-top: 18px; padding: 16px; font-size: 40px; font-weight: 700;
+  .modal h3 { font-size: 24px; font-weight: 900; letter-spacing: .03em; }
+  .modal p { color: var(--ink-2); font-size: 16px; margin-top: 6px; }
+  .modal input { width: 100%; margin-top: 12px; padding: 10px; font-size: 34px; font-weight: 700;
     text-align: center; letter-spacing: .3em; font-family: var(--pixel); }
-  .modal .err { color: var(--vol); font-size: 15px; font-weight: 700; margin-top: 10px; min-height: 22px; }
+  .modal .err { color: var(--vol); font-size: 15px; font-weight: 700; margin-top: 6px; min-height: 20px; }
   .modal .pick { font-family: var(--pixel); font-size: 13px; color: var(--ink-3);
-    letter-spacing: .06em; margin: 6px 0 10px; }
+    letter-spacing: .06em; margin: 2px 0 8px; }
   /* 七關全部開了之後這裡會有七顆。一顆一行會把這張紙拉到要捲動 ——
      改成兩欄、一顆一行字：左邊像素的關號，右邊關名。 */
   .modal .lv { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   /* 一顆就是一行字：五個字的關名（十字架的勝利）也不准掉到第二行 */
   .modal .lv button { display: flex; align-items: baseline; gap: 8px; white-space: nowrap;
-    padding: 13px 10px; font-size: 16px; font-weight: 700; text-align: left; }
+    padding: 11px 10px; font-size: 16px; font-weight: 700; text-align: left; }
   .modal .lv button b { flex: none; margin: 0;
     font-family: var(--pixel); font-size: 12px; color: var(--gold); }
-  .modal .close { width: 100%; margin-top: 16px; }
-  .modal .hint { font-size: 14px; color: var(--ink-3); margin-top: 16px; line-height: 1.8; }
+  /* 取消放進兩欄的第八格：七關是單數，剛好補滿最後一排，整張紙不用捲動 */
+  .modal .lv .close { justify-content: center; }
+  .modal .hint { font-size: 14px; color: var(--ink-3); margin-top: 12px; line-height: 1.6; }
+  /* 窄手機：紙貼著邊一點、按鈕字小一號，「十字架的勝利」才不會頂到框 */
+  @media (max-width: 420px) {
+    .modal { padding: 12px; }
+    .modal .box { padding: 16px 14px; }
+    .modal .lv button { padding: 10px 8px; gap: 6px; font-size: 15px; }
+  }
+  /* 矮螢幕：最底下那一行提示讓給按鈕，整張紙不用捲動 */
+  @media (max-height: 640px) { .modal .hint { display: none; } }
 
   h2.sec { font-size: 13px; font-family: var(--pixel); color: var(--ink-3); letter-spacing: .08em;
     border-bottom: 3px solid var(--edge); padding-bottom: 10px; margin: 44px 0 20px; }
@@ -246,6 +255,7 @@
       return '<button class="btn" data-week="' + w.n + '">' +
         '<b>' + (w.n < 10 ? '0' : '') + w.n + '</b>' + esc(w.name) + '</button>';
     }).join('');
+  document.getElementById('lv').appendChild(document.getElementById('joinclose'));
 
   function openJoin() {
     modal.classList.add('on');
@@ -259,7 +269,7 @@
     var c = rc.value.toUpperCase().trim();
     if (!CODE_RE.test(c)) {
       // 房號刻意不含 0/O、1/I，打錯的時候要講清楚，不要只說「格式錯誤」
-      rcerr.textContent = '房號是四個字，不會有 0、O、1、I。再看一次大螢幕。';
+      rcerr.textContent = '房號是四個字，沒有 0、O、1、I。';
       rc.focus();
       return;
     }
