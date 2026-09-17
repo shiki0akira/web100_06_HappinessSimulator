@@ -238,6 +238,7 @@
 
     end: function () {
       return '<h2>下週見</h2>' +
+        '<p>下一關：大魔王 RPG，全場組成一隊一起打。</p>' +
         '<p>你寫的那個人，這禮拜把祝福帶給他。</p>' +
         (cardURL ? '<img class="weekcard" src="' + cardURL + '" alt="第五關週卡">' : '') +
         (cardURL ? '<a class="btn ghost fullbtn" id="zoom" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none">放大這張卡</a>' : '') +
