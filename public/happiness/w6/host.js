@@ -1,6 +1,6 @@
 // 主持人大螢幕 · 第六關「十字架的勝利」
 //
-// 十九頁。兩個整面動畫（大魔王登場、最後一擊之後的得勝的力量）跟第二關的時光機同一個等級。
+// 二十頁。兩個整面動畫（大魔王登場、最後一擊之後的得勝的力量）跟第二關的時光機同一個等級。
 (function () {
   'use strict';
   var WEEK = 6;
@@ -325,6 +325,20 @@
                 S.stats.count + ' / ' + S.stats.count + ' 人已出手</div></div>'
             : '<div style="margin-top:min(calc(14px * var(--u)),1.8vh)">' + counter(b.hit, '人已出手') + '</div>') +
         '</div>';
+    },
+
+    // 你最常用哪一種打法？四條長條，**只印人數**。
+    habit: function () {
+      var h = S.habitNow;
+      return '<h2>' + esc(S.habitInfo.title) + '</h2>' +
+        '<p class="lede">' + esc(S.habitInfo.sub) + '</p>' +
+        '<div class="bars habits">' + h.rows.map(function (r) {
+          return '<div class="bar2' + (r.n ? '' : ' zero') + '">' +
+            '<span class="bl"><img src="' + jobArt(r.art) + '" alt=""><span class="hn"><b>' + esc(r.t) + '</b><i>' + esc(r.act) + '</i></span></span>' +
+            '<span class="bt"><i style="width:' + Math.round(r.n / h.max * 100) + '%"></i></span>' +
+            '<span class="bn">' + r.n + ' 人</span>' +
+          '</div>';
+        }).join('') + '</div>';
     },
 
     // 開場那張蓋著的卡，到這一頁**直接是翻開的**（不用主持人再按）。

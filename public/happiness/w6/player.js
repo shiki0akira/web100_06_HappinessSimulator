@@ -243,6 +243,16 @@
         '<button class="btn primary fullbtn" id="beat">' + esc(S.beatInfo.button) + '</button>';
     },
 
+    // 自己最常用的打法（週卡也印這一行）
+    habit: function (me) {
+      if (!me.habit) return '<h2>' + esc(S.habitInfo.title) + '</h2>' + wait('看大螢幕', '你這八回合都沒有選職業');
+      return '<div class="qn center">' + esc(S.habitInfo.mine) + '</div>' +
+        '<img class="bossart" src="' + jobArt(me.habit.art) + '" alt="" style="width:34%;max-width:130px">' +
+        '<h2 class="center" style="margin-top:10px">' + esc(me.habit.t) + ' · ' + esc(me.habit.act) + '</h2>' +
+        '<p class="center">' + me.habit.total + ' 回合裡選了 ' + me.habit.n + ' 次</p>' +
+        wait('看大螢幕');
+    },
+
     // 手機上只叫他看大螢幕
     goodOpen: function () { return wait('看大螢幕'); },
 
@@ -384,6 +394,8 @@
           path: me.drawn ? { label: 'MY CARD', steps: [me.drawn.aspect + ' · ' + me.drawn.text] } : null,
           // 第八週的護照要收這一行（架構第九節）。
           stamp: '這一仗，全場 ' + S.playerCount + ' 個人一起打贏',
+          // 他最常用的打法（第 16 頁那個統計）
+          habit: me.habit ? '我最常用的打法：' + me.habit.t + ' · ' + me.habit.act : '',
           burdenLabel: 'MY BATTLE',
           burdenAsk: S.bless.ask + '：',
           burden: readLine(),
@@ -446,7 +458,7 @@
       S.fightNow.round, S.fightNow.revealed, S.winNow.round, S.winNow.revealed,
       S.beatNow.done, beatHolding(), S.hp,
       me.outer, me.inner, me.visits, me.aspect, me.pick,
-      me.choice, me.winChoice, me.revived, me.beat,
+      me.choice, me.winChoice, me.habit ? me.habit.k + me.habit.n : '', me.revived, me.beat,
       me.receivedVerse, me.cardDone, me.prayed,
       draft.byVisits,
     ].join('|');

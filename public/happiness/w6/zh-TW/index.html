@@ -303,6 +303,15 @@
     mask-image: repeating-linear-gradient(90deg, #000 0 8px, transparent 8px 10px); }
   .bar2 .bn { font-family: var(--pixel); font-size: min(calc(19px * var(--u)), 2.4vh); color: var(--ink-2); }
   .bar2.zero { opacity: .4; }
+  /* 你最常用哪一種打法：四條，比抽卡統計那一頁粗 */
+  .bars.habits { flex: 1; justify-content: center; gap: min(calc(22px * var(--u)), 3vh); }
+  .bars.habits .bar2 { grid-template-columns: calc(300px * var(--u)) minmax(0, 1fr) calc(100px * var(--u)); }
+  .bars.habits .bl img { width: min(calc(72px * var(--u)), 9vh); }
+  .bars.habits .hn { display: flex; flex-direction: column; line-height: 1.25; }
+  .bars.habits .hn b { font-size: min(calc(30px * var(--u)), 3.8vh); }
+  .bars.habits .hn i { font-style: normal; font-size: min(calc(20px * var(--u)), 2.5vh); color: var(--vol); }
+  .bars.habits .bt { height: min(calc(44px * var(--u)), 5.4vh); }
+  .bars.habits .bn { font-size: min(calc(26px * var(--u)), 3.2vh); }
   /* 被挑走的那幾張卡的原文（**不掛名字**） */
   .quotes { margin-top: min(calc(12px * var(--u)), 1.6vh); display: flex; flex-wrap: wrap; gap: calc(10px * var(--u)); }
   .quotes span { padding: 2px calc(12px * var(--u)); border: 3px solid var(--edge-soft);

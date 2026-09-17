@@ -175,6 +175,15 @@ var GROUP_NAME = '幸福小組';
       ctx.fillText(road, M, y);
     }
 
+    // 第六關：他最常用的打法。一行，吃掉經文前面的一點留白。
+    if (data.habit) {
+      y += hasPath ? 50 : 80;
+      ctx.fillStyle = '#5C706A';
+      ctx.font = '700 28px ' + SANS;
+      ctx.fillText(data.habit, M, y);
+      y -= hasPath ? 14 : 44;
+    }
+
     // 經文（字要大，這是最可能被轉發出去的部分）
     y += hasPath ? 46 : 96;
     dots(ctx, M, y, CW, GREY);

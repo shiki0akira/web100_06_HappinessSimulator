@@ -13,7 +13,7 @@
 //     「信了才有能力」是這套設計明文避開的東西。
 import {
   GOOD, CHASE, ASPECTS, CARDS, COPE, PICK, DRAW, CARD_LOSS, TALLY, BOSS,
-  CLASSES, JOB, IDLE, FIGHT, LOST, CROSS, POWER, VERSE, WIN, BEAT, VICTORY, BLESS,
+  CLASSES, JOB, HABIT, IDLE, FIGHT, LOST, CROSS, POWER, VERSE, WIN, BEAT, VICTORY, BLESS,
 } from './w6-data.js';
 
 // 幸福根基的規則七關都一樣。上限 95 不是 100 —— 你自己填不滿。
@@ -43,6 +43,7 @@ export const PHASES = [
   { id: 'win',       tag: '主遊戲',   title: '在生活中得勝' },
   // 最後一擊打完，同一頁直接換成「得勝的力量」—— 不另開一頁。
   { id: 'beat',      tag: '互動點 4', title: '最後一擊 · 得勝的力量' },
+  { id: 'habit',     tag: '統計',     title: '你最常用哪一種打法？' },
   { id: 'goodOpen',  tag: '揭曉',     title: '在耶穌基督裡的好' },
   { id: 'bless',     tag: '互動點 5', title: '得勝禱告' },
   { id: 'card',      tag: '週卡',     title: '儲存模擬回憶' },
@@ -511,6 +512,39 @@ function tallyView(s) {
   return { rows, max: Math.max(max, 1) };
 }
 
+// 每個人兩個階段八回合裡最常選的職業。同樣多次，算比較後面選的那一個。
+function habitOf(p) {
+  const picks = arr(p.acts).slice(0, FIGHT_ROUNDS).concat(arr(p.winActs).slice(0, WIN_ROUNDS));
+  const count = {}, last = {};
+  let total = 0;
+  picks.forEach((k, i) => {
+    if (!classOf(k)) return;
+    count[k] = (count[k] || 0) + 1;
+    last[k] = i;
+    total += 1;
+  });
+  let best = '';
+  Object.keys(count).forEach((k) => {
+    if (!best || count[k] > count[best] || (count[k] === count[best] && last[k] > last[best])) best = k;
+  });
+  if (!best) return null;
+  const c = classOf(best);
+  return { k: c.k, t: c.t, act: c.act, art: c.art, n: count[best], total };
+}
+
+// 統計：每個職業是幾個人「最常用」的，**只有人數**
+function habitView(s) {
+  const ps = alive(s);
+  const tops = ps.map(habitOf).filter(Boolean);
+  const rows = CLASSES.map((c, i) => ({
+    k: c.k, t: c.t, act: c.act, art: c.art, order: i,
+    n: tops.filter((h) => h.k === c.k).length,
+  }));
+  const max = rows.reduce((m, r) => Math.max(m, r.n), 0);
+  rows.sort((a, b) => (b.n - a.n) || (a.order - b.order));
+  return { rows, max: Math.max(max, 1), counted: tops.length };
+}
+
 // 魔王的五招（**就是他們自己抽到的那幾句**）
 function movesView(s) {
   return movesOf(s).map((m) => ({ aspect: aspectOf(m.k).t, k: m.k, text: cardText(m.k, m.i) }));
@@ -573,6 +607,8 @@ function common(s) {
     cardsNow: cardsView(s),
     tally: TALLY,
     tallyNow: tallyView(s),
+    habitInfo: HABIT,
+    habitNow: habitView(s),
     boss: BOSS,
     bossMoves: movesView(s),
     classes: CLASSES,
@@ -674,6 +710,7 @@ export function playerView(s, pid, roomCode) {
       revived: !!p.revived,
       beat: !!p.beat,
       beatGain: p.beatGain || 0,
+      habit: habitOf(p),
       hasBless: !!p.hasBless, prayed: !!p.prayed,
       receivedVerse: !!p.receivedVerse, cardDone: !!p.cardDone,
     },
