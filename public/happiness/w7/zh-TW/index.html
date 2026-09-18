@@ -194,41 +194,6 @@
   .bars.oxbars .bl { font-size: min(calc(22px * var(--u)), 2.7vh, 1.5vw); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
   .bars.oxbars .bt { height: min(calc(24px * var(--u)), 2.9vh); }
   .bars.oxbars .bt i { background: var(--root-c); }
-  .saybig { margin-top: min(calc(18px * var(--u)), 2.4vh); text-align: center; white-space: nowrap;
-    font-size: min(calc(52px * var(--u)), 6.4vh, 3.4vw); font-weight: 900; color: var(--gold); animation: unseal .7s ease-out both; }
-
-  /* 身不由己 */
-  .ev { flex: 1; display: flex; flex-direction: column; justify-content: center; }
-  .ev .as { font-family: var(--pixel); font-size: min(calc(20px * var(--u)), 2.5vh); color: var(--gold); }
-  .ev .line { margin-top: min(calc(12px * var(--u)), 1.5vh); font-size: min(calc(52px * var(--u)), 6.4vh, 3.4vw); font-weight: 900; line-height: 1.4; }
-  .two { display: grid; grid-template-columns: 1fr 1fr; gap: calc(24px * var(--u)); margin-top: min(calc(26px * var(--u)), 3.2vh); }
-  .two > div { background: var(--surface); border: 4px solid var(--edge); box-shadow: 5px 5px 0 var(--hard);
-    padding: min(calc(18px * var(--u)), 2.2vh) calc(24px * var(--u)); }
-  .two .k { font-family: var(--pixel); font-size: min(calc(16px * var(--u)), 2vh); color: var(--ink-3); }
-  .two .t { display: block; margin-top: min(calc(6px * var(--u)), .8vh); font-size: min(calc(30px * var(--u)), 3.8vh, 2.1vw); font-weight: 900; }
-  .two .n { display: block; margin-top: min(calc(10px * var(--u)), 1.2vh); font-family: var(--pixel);
-    font-size: min(calc(34px * var(--u)), 4.2vh); color: var(--vol); animation: unseal .45s ease-out; }
-  .two .no .n { color: var(--ink-2); }
-  .two .n small { font-size: .5em; color: var(--ink-3); }
-
-  /* 被綁住的一排人 */
-  .billwrap { flex: 1; min-height: 0; position: relative; display: flex; flex-direction: column; }
-  .crowd { flex: 1; min-height: 0; display: flex; flex-wrap: wrap; justify-content: center; align-content: center;
-    gap: min(calc(18px * var(--u)), 2.2vh) calc(20px * var(--u)); margin-top: min(calc(12px * var(--u)), 1.5vh); transition: opacity .8s; }
-  .crowd .pp { display: flex; flex-direction: column; align-items: center; width: calc(110px * var(--u) * var(--cz, 1)); }
-  .crowd img { width: calc(min(calc(96px * var(--u)), 13vh) * var(--cz, 1)); height: auto; image-rendering: pixelated; }
-  .crowd b { margin-top: 4px; font-size: calc(min(calc(18px * var(--u)), 2.2vh) * var(--cz, 1)); white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
-  .crowd.dim { opacity: .15; }
-  .billline { font-family: var(--pixel); font-size: min(calc(22px * var(--u)), 2.7vh); color: var(--vol); margin-top: min(calc(6px * var(--u)), .8vh); }
-  .overline { position: absolute; left: 0; right: 0; top: 44%; text-align: center; white-space: nowrap;
-    font-size: min(calc(60px * var(--u)), 7.4vh, 4vw); font-weight: 900; animation: unseal 1s ease-out both; }
-
-  /* 經文 ＋ 全場一大串鎖鏈 */
-  .chainrow { display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
-    gap: calc(4px * var(--u)); margin-top: min(calc(26px * var(--u)), 3.2vh); min-height: min(calc(70px * var(--u)), 9vh); }
-  .chainrow img { height: min(calc(34px * var(--u)), 4.4vh); width: auto; image-rendering: pixelated; }
-  .chainrow img.bird { height: min(calc(30px * var(--u)), 3.8vh); animation: flyaway 2.4s ease-in both; }
-  @keyframes flyaway { 0% { transform: none; opacity: 1; } 100% { transform: translate(calc(30px * var(--u)), calc(-160px * var(--u))); opacity: 0; } }
   .faith { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: min(calc(30px * var(--u)), 4vh); }
   .faith div { font-size: min(calc(64px * var(--u)), 8vh, 4.4vw); font-weight: 900; letter-spacing: .08em; white-space: nowrap; animation: unseal .8s ease-out both; }
   .faith div + div { animation-delay: .5s; color: var(--root-c); }
@@ -247,22 +212,6 @@
   .goodcol.right h3 { color: var(--gold); font-size: min(calc(38px * var(--u)), 4.6vh); }
   .goodcol.right li { font-size: min(calc(44px * var(--u)), 5.4vh, 2.8vw); }
   .goodcol.right li::before { color: var(--root-c); }
-  .nofoot { margin-top: min(calc(14px * var(--u)), 1.8vh); text-align: center; font-size: min(calc(28px * var(--u)), 3.4vh); font-weight: 900; }
-  .nofoot b { font-family: var(--pixel); color: var(--root-c); }
-
-  /* 補滿 100：全場兩條線並排（人多就排兩欄、三欄，字跟著縮） */
-  .fullgrid { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(var(--fc, 1), minmax(0, 1fr));
-    align-content: center; gap: min(calc(12px * var(--u)), 1.5vh) calc(24px * var(--u)); margin-top: min(calc(12px * var(--u)), 1.5vh); }
-  .fr { background: var(--surface); border: 4px solid var(--edge); box-shadow: 4px 4px 0 var(--hard);
-    padding: min(calc(8px * var(--u)), 1vh) calc(16px * var(--u)); zoom: var(--fz, 1); }
-  .fr .nm { font-size: min(calc(20px * var(--u)), 2.5vh); font-weight: 900; }
-  .fr .ln { display: grid; grid-template-columns: 5.2em minmax(0, 1fr) 3em; align-items: center; gap: calc(10px * var(--u)); margin-top: min(calc(4px * var(--u)), .6vh);
-    font-family: var(--pixel); font-size: min(calc(14px * var(--u)), 1.8vh); color: var(--ink-3); }
-  .fr .ln .tr { height: min(calc(20px * var(--u)), 2.5vh); border: 3px solid var(--edge); background: var(--surface-2); }
-  .fr .ln .tr i { display: block; height: 100%; }
-  .fr .ln b { text-align: right; font-size: min(calc(17px * var(--u)), 2.1vh); }
-  .fr .ln.o i { background: var(--vol); } .fr .ln.o b { color: var(--vol); }
-  .fr .ln.n i { background: var(--root-c); transition: width 2.6s cubic-bezier(.3,.8,.3,1); } .fr .ln.n b { color: var(--root-c); }
   .fullnote { display: flex; justify-content: center; gap: calc(40px * var(--u)); margin-top: min(calc(12px * var(--u)), 1.5vh);
     font-size: min(calc(26px * var(--u)), 3.2vh); font-weight: 900; animation: unseal .8s 2.8s ease-out both; }
   .fullnote .o { color: var(--vol); } .fullnote .n { color: var(--root-c); }
@@ -270,25 +219,22 @@
   /* 天上的教會 */
   .heaven { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
   .heaven .hl { font-size: min(calc(48px * var(--u)), 6vh, 3.2vw); font-weight: 900; letter-spacing: .06em; white-space: nowrap; margin-top: min(calc(22px * var(--u)), 2.8vh); animation: unseal 1s ease-out both; }
-  /* 天上的身分 ①：一條滿格的幸福根基 */
-  .rootfull { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: calc(18px * var(--u));
-    width: min(calc(900px * var(--u)), 80%); animation: unseal .8s ease-out both; }
-  .rootfull .l { font-size: min(calc(30px * var(--u)), 3.8vh); font-weight: 900; }
-  .rootfull .tr { height: min(calc(44px * var(--u)), 5.6vh); border: 4px solid var(--edge); background: var(--root-c); }
-  .rootfull b { font-family: var(--pixel); font-size: min(calc(46px * var(--u)), 5.8vh); color: var(--root-c); }
   .heaven .hl.ask { margin-top: min(calc(20px * var(--u)), 2.6vh); color: var(--gold); }
   .heaven .church { width: min(calc(900px * var(--u)), 60vw, 44vh * 64 / 40); image-rendering: pixelated; animation: unseal 1.2s ease-out both; }
   .heaven .vref { margin-top: min(calc(12px * var(--u)), 1.5vh); font-size: min(calc(26px * var(--u)), 3.2vh); font-weight: 700; color: var(--ink-2); }
-  .avgrow { display: flex; align-items: center; gap: calc(22px * var(--u)); margin-top: min(calc(12px * var(--u)), 1.5vh); animation: unseal 1s .6s ease-out both; }
-  .avgrow .k { font-family: var(--pixel); font-size: min(calc(15px * var(--u)), 1.9vh); color: var(--ink-3); }
-  .avgrow .avg { display: flex; align-items: baseline; gap: calc(10px * var(--u)); background: var(--surface); border: 4px solid var(--edge);
-    box-shadow: 4px 4px 0 var(--hard); padding: min(calc(6px * var(--u)), .8vh) calc(16px * var(--u)); }
-  .avgrow .l { font-size: min(calc(18px * var(--u)), 2.2vh); font-weight: 900; }
-  .avgrow b { font-family: var(--pixel); font-size: min(calc(30px * var(--u)), 3.8vh); }
-  .avgrow .o b { color: var(--vol); } .avgrow .n b { color: var(--root-c); }
-  .avgrow .d { font-family: var(--pixel); font-size: min(calc(13px * var(--u)), 1.6vh); color: var(--ink-3); }
-  .heaven .fin { margin-top: min(calc(12px * var(--u)), 1.5vh); font-size: min(calc(40px * var(--u)), 5vh); font-weight: 900; color: var(--gold); letter-spacing: .1em; animation: unseal 1s 1.2s ease-out both; }
-
+  /* 每個人的幸福根基：小小的一片，人多排兩欄三欄（fitBoxes 會再縮） */
+  .rlist { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(var(--rc, 1), minmax(0, 1fr));
+    align-content: center; gap: min(calc(10px * var(--u)), 1.2vh) calc(34px * var(--u));
+    margin-top: min(calc(14px * var(--u)), 1.8vh); zoom: var(--rz, 1); }
+  .rl { display: grid; grid-template-columns: auto minmax(0, 1fr) 2.6em; align-items: center; gap: calc(12px * var(--u)); }
+  .rl .nm { min-width: 5em; max-width: 8em; font-size: min(calc(20px * var(--u)), 2.5vh); font-weight: 900;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rl .tr { height: min(calc(18px * var(--u)), 2.3vh); border: 3px solid var(--edge); background: var(--surface-2); }
+  .rl .tr i { display: block; height: 100%; background: var(--root-c); transition: width 2.6s cubic-bezier(.3,.8,.3,1); }
+  .rl b { text-align: right; font-family: var(--pixel); font-size: min(calc(17px * var(--u)), 2.1vh); color: var(--root-c); }
+  /* 不掛名字的那一片：線粗一點 */
+  .rl[data-k] { grid-template-columns: minmax(0, 1fr) 2.6em; }
+  .rl[data-k] .tr { height: min(calc(24px * var(--u)), 3vh); }
 </style>
 </head>
 <body>
@@ -318,7 +264,6 @@
     <span id="stepctl" style="display:none;gap:8px;">
       <button class="btn" data-cmd="stepBack" id="sback">← 上一步</button>
       <button class="btn primary" data-cmd="stepNext" id="snext">下一步</button>
-      <button class="btn" data-cmd="boundRestart" id="srestart">重跑五回合</button>
     </span>
     <span class="sp"></span>
     <span class="hint" id="hint"></span>

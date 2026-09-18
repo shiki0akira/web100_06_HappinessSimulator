@@ -1,7 +1,7 @@
 // 主持人大螢幕 · 第七關「釋放與自由」
 //
-// 十六頁。模擬器的最後一關 —— 天上的教會之後是下週預告（第八週 · 幸福的教會），最後結算放在那一頁。
-// 需要一步一步走的那幾頁（公布、下一段、補滿 100）共用一組按鈕，字由伺服器給（S.step）。
+// 十四頁。模擬器的最後一關 —— 最後是下週預告（第八週 · 幸福的教會），最後結算放在那一頁。
+// 需要一步一步走的那幾頁（O/X 公布、全場補滿 100）共用一組按鈕，字由伺服器給（S.step）。
 (function () {
   'use strict';
   var WEEK = 7;
@@ -37,19 +37,17 @@
   }
 
   // ── 側欄玩家狀態 ──────────────────────────────────────────────────────
-  // **不掛鎖鏈數、不掛誰選了什麼** —— 只有「已決定」這種等人的標籤。
+  // ⚠️ **不掛誰按了「我願意」** —— 側欄的幸福根基要等全場補滿才變。
   function renderPlayers() {
     var el = document.getElementById('plist');
     if (!S.players.length) {
       el.innerHTML = '<p class="muted" style="font-size:calc(13px * var(--u))">還沒有人進場。</p>';
       return;
     }
-    var id = S.phase.id;
-    var onBound = id === 'bound' && !S.boundNow.revealed;
-    var onRefuse = (id === 'refuse' && !S.refuseNow.revealed) || (id === 'ox' && !S.oxNow.revealed);
+    var onOx = S.phase.id === 'ox' && !S.oxNow.revealed;
     el.innerHTML = S.players.map(function (p) {
       var chips = [];
-      if (onBound || onRefuse) chips.push('<span class="chip' + (p.acted ? ' on' : '') + '">' + (p.acted ? '已決定' : '還沒') + '</span>');
+      if (onOx) chips.push('<span class="chip' + (p.acted ? ' on' : '') + '">' + (p.acted ? '已選' : '還沒') + '</span>');
       if (p.prayed) chips.push('<span class="chip">已寫下</span>');
       return '' +
         '<div class="prow">' +
@@ -66,11 +64,13 @@
       (all ? '　<b>大家都好了</b>' : '') + '</div>';
   }
 
-  // 一排人：每個人一個小人，身上幾條鏈。**照進場順序，不排序。**
-  function crowd(chains, dim) {
-    return '<div class="crowd' + (dim ? ' dim' : '') + '">' + S.players.map(function (p) {
-      var n = chains == null ? p.chains : chains;
-      return '<div class="pp"><img src="' + ART + 'bound-' + Math.max(0, Math.min(5, n)) + '.svg" alt=""><b>' + esc(p.name) + '</b></div>';
+  // 一片幸福根基的線（小小的，排好幾欄）。rows: [{ k, name, v }]；name 沒給就不掛名字
+  function rootList(rows) {
+    return '<div class="rlist">' + rows.map(function (r) {
+      return '<div class="rl"' + (r.k ? ' data-k="' + esc(r.k) + '"' : '') + '>' +
+        (r.name != null ? '<span class="nm">' + esc(r.name) + '</span>' : '') +
+        '<span class="tr"><i data-v="' + r.v + '" style="width:' + r.v + '%"></i></span>' +
+        '<b>' + r.v + '</b></div>';
     }).join('') + '</div>';
   }
 
@@ -126,97 +126,54 @@
         }).join('') + '</div>';
     },
 
-    // 身不由己。公布之後**只有數字，不掛名字**。
-    bound: function () {
-      var b = S.boundNow, info = S.boundInfo;
-      return '<h2>' + esc(info.title) + '</h2>' +
-        '<div class="sub2">' + esc(info.sub) + '</div>' +
-        '<div class="ev">' +
-          '<div class="as">第 ' + (b.round + 1) + ' / ' + b.total + ' 回合 · ' + esc(b.bond) + '</div>' +
-          '<div class="line">' + esc(b.text) + '</div>' +
-          '<div class="two">' +
-            '<div class="ease"><span class="k">' + esc(info.easeLabel) + '</span><span class="t">' + esc(b.ease) + '</span>' +
-              (b.revealed ? '<span class="n">' + b.easeN + ' <small>人</small></span>' : '') + '</div>' +
-            '<div class="no"><span class="k">' + esc(info.noLabel) + '</span><span class="t">' + esc(b.no) + '</span>' +
-              (b.revealed ? '<span class="n">' + b.noN + ' <small>人</small></span>' : '') + '</div>' +
-          '</div>' +
-        '</div>' +
-        (b.revealed
-          ? '<div class="qcount">這一回合，全場身上又多了 ' + S.stats.count + ' 條鎖鏈</div>'
-          : counter(b.acted, '人已決定'));
-    },
-
-    // 罪的奴僕，身不由己。0 帳單＋一排被綁住的人 → 1 淡掉，浮出「生活沒有意義，失去方向」
-    bill: function () {
-      var st = S.billStep;
-      return '<h2>' + esc(S.bill.title) + '</h2>' +
-        '<div class="billline">' + esc(S.bill.billLead) + (S.billTotal ? '　全場幸福指數 −' + S.billTotal : '') + '</div>' +
-        '<div class="billwrap">' +
-          crowd(null, st >= 1) +
-          (st >= 1 ? '<div class="overline">' + esc(S.bill.line) + '</div>' : '') +
-        '</div>';
-    },
-
     story: function () {
       return StageParts.testimony({ title: S.story.title });
     },
 
-    // 領受經文：**跟前六關同一個畫面**（共用元件）。鎖鏈斷掉是手機上的事。
-    verse: function () {
-      return StageParts.verse({ ref: S.verse.ref, text: S.verse.text, done: S.stats.broken, total: S.stats.count });
-    },
-
     // 信而受洗，必得釋放 · 相信耶穌，醫治與平安。**手機上沒有按鈕。**
     faith: function () {
-      return '<div class="faith">' + S.verse.faith.map(function (t) { return '<div>' + esc(t) + '</div>'; }).join('') + '</div>';
-    },
-
-    // 拒絕的自由。**不計分**，大螢幕只出「說了幾次不」。
-    refuse: function () {
-      var r = S.refuseNow, info = S.refuseInfo;
-      return '<h2>' + esc(info.title) + '</h2>' +
-        '<div class="sub2">' + esc(info.sub) + '</div>' +
-        '<div class="ev">' +
-          '<div class="as">第 ' + (r.round + 1) + ' / ' + r.total + ' 回合 · ' + esc(r.bond) + '</div>' +
-          '<div class="line">' + esc(r.text) + '</div>' +
-          '<div class="two">' +
-            '<div class="ease"><span class="k">' + esc(S.boundInfo.easeLabel) + '</span><span class="t">' + esc(r.ease) + '</span></div>' +
-            '<div class="no"><span class="k">' + esc(S.boundInfo.noLabel) + '</span><span class="t">' + esc(r.no) + '</span>' +
-              (r.revealed ? '<span class="n" style="color:var(--root-c)">' + r.noN + ' <small>次不</small></span>' : '') + '</div>' +
-          '</div>' +
-        '</div>' +
-        (r.revealed
-          ? '<div class="qcount all">今晚全場說了 ' + r.saidNo + ' 次不</div>'
-          : counter(r.acted, '人已決定'));
+      return '<div class="faith">' + S.faith.map(function (t) { return '<div>' + esc(t) + '</div>'; }).join('') + '</div>';
     },
 
     trueFree: function () {
-      var t = S.trueFree, top = t.left;
+      var t = S.trueFree;
       return '<h2>' + esc(t.title) + '</h2>' +
         '<div class="goodgrid">' +
           '<div class="goodcol left"><h3>' + esc(t.leftLabel) + '</h3><ul>' +
-            top.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>' +
+            t.left.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>' +
           '<div class="goodcol right"><h3>' + esc(t.rightLabel) + '</h3><ul>' +
             t.right.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>' +
-        '</div>' +
-        '<div class="nofoot">今晚全場說了 <b>' + S.saidNo + '</b> 次不</div>';
+        '</div>';
     },
 
-    // 補滿 100。**全場同一秒。** 按下去之前是各自的數字，之後一起長到 100。
-    full: function () {
-      var rows = S.players.map(function (p) {
-        var from = p.innerBeforeFill == null ? (p.inner || 0) : p.innerBeforeFill;
-        var now = S.filled ? 100 : (p.inner || 0);
-        return '<div class="fr">' +
-          '<div class="nm">' + esc(p.name) + '</div>' +
-          '<div class="ln o"><span>幸福指數</span><span class="tr"><i style="width:' + (p.outer || 0) + '%"></i></span><b>' + (p.outer == null ? '—' : p.outer) + '</b></div>' +
-          '<div class="ln n"><span>幸福根基</span><span class="tr"><i class="grow" data-to="' + now + '" style="width:' + (S.filled && fullAnimate ? from : now) + '%"></i></span>' +
-            '<b class="gnum" data-from="' + from + '" data-to="' + now + '">' + (S.filled && fullAnimate ? from : now) + '</b></div>' +
-        '</div>';
-      }).join('');
-      return '<h2>' + esc(S.filled ? S.full.title : '兩條線') + '</h2>' +
-        '<div class="fullgrid">' + rows + '</div>' +
-        (S.filled ? '<div class="fullnote"><span class="o">▍' + esc(S.full.outerNote) + '</span><span class="n">▍' + esc(S.full.innerNote) + '</span></div>' : '');
+    // 領受經文：**跟前六關同一個畫面**（共用元件）。
+    verse: function () {
+      return StageParts.verse({ ref: S.verse.ref, text: S.verse.text, done: S.stats.versesReceived, total: S.stats.count });
+    },
+
+    // 這不是一個分數，是一個身分：每個人現在的幸福根基（**掛名字**，照進場順序）。
+    identity: function () {
+      return '<h2>' + esc(S.identity.title) + '</h2>' +
+        rootList(S.players.map(function (p) { return { name: p.name, v: p.inner || 0 }; }));
+    },
+
+    // 邀請：只有問題和約翰福音 1:12。**手機上還沒有按鈕**（下一頁才有）。
+    invite: function () {
+      return '<div class="heaven">' +
+        '<img class="church" src="' + ART + 'heaven-church.svg" alt="">' +
+        '<div class="hl ask">' + esc(S.invite.title) + '</div>' +
+        '<div class="vref">「' + esc(S.invite.verse.text) + '」' + esc(S.invite.verse.ref) + '</div>' +
+      '</div>';
+    },
+
+    // 天上的身分：每個人的幸福根基（**不掛名字、順序打亂**）。
+    // 手機上按了「我願意」，那一條就慢慢補滿；主持人按「全場補滿 100」，每一條都滿。
+    willing: function () {
+      var w = S.willingNow, info = S.willingInfo;
+      return '<h2>' + esc(w.filled ? info.fullTitle : info.title) + '</h2>' +
+        (w.filled ? '' : '<div class="sub2">' + esc(info.sub) + '</div>') +
+        rootList(w.lines.map(function (l) { return { k: l.k, v: l.v }; })) +
+        (w.filled ? '<div class="fullnote"><span class="o">▍' + esc(info.outerNote) + '</span><span class="n">▍' + esc(info.innerNote) + '</span></div>' : '');
     },
 
     bless: function () {
@@ -246,63 +203,42 @@
         week: S.next.week, lines: S.next.lines, nextLabel: S.next.nextLabel,
       });
     },
-
-    // 天上的身分。三段：滿了之後 → 上帝的兒女 → 邀請。
-    // ⚠️ **大螢幕上什麼都不顯示**：沒有人數、沒有名字。誰按了「我願意」只在主持人備忘錄上。
-    heaven: function () {
-      var st = S.heavenStep, h = S.heaven;
-      if (st === 0) {
-        return '<div class="heaven">' +
-          '<div class="rootfull"><span class="l">幸福根基</span><span class="tr"><i></i></span><b>100</b></div>' +
-          '<div class="hl">' + esc(h.steps[0]) + '</div>' +
-        '</div>';
-      }
-      return '<div class="heaven">' +
-        '<img class="church" src="' + ART + 'heaven-church.svg" alt="">' +
-        (st === 1
-          ? '<div class="hl" style="margin-top:min(calc(12px * var(--u)),1.5vh)">' + esc(h.steps[1]) + '</div>' +
-            '<div class="vref">「' + esc(h.verse.text) + '」' + esc(h.verse.ref) + '</div>'
-          : '<div class="hl ask">' + esc(h.steps[2]) + '</div>') +
-      '</div>';
-    },
   };
 
-  // ── 補滿 100 的動畫 ─────────────────────────────────────────────────
-  // **在這一頁親眼看到它從沒補變成補滿**才播：全場的幸福根基同一秒一起往上長。
-  // 重新整理或跳頁進來的時候已經補滿了，就直接畫 100。
-  var fullAnimate = false, fullSeenEmpty = false, fullPlayed = false;
-  function fullWatch() {
-    if (S.phase.id !== 'full') { fullSeenEmpty = false; fullAnimate = false; fullPlayed = false; return; }
-    if (!S.filled) { fullSeenEmpty = true; fullAnimate = false; fullPlayed = false; return; }
-    fullAnimate = fullSeenEmpty && !fullPlayed;
-  }
-  function fullRun() {
-    if (!fullAnimate) return;
-    fullPlayed = true;
-    fullSeenEmpty = false;
-    var bars = stage.querySelectorAll('.fr .ln.n i.grow');
-    var nums = stage.querySelectorAll('.fr .ln.n b.gnum');
-    void stage.offsetWidth;
-    // 不用 requestAnimationFrame：分頁在背景時它不會跑，數字會卡在補滿之前
-    setTimeout(function () {
-      bars.forEach(function (b) { b.style.width = b.dataset.to + '%'; });
-      var t0 = Date.now(), DUR = 2600;
-      var tick = setInterval(function () {
-        var t = Math.min(1, (Date.now() - t0) / DUR), e = 1 - Math.pow(1 - t, 3);
-        nums.forEach(function (n) {
-          var f = Number(n.dataset.from), to = Number(n.dataset.to);
-          n.textContent = Math.round(f + (to - f) * e);
-        });
-        if (t >= 1) clearInterval(tick);
-      }, 40);
-    }, 60);
-    fullAnimate = false;
+  // ── 線慢慢補滿 ────────────────────────────────────────────────────────
+  // 整頁重畫的時候，每一條（data-k）先放回上一次的寬度，再慢慢長到新的值 ——
+  // 手機上按了「我願意」，大螢幕上**某一條**（不知道是誰）就慢慢補滿。
+  var lastW = {};
+  function growLines() {
+    var bars = stage.querySelectorAll('.rl[data-k] .tr i');
+    if (!bars.length) { lastW = {}; return; }
+    var next = {};
+    bars.forEach(function (i) {
+      var k = i.parentNode.parentNode.dataset.k, v = Number(i.dataset.v);
+      next[k] = v;
+      if (lastW[k] != null && lastW[k] !== v) {
+        var b = i.parentNode.parentNode.querySelector('b');
+        i.style.transition = 'none';
+        i.style.width = lastW[k] + '%';
+        if (b) b.textContent = lastW[k];
+        void i.offsetWidth;
+        i.style.transition = '';
+        i.classList.add('growing');
+        i.style.width = v + '%';
+        // 數字跟著跑（setInterval：分頁在背景時 requestAnimationFrame 不會跑）
+        var from = lastW[k], t0 = Date.now(), DUR = 2600;
+        var tick = setInterval(function () {
+          var t = Math.min(1, (Date.now() - t0) / DUR), e = 1 - Math.pow(1 - t, 3);
+          if (b) b.textContent = Math.round(from + (v - from) * e);
+          if (t >= 1) clearInterval(tick);
+        }, 40);
+      }
+    });
+    lastW = next;
   }
 
   function paint() {
-    fullWatch();
-    stage.className = 'stage phase-' + S.phase.id +
-      (S.phase.id === 'heaven' ? ' cinepage' : '');
+    stage.className = 'stage phase-' + S.phase.id + (S.phase.id === 'invite' ? ' cinepage' : '');
     var html = (views[S.phase.id] || function () { return ''; })();
     stage.innerHTML = html;
 
@@ -310,33 +246,25 @@
     if (qr && ROOM) {
       try { QR.render(qr, joinUrl(), qrScale(7), '#161A18', '#ffffff'); } catch (err) {}
     }
-    fullRun();
+    growLines();
     fitSolo();
     fitBoxes();
   }
 
   // 一整行不斷行的字：畫完再量，量到塞得下為止
   function fitSolo() {
-    var list = stage.querySelectorAll('.saybig, .overline, .faith div, .heaven .hl, .ev .line');
+    var list = stage.querySelectorAll('.faith div, .heaven .hl');
     var avail = stage.clientWidth - parseFloat(getComputedStyle(stage).paddingLeft) * 2;
     for (var i = 0; i < list.length; i++) {
       var h = list[i];
-      if (h.classList.contains('line')) continue;   // 事件那一句可以斷行
       h.style.fontSize = '';
       var size = parseFloat(getComputedStyle(h).fontSize), guard = 0;
       while (h.scrollWidth > avail && size > 18 && guard++ < 80) { size -= 2; h.style.fontSize = size + 'px'; }
     }
   }
 
-  // 人多的時候：一排人縮小、兩條線排兩欄三欄。**整頁不捲動。**
+  // 人多的時候：O/X 名字縮、幸福根基那一片排好幾欄再縮。**整頁不捲動。**
   function fitBoxes() {
-    var cr = stage.querySelector('.crowd');
-    if (cr) {
-      var z = 1;
-      cr.style.setProperty('--cz', z);
-      while (stage.scrollHeight > stage.clientHeight + 1 && z > 0.4) { z -= 0.05; cr.style.setProperty('--cz', z.toFixed(2)); }
-    }
-    // O/X 兩邊的名字：人多的時候名字一起縮，框子不准被撐破
     var sides = stage.querySelectorAll('.oxside');
     if (sides.length) {
       var oz = 1, tooTall = function () {
@@ -348,14 +276,13 @@
         sides.forEach(function (sd) { var w = sd.querySelector('.who'); if (w) w.style.setProperty('--oz', oz.toFixed(2)); });
       }
     }
-    var fg = stage.querySelector('.fullgrid');
-    if (fg) {
-      var n = S.players.length;
-      var cols = n > 18 ? 3 : n > 6 ? 2 : 1;
-      fg.style.setProperty('--fc', cols);
+    var rl = stage.querySelector('.rlist');
+    if (rl) {
+      var n = rl.children.length;
+      rl.style.setProperty('--rc', n > 16 ? 3 : n > 6 ? 2 : 1);
       var k = 1;
-      fg.style.setProperty('--fz', k);
-      while (stage.scrollHeight > stage.clientHeight + 1 && k > 0.45) { k -= 0.05; fg.style.setProperty('--fz', k.toFixed(2)); }
+      rl.style.setProperty('--rz', k);
+      while (stage.scrollHeight > stage.clientHeight + 1 && k > 0.45) { k -= 0.05; rl.style.setProperty('--rz', k.toFixed(2)); }
     }
   }
 
@@ -380,11 +307,10 @@
     ctl.style.display = S.step ? 'inline-flex' : 'none';
     if (S.step) {
       document.getElementById('sback').disabled = !S.step.back;
-      document.getElementById('sback').style.display = S.phase.id === 'full' ? 'none' : '';
+      document.getElementById('sback').style.display = S.phase.id === 'willing' ? 'none' : '';
       var sn = document.getElementById('snext');
       sn.textContent = S.step.label;
       sn.disabled = !S.step.next;
-      document.getElementById('srestart').style.display = S.step.restart ? '' : 'none';
     }
     renderPlayers();
     paint();
@@ -403,7 +329,6 @@
     b.onclick = function () {
       var cmd = b.dataset.cmd;
       if (cmd === 'reset' && !confirm('把這個房間整個重置？所有人的分數和接關資料都會清掉。')) return;
-      if (cmd === 'boundRestart' && !confirm('五回合整個重跑？每個人的分數、鎖鏈、帳單都會還原。')) return;
       post(cmd);
     };
   });

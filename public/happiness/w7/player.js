@@ -1,8 +1,8 @@
 // 玩家手機 · 第七關「釋放與自由」
 //
-// ⚠️ 這一關手機會亮的：接關、自由是什麼、身不由己五回合、領受經文（斷鏈）、
-// 拒絕的自由三回合、寫下想說不的那一件事（再加存卡）。
-// **「不要」越來越難按、「好過一點」自己亮起來，都是這支手機上的事** —— 伺服器只收結果。
+// ⚠️ 這一關手機會亮的：接關、O/X 八題、領受經文、天上的身分（我願意／我想再想想）、
+// 祝福禱告（再加存卡）。
+// **按了「我願意」，他自己的那一條慢慢補滿 100** —— 伺服器的數字要等全場補滿才變（側欄不能露出誰按了）。
 (function () {
   'use strict';
   var S = null, pid = null, src = null, sig = '', cardURL = null, cardBlob = null;
@@ -44,7 +44,6 @@
   }
   function join(name) { if (src) src.join(name); }
 
-  // 送出之前只活在這支手機上的暫存
   var draft = { byVisits: false };
 
   var wait = function (msg, sub) {
@@ -52,41 +51,27 @@
       esc(msg) + '</p>' + (sub ? '<p style="font-size:17px">' + esc(sub) + '</p>' : '') + '</div>';
   };
 
-  // 他身上的鎖鏈：一條一行
-  function chainList(chains) {
-    if (!chains.length) return '';
-    return '<div class="chains">' + chains.map(function (c) {
-      return '<span><img src="' + ART + 'chain-link.svg" alt="">' + esc(c) + '</span>';
-    }).join('') + '</div>';
+  // 他自己的那一條幸福根基。按了「我願意」會從原本的數字慢慢長到 100。
+  var myFrom = null;
+  function myLine(me) {
+    var v = myFrom == null ? me.innerShown : myFrom;
+    return '<div class="myroot"><span class="l">幸福根基</span>' +
+      '<span class="tr"><i id="myfill" style="width:' + v + '%"></i></span>' +
+      '<b id="mynum">' + v + '</b></div>';
   }
-
-  // 斷鏈：**在這支手機上親眼看到它斷**才播鳥飛走（重新整理進來就直接是斷的）
-  var sawBound = false, flyAt = 0;
-  function breakWatch(me) {
-    if (!me.broken) { sawBound = true; flyAt = 0; return; }
-    if (sawBound && !flyAt) { sawBound = false; flyAt = Date.now(); }
-  }
-  function flying() { return flyAt && Date.now() - flyAt < 2600; }
-
-  // 經文卡（第 7 頁，還沒領受的人在第 8 頁也先回到這裡）
-  function verseCard(me, back) {
-    var head = (back ? '<p class="privacy" style="margin-top:0">先領受這一句，再一起往下走。</p>' : '') +
-      '<div class="verse-p"><span class="ref">' + esc(S.verse.ref) + '</span>' +
-      '<blockquote>「' + esc(S.verse.text) + '」</blockquote></div>';
-    if (!me.broken) {
-      return head + (me.chainsHad ? '<div class="qn center" style="margin-top:8px">你身上的鎖鏈</div>' + chainList(me.chains) : '') +
-        '<button class="btn primary fullbtn" id="verse">' + esc(S.verse.receive) + '</button>';
-    }
-    var birds = '';
-    for (var i = 0; i < Math.max(me.chainsHad, 3); i++) birds += '<img src="' + ART + 'bird.svg" alt="" style="animation-delay:' + (i * 0.18) + 's">';
-    return head +
-      (flying() || me.chainsHad ? '<div class="birds' + (flying() ? ' fly' : '') + '">' + birds + '</div>' : '') +
-      '<img class="freeart" src="' + ART + 'bound-0.svg" alt="">' +
-      '<div class="grew"><img src="/happiness/shared/art/verse.svg" alt="">' +
-        // 撞到 95 的人只長了幾格 —— 不要騙他說 +10
-        '<p class="ok">鎖鏈斷了<br><b>' + (me.capped ? '幸福根基 ' + Math.min(me.inner, 95) : '幸福根基 +10') + '</b>' +
-        (me.breakGain ? '<br><b style="color:var(--vol)">幸福指數 +' + me.breakGain + '</b>' : '') + '</p></div>' +
-      (me.capped ? '<p class="bigline center">' + esc(S.verse.capped) + '</p>' : '');
+  function growMine(me) {
+    var fill = document.getElementById('myfill'), num = document.getElementById('mynum');
+    if (!fill || myFrom == null || myFrom === me.innerShown) { myFrom = me.innerShown; return; }
+    var from = myFrom, to = me.innerShown, t0 = Date.now(), DUR = 2600;
+    myFrom = to;
+    void fill.offsetWidth;
+    fill.style.width = to + '%';
+    // setInterval：分頁在背景時 requestAnimationFrame 不會跑
+    var tick = setInterval(function () {
+      var t = Math.min(1, (Date.now() - t0) / DUR), e = 1 - Math.pow(1 - t, 3);
+      if (num) num.textContent = Math.round(from + (to - from) * e);
+      if (t >= 1) clearInterval(tick);
+    }, 40);
   }
 
   var views = {
@@ -131,84 +116,60 @@
           '<button class="oxbtn o' + (mine === 'o' ? ' on' : '') + '" data-ox="o">O</button>' +
           '<button class="oxbtn x' + (mine === 'x' ? ' on' : '') + '" data-ox="x">X</button>' +
         '</div>' +
-        '<p class="privacy center">' + '公布之後大螢幕會出現名字。</p>';
+        '<p class="privacy center">公布之後大螢幕會出現名字。</p>';
     },
 
     oxTally: function (me) {
       return (me.oxN ? '<p class="bigline center">八題裡，你有 ' + me.oxO + ' 個 O</p>' : '') + wait('看大螢幕');
     },
 
-    // 身不由己。**第 3 回合起「不要」要長按；第 4 回合起「好過一點」自己亮著。**
-    bound: function (me) {
-      var b = S.boundNow, info = S.boundInfo;
-      var head = '<div class="qn">第 ' + (b.round + 1) + ' / ' + b.total + ' 回合 · ' + esc(b.bond) + '</div>' +
-        '<h2 style="margin-top:6px">' + esc(b.text) + '</h2>';
-      if (b.revealed) {
-        return head + '<div class="qn center" style="margin-top:18px">你身上的鎖鏈</div>' + chainList(me.chains) + wait('看大螢幕');
-      }
-      var mine = me.boundChoice;
-      // 「好過一點」自己亮著：他還沒選的時候，看起來已經選好了
-      var lit = b.lit && !mine;
-      var holdSec = b.hold ? (b.hold / 1000) : 0;
-      return head +
-        (me.chains.length ? '<div class="qn" style="margin-top:14px">你身上的鎖鏈</div>' + chainList(me.chains) : '') +
-        '<div class="opts">' +
-          '<button class="opt' + (mine === 'ease' || lit ? ' on' : '') + '" data-bound="ease">' + esc(b.ease) +
-            '<small>' + esc(info.easeLabel) + (lit ? '　·　再點一下就送出' : '') + '</small></button>' +
-          '<button class="opt hold' + (mine === 'no' ? ' on2' : '') + '" data-bound="no"' + (b.hold ? ' data-hold="' + b.hold + '"' : '') + '>' +
-            '<i class="fillbar" style="animation-duration:' + (b.hold || 1) + 'ms"></i>' +
-            '<span>' + esc(b.no) + '</span>' +
-            '<small>' + esc(info.noLabel) + (b.hold ? '　·　長按 ' + holdSec + ' 秒' : '') + '</small></button>' +
-        '</div>' +
-        (b.hold >= 2000 ? '<p class="privacy center">' + esc(info.handHint) + '</p>' : '') +
-        (mine ? '<p class="ok center" style="margin-top:12px">已決定。主持人公布之前都可以改。</p>' : '');
-    },
-
-    bill: function (me) {
-      return '<h2 class="center">' + esc(S.bill.title) + '</h2>' +
-        '<img class="freeart" src="' + ART + 'bound-' + Math.min(5, me.chains.length) + '.svg" alt="">' +
-        chainList(me.chains) +
-        (me.billLoss ? '<div class="hit">' + esc(S.bill.billLead) + '　幸福指數 −' + me.billLoss + '</div>' : '') +
-        (S.billStep >= 1 ? '<p class="bigline center">' + esc(S.bill.line) + '</p>' : '') +
-        wait('看大螢幕');
-    },
-
-    story: function () { return wait('看大螢幕'); },
-
-    verse: function (me) { return verseCard(me, false); },
-
     faith: function () {
-      return '<h2 class="center">' + esc(S.verse.faith[0]) + '</h2>' +
-        '<h2 class="center" style="color:var(--root-c)">' + esc(S.verse.faith[1]) + '</h2>' + wait('看大螢幕');
+      return '<h2 class="center">' + esc(S.faith[0]) + '</h2>' +
+        '<h2 class="center" style="color:var(--root-c)">' + esc(S.faith[1]) + '</h2>' + wait('看大螢幕');
     },
 
-    // 拒絕的自由。**還沒領受的人先回到經文卡。**「不要」是普通按鈕。
-    refuse: function (me) {
-      if (!me.broken) return verseCard(me, true);
-      var r = S.refuseNow, info = S.refuseInfo;
-      var mine = me.refuseChoice;
-      var head = '<div class="qn">' + esc(info.title) + ' · 第 ' + (r.round + 1) + ' / ' + r.total + ' 回合</div>' +
-        '<h2 style="margin-top:6px">' + esc(r.text) + '</h2>';
-      var said = mine === 'no'
-        ? '<div class="said no">' + esc(info.saidNo) + '</div>'
-        : mine === 'ease' ? '<div class="said">' + esc(info.saidEase) + '</div>' : '';
-      if (r.revealed) return head + said + wait('看大螢幕');
-      return head +
-        '<div class="opts">' +
-          '<button class="opt' + (mine === 'ease' ? ' on' : '') + '" data-refuse="ease">' + esc(r.ease) + '<small>' + esc(S.boundInfo.easeLabel) + '</small></button>' +
-          '<button class="opt' + (mine === 'no' ? ' on2' : '') + '" data-refuse="no">' + esc(r.no) + '<small>' + esc(S.boundInfo.noLabel) + '</small></button>' +
-        '</div>' + said;
+    // 領受經文：跟前六關一樣。
+    verse: function (me) {
+      return '<div class="verse-p"><span class="ref">' + esc(S.verse.ref) + '</span>' +
+        '<blockquote>「' + esc(S.verse.text) + '」</blockquote></div>' +
+        (me.receivedVerse
+          ? '<div class="grew"><img src="/happiness/shared/art/verse.svg" alt="">' +
+            // 撞到 95 的人只長了幾格 —— 不要騙他說 +10
+            '<p class="ok">已領受<br><b>' + (me.capped ? '幸福根基 ' + me.inner : '幸福根基 +10') + '</b></p></div>' +
+            (me.capped ? '<p class="bigline center">' + esc(S.verse.capped) + '</p>' : '')
+          : '<button class="btn primary fullbtn" id="verse">' + esc(S.verse.receive) + '</button>');
     },
 
-    trueFree: function () { return wait('看大螢幕'); },
-
-    full: function (me) {
-      if (!S.filled) return wait('看大螢幕');
-      return '<div class="hundred">100</div>' +
-        '<p class="bigline center">' + esc(S.full.mine) + '</p>' +
-        wait('看大螢幕');
+    identity: function (me) {
+      return '<h2 class="center">' + esc(S.identity.title) + '</h2>' + myLine(me) + wait('看大螢幕');
     },
 
+    invite: function () {
+      return '<img class="churchart" src="' + ART + 'heaven-church.svg" alt="">' +
+        '<h2 class="center" style="margin-top:14px">' + esc(S.invite.title) + '</h2>' +
+        '<div class="verse-p"><span class="ref">' + esc(S.invite.verse.ref) + '</span>' +
+          '<blockquote>「' + esc(S.invite.verse.text) + '」</blockquote></div>';
+    },
+
+    // 天上的身分：我願意／我想再想想。**按了什麼不會上大螢幕**（大螢幕上的線不掛名字）。
+    willing: function (me) {
+      var w = S.willingInfo;
+      if (S.filled) {
+        return myLine(me) + '<p class="bigline center">' + esc(w.mine) + '</p>' +
+          (me.willing === 'yes' ? '<p class="center">' + esc(w.yesReply) + '</p>' : '');
+      }
+      if (me.willing === 'yes') {
+        return '<h2 class="center">' + esc(me.name) + '</h2>' + myLine(me) +
+          '<p class="bigline center">' + esc(w.yesReply) + '</p>';
+      }
+      return '<h2 class="center">' + esc(S.invite.title) + '</h2>' + myLine(me) +
+        (me.willing === 'later' ? '<p class="bigline center">' + esc(w.laterReply) + '</p>' : '') +
+        '<button class="btn primary fullbtn" id="willyes">' + esc(w.yes) + '</button>' +
+        (me.willing === 'later' ? '' : '<button class="btn ghost fullbtn" id="willlater">' + esc(w.later) + '</button>') +
+        '<p class="privacy center">🔒 大螢幕上的線不掛名字，沒有人知道哪一條是你。</p>';
+    },
+
+    // 祝福禱告。**什麼都沒寫也按得下去。只有他自己看得到。**
     bless: function (me) {
       var mine = readLine();
       return '<h2>' + esc(S.bless.title) + '</h2>' +
@@ -230,30 +191,12 @@
         '<a class="btn primary fullbtn" id="zoom" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none">放大這張卡</a>';
     },
 
-    end: function (me) {
+    end: function () {
       return '<h2>下週見</h2>' +
         '<p>' + esc(S.next.nextLabel) + ' · ' + esc(S.next.week) + '</p>' +
         '<p>' + esc(S.next.lines[0]) + '</p>' +
         (cardURL ? '<img class="weekcard" src="' + cardURL + '" alt="第七關週卡">' : '') +
         (cardURL ? '<a class="btn ghost fullbtn" id="zoom" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none">放大這張卡</a>' : '');
-    },
-
-    // 天上的身分。前兩段看大螢幕；第三段「我願意」／「我想再想想」。
-    // **按了什麼不會上大螢幕。**
-    heaven: function (me) {
-      var st = S.heavenStep, h = S.heaven;
-      if (st < 2) return wait('看大螢幕');
-      if (me.willing === 'yes') {
-        return '<img class="churchart" src="' + ART + 'heaven-church.svg" alt="">' +
-          '<h2 class="center" style="margin-top:14px">' + esc(me.name) + '</h2>' +
-          '<p class="bigline center">' + esc(h.yesReply) + '</p>';
-      }
-      return '<img class="churchart" src="' + ART + 'heaven-church.svg" alt="">' +
-        '<h2 class="center" style="margin-top:14px">' + esc(h.steps[2]) + '</h2>' +
-        (me.willing === 'later' ? '<p class="bigline center">' + esc(h.laterReply) + '</p>' : '') +
-        '<button class="btn primary fullbtn" id="willyes">' + esc(h.yes) + '</button>' +
-        (me.willing === 'later' ? '' : '<button class="btn ghost fullbtn" id="willlater">' + esc(h.later) + '</button>') +
-        '<p class="privacy center">🔒 你按了什麼，不會出現在大螢幕上。</p>';
     },
   };
 
@@ -269,22 +212,6 @@
     c.fillRect(0, 0, W, H);
     c.drawImage(card, 0, Math.round((H - card.height) / 2));
     return out;
-  }
-
-  // 長按「不要」：按住的時候那一格慢慢填滿，放開就重來。
-  function bindHold(b, ms, done) {
-    var timer = null;
-    var stop = function () { clearTimeout(timer); timer = null; b.classList.remove('holding'); };
-    b.oncontextmenu = function (e) { e.preventDefault(); };
-    b.onpointerdown = function (e) {
-      e.preventDefault();
-      b.classList.add('holding');
-      timer = setTimeout(function () { stop(); done(); }, ms);
-    };
-    b.onpointerup = stop;
-    b.onpointerleave = stop;
-    b.onpointercancel = stop;
-    b.onclick = function (e) { e.preventDefault(); };
   }
 
   function bind(me) {
@@ -305,27 +232,16 @@
       if (tm) tm.onclick = function () { draft.byVisits = !draft.byVisits; sig = ''; render(); };
     }
 
-    // 自由是什麼：勾選只改暫存，按送出才上去
     document.querySelectorAll('[data-ox]').forEach(function (b) {
       b.onclick = function () { act('ox', { round: S.oxNow.round, k: b.dataset.ox }); };
     });
 
-    document.querySelectorAll('[data-bound]').forEach(function (b) {
-      var send = function () { act('bound', { round: S.boundNow.round, k: b.dataset.bound }); };
-      if (b.dataset.hold) bindHold(b, Number(b.dataset.hold), send);
-      else b.onclick = send;
-    });
-    document.querySelectorAll('[data-refuse]').forEach(function (b) {
-      b.onclick = function () { act('refuse', { round: S.refuseNow.round, k: b.dataset.refuse }); };
-    });
-
+    var v = document.getElementById('verse');
+    if (v) v.onclick = function () { act('verse'); };
     var wy = document.getElementById('willyes');
     if (wy) wy.onclick = function () { act('willing', { k: 'yes' }); };
     var wl = document.getElementById('willlater');
     if (wl) wl.onclick = function () { act('willing', { k: 'later' }); };
-
-    var v = document.getElementById('verse');
-    if (v) v.onclick = function () { act('verse'); };
 
     var save = document.getElementById('savebl');
     if (save) save.onclick = function () {
@@ -362,12 +278,11 @@
           week: 7,
           name: me.name,
           outer: me.outer, outerPrev: me.outerStart,
-          inner: me.inner, innerLabel: '幸福根基',
+          inner: me.innerShown, innerLabel: '幸福根基',
           verseRef: S.verse.ref, verseText: S.verse.text,
-          // **不印第一階段選了什麼** —— 印上去就是一張罪狀。
-          // 天上的身分：按了「我願意」的人印這一句；其他人印「我可以說不。」（**這張卡只在他自己的手機上**）
-          path: { label: 'MY CARD', steps: [me.willing === 'yes' ? S.heaven.cardYes : S.refuseInfo.saidNo] },
-          stamp: S.heaven.steps[0],
+          // 按了「我願意」的人印這一句；其他人印「我可以說不。」（**這張卡只在他自己的手機上**）
+          path: { label: 'MY CARD', steps: [me.willing === 'yes' ? S.willingInfo.cardYes : S.willingInfo.cardNo] },
+          stamp: S.identity.title,
           burdenLabel: 'MY PRAYER',
           burdenAsk: S.bless.ask + '：',
           burden: readLine(),
@@ -410,29 +325,28 @@
       return;
     }
 
-    breakWatch(me);
-
     statusEl.hidden = false;
     document.getElementById('myname').textContent = me.name;
     document.getElementById('mystate').textContent = S.phase.title;
     document.getElementById('outerv').textContent = me.outer == null ? '—' : me.outer;
     document.getElementById('outerbar').style.width = (me.outer == null ? 0 : me.outer) + '%';
-    document.getElementById('innerv').textContent = me.inner ? me.inner : '—';
-    document.getElementById('innerbar').style.width = me.inner + '%';
+    document.getElementById('innerv').textContent = me.innerShown ? me.innerShown : '—';
+    document.getElementById('innerbar').style.width = me.innerShown + '%';
 
-    // ⚠️ 正在打的字（其他、禱告）不能進這一行 —— 一變就整頁重畫，焦點會被踢掉。
+    // ⚠️ 禱告那一格正在打的字不能進這一行 —— 一變就整頁重畫，焦點會被踢掉。
     var next = [
-      S.phase.id, S.oxNow.round, S.oxNow.revealed, S.boundNow.round, S.boundNow.revealed, S.billStep,
-      S.refuseNow.round, S.refuseNow.revealed, S.filled, S.heavenStep,
-      me.outer, me.inner, me.oxChoice, me.oxO, me.boundChoice, me.chains.join(','),
-      me.billLoss, me.broken, me.capped, me.refuseChoice, me.cardDone, me.prayed, me.willing,
-      draft.byVisits, !!flying(),
+      S.phase.id, S.oxNow.round, S.oxNow.revealed, S.filled,
+      me.outer, me.inner, me.innerShown, me.oxChoice, me.oxO,
+      me.receivedVerse, me.capped, me.willing, me.cardDone, me.prayed,
+      draft.byVisits,
     ].join('|');
     if (next !== sig) {
+      // 換頁的時候他那一條從目前的數字開始畫，不要重播
+      if (sig.split('|')[0] !== S.phase.id) myFrom = null;
       sig = next;
       screen.innerHTML = (views[S.phase.id] || function () { return wait('看大螢幕'); })(me);
       bind(me);
-      if (flying()) setTimeout(render, 2700);
+      growMine(me);
     }
   }
 

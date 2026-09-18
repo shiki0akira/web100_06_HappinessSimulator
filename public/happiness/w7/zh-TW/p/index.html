@@ -85,7 +85,13 @@
   .mono { font-family: var(--pixel); }
 
   /* ── 第七關 ─────────────────────────────────────────────── */
-  .opt.on2 { border-color: var(--root-c); background: var(--root-soft); color: var(--root-c); }
+  .churchart { display: block; width: 100%; margin-top: 10px; image-rendering: pixelated; }
+  /* 他自己的那一條幸福根基：按了「我願意」會慢慢補滿 */
+  .myroot { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; margin-top: 18px; }
+  .myroot .l { font-size: 17px; font-weight: 900; }
+  .myroot .tr { height: 26px; border: 3px solid var(--edge); background: var(--surface-2); }
+  .myroot .tr i { display: block; height: 100%; background: var(--root-c); transition: width 2.6s cubic-bezier(.3,.8,.3,1); }
+  .myroot b { font-family: var(--pixel); font-size: 22px; color: var(--root-c); min-width: 2.6em; text-align: right; }
   /* O/X 兩顆大按鈕 */
   .oxbtns { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 22px; }
   .oxbtn { height: 150px; cursor: pointer; border: 4px solid var(--edge); background: var(--surface); box-shadow: 4px 4px 0 var(--hard);
@@ -98,28 +104,6 @@
     font-family: var(--pixel); font-size: 64px; border: 4px solid; }
   .oxmine.o { color: var(--root-c); border-color: var(--root-c); background: var(--root-soft); }
   .oxmine.x { color: var(--vol); border-color: var(--vol); background: var(--vol-soft); }
-  /* 長按「不要」：按住的時候底下那一條慢慢填滿 */
-  .opt.hold { position: relative; overflow: hidden; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: manipulation; }
-  .opt.hold span, .opt.hold small { position: relative; }
-  .opt.hold .fillbar { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--root-soft); }
-  .opt.hold.holding .fillbar { animation-name: holdfill; animation-timing-function: linear; animation-fill-mode: forwards; }
-  @keyframes holdfill { from { width: 0; } to { width: 100%; } }
-  .chains { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-  .chains span { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 3px solid var(--edge-soft);
-    font-size: 16px; font-weight: 700; color: var(--ink-2); }
-  .chains img { width: 30px; height: auto; image-rendering: pixelated; }
-  .freeart { display: block; width: 40%; max-width: 160px; margin: 14px auto 0; image-rendering: pixelated; }
-  .freeart.wide { width: 70%; max-width: 280px; }
-  .freeart.dim { opacity: .55; }
-  .churchart { display: block; width: 100%; margin-top: 10px; image-rendering: pixelated; }
-  .birds { display: flex; justify-content: center; gap: 14px; margin-top: 10px; height: 34px; }
-  .birds img { width: 34px; image-rendering: pixelated; opacity: 0; }
-  .birds.fly img { animation: fly 2.4s ease-in both; }
-  @keyframes fly { 0% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translate(20px, -120px); } }
-  .said { margin-top: 16px; padding: 14px; border: 3px dashed var(--edge-soft); font-size: 20px; font-weight: 900; text-align: center; color: var(--ink-2); }
-  .said.no { border: 3px solid var(--root-c); background: var(--root-soft); color: var(--root-c); font-size: 26px; }
-  .hundred { margin-top: 26px; text-align: center; font-family: var(--pixel); font-size: 72px; color: var(--root-c); animation: pop .8s ease-out both; }
-  @keyframes pop { from { transform: scale(.4); opacity: 0; } to { transform: none; opacity: 1; } }
 </style>
 </head>
 <body>
