@@ -230,7 +230,7 @@
     card: function () {
       return StageParts.keepsake({
         done: S.stats.cardsDone, total: S.stats.count,
-        extra: '「我可以說不」、你想對它說不的那一件事',
+        extra: '「這不是一個分數，是一個身分」、你想對天父說的話',
         // 第七張卡：下一週不用模擬器，不叫它入場券
         lede: '長按手機上的圖片存進相簿。這是第七張卡。',
       });

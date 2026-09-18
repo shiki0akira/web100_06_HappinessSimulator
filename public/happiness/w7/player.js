@@ -23,7 +23,7 @@
   var PID_KEY = 'happiness_pid_w7_' + ROOM + (SEAT ? '_' + SEAT : '');
   var LINE_KEY = 'happiness_line_w7_' + ROOM + (SEAT ? '_' + SEAT : '');
 
-  // 「我想對它說『不』的是＿＿」那一句只存在這支手機裡。**完全不上牆。**
+  // 「成為上帝的兒女，我想對天父說＿＿」那一句只存在這支手機裡。**完全不上牆。**
   function readLine() { try { return localStorage.getItem(LINE_KEY) || ''; } catch (e) { return ''; } }
   function writeLine(t) { try { localStorage.setItem(LINE_KEY, t); } catch (e) {} }
 
@@ -365,9 +365,10 @@
           inner: me.inner, innerLabel: '幸福根基',
           verseRef: S.verse.ref, verseText: S.verse.text,
           // **不印第一階段選了什麼** —— 印上去就是一張罪狀。
-          path: { label: 'MY CARD', steps: [S.refuseInfo.saidNo] },
-          stamp: '今晚全場說了 ' + S.saidNo + ' 次不',
-          burdenLabel: 'MY NO',
+          // 天上的身分：按了「我願意」的人印這一句；其他人印「我可以說不。」（**這張卡只在他自己的手機上**）
+          path: { label: 'MY CARD', steps: [me.willing === 'yes' ? S.heaven.cardYes : S.refuseInfo.saidNo] },
+          stamp: S.heaven.steps[0],
+          burdenLabel: 'MY PRAYER',
           burdenAsk: S.bless.ask + '：',
           burden: readLine(),
         });
