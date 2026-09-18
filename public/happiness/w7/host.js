@@ -112,7 +112,7 @@
         (o.revealed ? '' : counter(o.acted, '人已選'));
     },
 
-    // 統計：八題各幾個人選 O → 浮出「還有一種自由：我可以說不。」
+    // 統計：八題各幾個人選 O。**沒有步驟按鈕**，按下一頁就走。
     oxTally: function () {
       var t = S.oxTally, info = S.oxInfo;
       return '<h2>' + esc(info.tallyTitle) + '</h2>' +
@@ -123,8 +123,7 @@
             '<span class="bt"><i style="width:' + Math.round(r.o / t.max * 100) + '%"></i></span>' +
             '<span class="bn">' + r.o + ' 人</span>' +
           '</div>';
-        }).join('') + '</div>' +
-        (t.step >= 1 ? '<div class="saybig">' + esc(info.reveal) + '</div>' : '');
+        }).join('') + '</div>';
     },
 
     // 身不由己。公布之後**只有數字，不掛名字**。

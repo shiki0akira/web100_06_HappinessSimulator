@@ -51,7 +51,6 @@ export function createState() {
     order: [],
     oxRound: 0,
     oxOpen: [],
-    oxTallyStep: 0,      // 0 長條 → 1 浮出「還有一種自由：我可以說不」
     boundRound: 0,
     boundOpen: [],
     billPaid: false,     // 帳單只扣一次
@@ -144,7 +143,7 @@ function oxTallyView(s) {
     n: ps.filter((p) => oxAt(p, i) !== undefined).length,
   }));
   rows.sort((a, b) => (b.o - a.o) || (a.order - b.order));
-  return { rows, max: Math.max(1, rows.reduce((m, r) => Math.max(m, r.n), 0)), step: s.oxTallyStep || 0 };
+  return { rows, max: Math.max(1, rows.reduce((m, r) => Math.max(m, r.n), 0)) };
 }
 
 // ── 身不由己 ────────────────────────────────────────────────────────────
@@ -283,7 +282,6 @@ export function fill(s) {
 export function stepNext(s) {
   switch (phaseId(s)) {
     case 'ox': return oxStep(s);
-    case 'oxTally': if (s.oxTallyStep < 1) { s.oxTallyStep = 1; return true; } return false;
     case 'bound': return boundStep(s);
     case 'bill': if (s.billStep < 1) { s.billStep = 1; return true; } return false;
     case 'refuse': return refuseStep(s);
@@ -296,7 +294,6 @@ export function stepNext(s) {
 export function stepBack(s) {
   switch (phaseId(s)) {
     case 'ox': return oxPrev(s);
-    case 'oxTally': if (s.oxTallyStep > 0) { s.oxTallyStep = 0; return true; } return false;
     case 'bound': return boundPrev(s);
     case 'bill': if (s.billStep > 0) { s.billStep = 0; return true; } return false;
     case 'refuse': return refusePrev(s);
@@ -312,10 +309,6 @@ function stepView(s) {
     return { back: r > 0, next: !(open && last),
       label: !open ? '公布（' + (r + 1) + '/' + OX_TOTAL + '）'
         : (last ? '八題都公布了，按下一頁' : '下一題 →（' + (r + 2) + '/' + OX_TOTAL + '）') };
-  }
-  if (id === 'oxTally') {
-    return { back: s.oxTallyStep > 0, next: s.oxTallyStep < 1,
-      label: s.oxTallyStep < 1 ? '浮出「還有一種自由」' : '出來了，按下一頁' };
   }
   if (id === 'bound') {
     const r = s.boundRound, open = shown(s, 'boundOpen', r), last = r >= B_TOTAL - 1;
