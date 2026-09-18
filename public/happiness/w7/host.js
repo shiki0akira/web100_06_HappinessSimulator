@@ -97,7 +97,7 @@
       return StageParts.reconnect({ done: S.stats.reconnected, total: S.stats.count });
     },
 
-    // 你覺得自由是什麼？ 0 作答 → 1 長條（**只有人數，不掛名字**）
+    // 你覺得自由是什麼？ 0 作答 → 1 長條（**掛名字**：每一項底下是誰選的）
     free: function () {
       var f = S.freeNow, info = S.freeInfo;
       if (f.step === 0) {
@@ -114,9 +114,10 @@
             '<span class="bl">' + esc(r.t) + '</span>' +
             '<span class="bt"><i style="width:' + Math.round(r.n / f.max * 100) + '%"></i></span>' +
             '<span class="bn">' + r.n + ' 人</span>' +
+            '<span class="who">' + r.who.map(function (n) { return '<em>' + esc(n) + '</em>'; }).join('') + '</span>' +
           '</div>';
         }).join('') + '</div>' +
-        (f.others.length ? '<div class="others">' + f.others.map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('') + '</div>' : '');
+        (f.others.length ? '<div class="others">' + f.others.map(function (o) { return '<span><b>' + esc(o.name) + '</b>' + esc(o.t) + '</span>'; }).join('') + '</div>' : '');
     },
 
     // O/X：一題一題。公布之後**名字站到 O 或 X 那一邊**。
@@ -324,6 +325,13 @@
         oz -= 0.05;
         sides.forEach(function (sd) { var w = sd.querySelector('.who'); if (w) w.style.setProperty('--oz', oz.toFixed(2)); });
       }
+    }
+    // 自由是什麼：名字多的時候整片一起縮
+    var fb = stage.querySelector('.bars.free');
+    if (fb) {
+      var fz = 1;
+      fb.style.setProperty('--fz', fz);
+      while (stage.scrollHeight > stage.clientHeight + 1 && fz > 0.5) { fz -= 0.05; fb.style.setProperty('--fz', fz.toFixed(2)); }
     }
     // 統計表：名字多的時候名字一起縮
     var tb = stage.querySelector('.oxtab');

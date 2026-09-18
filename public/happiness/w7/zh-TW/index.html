@@ -180,7 +180,12 @@
     padding: min(calc(22px * var(--u)), 2.8vh) calc(18px * var(--u)); text-align: center;
     font-size: min(calc(32px * var(--u)), 4vh, 2.2vw); font-weight: 900; }
   .freeopts div.other { border-style: dashed; color: var(--ink-3); }
-  .bars.free { flex: 1; justify-content: center; gap: min(calc(16px * var(--u)), 2vh); }
+  .bars.free { flex: 1; justify-content: center; gap: min(calc(16px * var(--u)), 2vh); zoom: var(--fz, 1); }
+  .bars.free .bar2 { row-gap: 2px; }
+  .bars.free .who { grid-column: 2 / 4; display: flex; flex-wrap: wrap; gap: 2px calc(10px * var(--u)); }
+  .bars.free .who:empty { display: none; }
+  .bars.free .who em { font-style: normal; font-size: min(calc(20px * var(--u)), 2.5vh); font-weight: 900; color: var(--vol); }
+  .others span b { margin-right: .5em; color: var(--ink); }
   .bars.free .bar2 { grid-template-columns: calc(300px * var(--u)) minmax(0, 1fr) calc(90px * var(--u)); }
   .bars.free .bl { font-size: min(calc(30px * var(--u)), 3.8vh); }
   .bars.free .bt { height: min(calc(36px * var(--u)), 4.4vh); }

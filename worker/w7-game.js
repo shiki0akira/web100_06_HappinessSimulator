@@ -92,13 +92,17 @@ export function addPlayer(s, name) {
   return pid;
 }
 
-// ── 你覺得自由是什麼？ ────────────────────────────────────────────────
+// ── 你覺得自由是什麼？（公布之後**掛名字**：誰選了哪一項）────────────────────────────────────────────────
 function freeView(s) {
   const ps = alive(s);
   const rows = FREE.options.map((o, i) => ({
     k: o.k, t: o.t, order: i, n: ps.filter((p) => arr(p.free).indexOf(o.k) >= 0).length,
+    // 誰選了這一項（照進場順序；長條公布之後才給）
+    who: s.freeStep >= 1 ? ps.filter((p) => arr(p.free).indexOf(o.k) >= 0).map((p) => p.name) : [],
   }));
-  const others = ps.map((p) => String(p.freeOther || '').trim()).filter(Boolean);
+  // 其他：名字 ＋ 他寫的那一句
+  const others = ps.filter((p) => String(p.freeOther || '').trim())
+    .map((p) => ({ name: p.name, t: String(p.freeOther).trim() }));
   const max = rows.reduce((m, r) => Math.max(m, r.n), 0);
   const sorted = rows.slice().sort((a, b) => (b.n - a.n) || (a.order - b.order));
   return {
