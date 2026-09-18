@@ -256,15 +256,18 @@
   .rlist { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(var(--rc, 1), minmax(0, 1fr));
     align-content: center; gap: min(calc(10px * var(--u)), 1.2vh) calc(34px * var(--u));
     margin-top: min(calc(14px * var(--u)), 1.8vh); zoom: var(--rz, 1); }
+  /* 你願意嗎那一頁：從上往下排，不置中 */
+  .rlist.top { align-content: start; }
+  .stage h2.asktitle { font-size: min(calc(40px * var(--u)), 5.2vh, 2.7vw); color: var(--gold); }
+  .heaven .handheart { width: min(calc(560px * var(--u)), 50vw, 40vh * 48 / 32); image-rendering: pixelated; animation: unseal 1s ease-out both; }
+  .verse.bigverse { text-align: center; margin-top: min(calc(18px * var(--u)), 2.4vh); }
+  .verse.bigverse blockquote { margin-left: auto; margin-right: auto; }
   .rl { display: grid; grid-template-columns: auto minmax(0, 1fr) 2.6em; align-items: center; gap: calc(12px * var(--u)); }
   .rl .nm { min-width: 5em; max-width: 8em; font-size: min(calc(20px * var(--u)), 2.5vh); font-weight: 900;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .rl .tr { height: min(calc(18px * var(--u)), 2.3vh); border: 3px solid var(--edge); background: var(--surface-2); }
   .rl .tr i { display: block; height: 100%; background: var(--root-c); transition: width 2.6s cubic-bezier(.3,.8,.3,1); }
   .rl b { text-align: right; font-family: var(--pixel); font-size: min(calc(17px * var(--u)), 2.1vh); color: var(--root-c); }
-  /* 不掛名字的那一片：線粗一點 */
-  .rl[data-k] { grid-template-columns: minmax(0, 1fr) 2.6em; }
-  .rl[data-k] .tr { height: min(calc(24px * var(--u)), 3vh); }
 </style>
 </head>
 <body>

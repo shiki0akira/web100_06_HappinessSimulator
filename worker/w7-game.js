@@ -4,15 +4,15 @@
 // 接過來的只有卡片上的兩條線。**第三關起第一次來的人，幸福根基直接給 15。**
 //
 // 流程：身不由己 O/X → 統計 → 見證 → 信而受洗 → 耶穌裡的真自由 → 領受經文（+10，最多 95）→
-// 這不是一個分數，是一個身分 → 邀請 → **天上的身分：按了「我願意」，那一條慢慢補滿 100；
-// 最後全場一起補滿** → 祝福禱告 → 週卡 → 下週預告。
+// 這不是一個分數，是一個身分 → 約翰福音 1:12 → **你願意嗎：按了「我願意」，那一條慢慢補滿 100** →
+// 祝福禱告 → 週卡 → 下週預告。
 //
-// ⚠️ **這是模擬器的最後一關**（第八週不用模擬器）。補滿之後幸福根基鎖在 100，禱告不再加。
-// ⚠️ **誰按了「我願意」不公開**：大螢幕的線不掛名字、側欄要等全場補滿才變；名字只給主持人備忘錄。
+// ⚠️ **這是模擬器的最後一關**（第八週不用模擬器）。禱告不再加分。
+// ⚠️ **主持人不替任何人補滿** —— 只有按了「我願意」的那一條會滿；全場都按了，才換成歡呼的那張圖。
 import { FREE, OX, STORY, FAITH, TRUE_FREE, VERSE, IDENTITY, INVITE, WILLING, BLESS, NEXT } from './w7-data.js';
 
 // 幸福根基的規則七關都一樣。上限 95 不是 100 —— 你自己填不滿。
-// **第七關「天上的身分」補滿之後才變成 100**（FULL_INNER）。
+// **第七關按了「我願意」才變成 100**（FULL_INNER）。
 export const INNER_CAP = 95;
 export const FULL_INNER = 100;
 export const INNER_PER_WEEK = 15;
@@ -31,8 +31,8 @@ export const PHASES = [
   { id: 'trueFree',  tag: '揭曉',     title: '耶穌裡的真自由' },
   { id: 'verse',     tag: '經文',     title: '領受經文' },
   { id: 'identity',  tag: '身分',     title: '這不是一個分數，是一個身分' },
-  { id: 'invite',    tag: '邀請',     title: '你願意成為上帝的兒女嗎？' },
-  { id: 'willing',   tag: '互動點 3', title: '天上的身分（我願意）' },
+  { id: 'invite',    tag: '經文',     title: '約翰福音 1:12' },
+  { id: 'willing',   tag: '互動點 3', title: '你願意成為上帝的兒女嗎？（我願意）' },
   { id: 'bless',     tag: '互動點 4', title: '祝福禱告' },
   { id: 'card',      tag: '週卡',     title: '儲存模擬回憶' },
   { id: 'end',       tag: '預告',     title: '下週預告' },
@@ -49,7 +49,6 @@ export function createState() {
     freeStep: 0,         // 0 作答 → 1 長條
     oxRound: 0,
     oxOpen: [],
-    filled: false,       // 全場補滿 100 了沒
     seq: 0,
   };
 }
@@ -60,11 +59,9 @@ const scored = (s) => alive(s).filter((p) => p.outer !== null);
 const arr = (v) => (Array.isArray(v) ? v : []);
 const openList = (s, key) => (Array.isArray(s[key]) ? s[key] : (s[key] = []));
 const shown = (s, key, r) => openList(s, key).indexOf(r) >= 0;
-// 幸福根基只會漲。補滿之後一律 100。
-const capOf = (s) => (s.filled ? FULL_INNER : INNER_CAP);
-const grow = (s, p, n) => { p.inner = s.filled ? FULL_INNER : Math.min(INNER_CAP, (p.inner || 0) + n); };
-// 按了「我願意」或全場補滿了：他的那一條是 100（**側欄的數字不看這個** —— 要等全場補滿）
-const shownInner = (s, p) => (s.filled || p.willing === 'yes' ? FULL_INNER : (p.inner || 0));
+// 幸福根基只會漲。按了「我願意」就是 100（**只有這一件事填得滿**）。
+const capOf = (p) => (p.willing === 'yes' ? FULL_INNER : INNER_CAP);
+const grow = (p, n) => { p.inner = Math.min(capOf(p), (p.inner || 0) + n); };
 
 export function addPlayer(s, name) {
   s.seq += 1;
@@ -75,7 +72,7 @@ export function addPlayer(s, name) {
     joinedAt: Date.now(),
     outer: null,
     outerStart: null,
-    inner: s.filled ? FULL_INNER : 0,
+    inner: 0,
     innerStart: 0,
     visits: 0,
     newcomer: false,
@@ -85,7 +82,7 @@ export function addPlayer(s, name) {
     ox: [],               // O/X 八題各選了什麼：'o'／'x'
     receivedVerse: false,
     capped: false,        // 領受那一刻撞到 95
-    willing: '',          // 天上的身分：'yes'（我願意）／'later'（我想再想想）。**只有主持人備忘錄看得到**
+    willing: '',          // 'yes'＝按了「我願意」（那一條補滿 100）
     hasBless: false,
     prayed: false,
     cardDone: false,
@@ -159,22 +156,12 @@ function oxTallyView(s) {
   return { rows, max: Math.max(1, rows.reduce((m, r) => Math.max(m, r.n), 0)) };
 }
 
-// ── 全場補滿 100 ───────────────────────────────────────────────────────
-// 按了「我願意」的人先補滿；**最後主持人按一下，每一條都滿**（不看任何條件）。
-export function fill(s) {
-  if (s.filled) return false;
-  s.filled = true;
-  alive(s).forEach((p) => { p.inner = FULL_INNER; });
-  return true;
-}
-
 // ── 一顆「下一步」按鈕，每一頁各自的意思 ─────────────────────────────────
 // 大螢幕控制列和主持人備忘錄都用這一組（stepNext／stepBack），標籤由 stepView 給。
 export function stepNext(s) {
   switch (phaseId(s)) {
     case 'free': if (s.freeStep < 1) { s.freeStep = 1; return true; } return false;
     case 'ox': return oxStep(s);
-    case 'willing': return fill(s);
     default: return false;
   }
 }
@@ -196,9 +183,6 @@ function stepView(s) {
     return { back: r > 0, next: !(open && last),
       label: !open ? '公布（' + (r + 1) + '/' + OX_TOTAL + '）'
         : (last ? '八題都公布了，按下一頁' : '下一題 →（' + (r + 2) + '/' + OX_TOTAL + '）') };
-  }
-  if (id === 'willing') {
-    return { back: false, next: !s.filled, label: s.filled ? '已經補滿了' : '全場補滿 100' };
   }
   return null;
 }
@@ -227,8 +211,6 @@ export function applyAction(s, pid, msg) {
       p.newcomer = p.inner === 0;
       if (p.newcomer) p.inner = NEWCOMER_INNER;
       p.innerStart = p.inner;
-      // 補滿之後才進來的人也一樣是 100
-      if (s.filled) p.inner = FULL_INNER;
       break;
     }
     // 自由是什麼。**送出之後還可以改**（長條公布之前）。
@@ -257,16 +239,15 @@ export function applyAction(s, pid, msg) {
       if (p.receivedVerse) break;
       p.receivedVerse = true;
       const before = p.inner || 0;
-      grow(s, p, INNER_VERSE);
-      p.capped = !s.filled && before + INNER_VERSE > INNER_CAP;
+      grow(p, INNER_VERSE);
+      p.capped = before + INNER_VERSE > INNER_CAP;
       break;
     }
-    // 天上的身分：我願意／我想再想想。**只在這一頁收**，可以改（想再想想的人，門一直開著）。
-    // ⚠️ 伺服器的 inner **不在這裡動** —— 側欄會露出誰按了。那一條補滿只畫在不掛名字的線和他自己的手機上。
+    // 我願意：那一條補滿 100。**只在這一頁收，按了就不能收回。**
     case 'willing': {
-      if (phaseId(s) !== 'willing') break;
-      const k = String(msg.k || '');
-      if (k === 'yes' || k === 'later') p.willing = k;
+      if (phaseId(s) !== 'willing' || msg.k !== 'yes') break;
+      p.willing = 'yes';
+      p.inner = FULL_INNER;
       break;
     }
     // 「成為上帝的兒女，我想對天父說＿＿」。那句話留在玩家自己的手機上，這裡只收「有沒有寫」。
@@ -309,16 +290,14 @@ export function applyHost(s, msg) {
 }
 
 // ── 對外視圖 ────────────────────────────────────────────────────────────
-// 不掛名字的線：順序照 pid 打亂（每次重畫都一樣，才畫得出「慢慢補滿」）
-function hashKey(pid) {
-  let h = 2166136261;
-  for (let i = 0; i < pid.length; i++) { h ^= pid.charCodeAt(i); h = Math.imul(h, 16777619); }
-  return (h >>> 0).toString(36);
-}
+// 你願意嗎那一頁：每個人的幸福根基（**掛名字，照進場順序**）。k 是給大螢幕畫「慢慢補滿」用的
 function willingView(s) {
-  const lines = alive(s).map((p) => ({ k: hashKey(p.pid), from: p.inner || 0, v: shownInner(s, p) }));
-  lines.sort((a, b) => (a.k < b.k ? -1 : a.k > b.k ? 1 : 0));
-  return { filled: !!s.filled, lines };
+  const ps = alive(s);
+  return {
+    lines: ps.map((p) => ({ k: p.pid, name: p.name, v: p.inner || 0 })),
+    yes: ps.filter((p) => p.willing === 'yes').length,
+    all: ps.length > 0 && ps.every((p) => p.willing === 'yes'),
+  };
 }
 
 function common(s) {
@@ -339,7 +318,6 @@ function common(s) {
     invite: INVITE,
     willingInfo: WILLING,
     willingNow: willingView(s),
-    filled: !!s.filled,
     bless: BLESS,
     next: NEXT,
     step: stepView(s),
@@ -356,7 +334,6 @@ export function hostView(s, roomCode) {
     room: roomCode,
     phases: PHASES,
     ...common(s),
-    // ⚠️ 這裡**不放 willing**：側欄和名單不准露出誰按了「我願意」
     players: ps.map((p) => ({
       pid: p.pid, name: p.name,
       outer: p.outer, outerStart: p.outerStart, inner: p.inner || 0,
@@ -380,9 +357,8 @@ export function hostView(s, roomCode) {
       innerStartAvg: sc.length ? Math.round(sc.reduce((a, b) => a + (b.innerStart || 0), 0) / sc.length) : null,
       cardsDone: ps.filter((p) => p.cardDone).length,
       blessed: ps.filter((p) => p.prayed).length,
-      // 天上的身分：**只給主持人備忘錄**（大螢幕的畫面不讀這兩個）
+      // 你願意嗎：按了「我願意」的名字（主持人備忘錄最上面那一行）
       willingYes: ps.filter((p) => p.willing === 'yes').map((p) => p.name),
-      willingLater: ps.filter((p) => p.willing === 'later').length,
     },
   };
 }
@@ -401,9 +377,7 @@ export function playerView(s, pid, roomCode) {
     me: {
       pid: p.pid, name: p.name,
       outer: p.outer, outerStart: p.outerStart,
-      inner: p.inner || 0, innerCap: capOf(s),
-      // 他自己手機上的那一條：按了「我願意」就是 100
-      innerShown: shownInner(s, p),
+      inner: p.inner || 0, innerCap: capOf(p),
       visits: p.visits, newcomer: p.newcomer,
       free: arr(p.free), freeOther: p.freeOther || '', freeSent: !!p.freeSent,
       oxChoice: oxAt(p, s.oxRound),

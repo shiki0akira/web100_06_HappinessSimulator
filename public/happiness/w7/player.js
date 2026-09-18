@@ -1,8 +1,8 @@
 // 玩家手機 · 第七關「釋放與自由」
 //
-// ⚠️ 這一關手機會亮的：接關、O/X 八題、領受經文、天上的身分（我願意／我想再想想）、
+// ⚠️ 這一關手機會亮的：接關、自由是什麼、O/X 八題、領受經文、你願意嗎（我願意）、
 // 祝福禱告（再加存卡）。
-// **按了「我願意」，他自己的那一條慢慢補滿 100** —— 伺服器的數字要等全場補滿才變（側欄不能露出誰按了）。
+// **按了「我願意」，他自己的那一條慢慢補滿 100。**
 (function () {
   'use strict';
   var S = null, pid = null, src = null, sig = '', cardURL = null, cardBlob = null;
@@ -54,15 +54,15 @@
   // 他自己的那一條幸福根基。按了「我願意」會從原本的數字慢慢長到 100。
   var myFrom = null;
   function myLine(me) {
-    var v = myFrom == null ? me.innerShown : myFrom;
+    var v = myFrom == null ? me.inner : myFrom;
     return '<div class="myroot"><span class="l">幸福根基</span>' +
       '<span class="tr"><i id="myfill" style="width:' + v + '%"></i></span>' +
       '<b id="mynum">' + v + '</b></div>';
   }
   function growMine(me) {
     var fill = document.getElementById('myfill'), num = document.getElementById('mynum');
-    if (!fill || myFrom == null || myFrom === me.innerShown) { myFrom = me.innerShown; return; }
-    var from = myFrom, to = me.innerShown, t0 = Date.now(), DUR = 2600;
+    if (!fill || myFrom == null || myFrom === me.inner) { myFrom = me.inner; return; }
+    var from = myFrom, to = me.inner, t0 = Date.now(), DUR = 2600;
     myFrom = to;
     void fill.offsetWidth;
     fill.style.width = to + '%';
@@ -162,28 +162,21 @@
     },
 
     invite: function () {
-      return '<img class="churchart" src="' + ART + 'heaven-church.svg" alt="">' +
-        '<h2 class="center" style="margin-top:14px">' + esc(S.invite.title) + '</h2>' +
+      return '<img class="churchart" src="' + ART + esc(S.invite.art) + '.svg" alt="">' +
         '<div class="verse-p"><span class="ref">' + esc(S.invite.verse.ref) + '</span>' +
           '<blockquote>「' + esc(S.invite.verse.text) + '」</blockquote></div>';
     },
 
-    // 天上的身分：我願意／我想再想想。**按了什麼不會上大螢幕**（大螢幕上的線不掛名字）。
+    // 你願意嗎：**只有「我願意」一顆**。按了，自己那一條慢慢補滿 100。
     willing: function (me) {
       var w = S.willingInfo;
-      if (S.filled) {
-        return myLine(me) + '<p class="bigline center">' + esc(w.mine) + '</p>' +
-          (me.willing === 'yes' ? '<p class="center">' + esc(w.yesReply) + '</p>' : '');
-      }
       if (me.willing === 'yes') {
         return '<h2 class="center">' + esc(me.name) + '</h2>' + myLine(me) +
-          '<p class="bigline center">' + esc(w.yesReply) + '</p>';
+          '<p class="bigline center">' + esc(w.yesReply) + '</p>' +
+          (S.willingNow.all ? '<img class="churchart" src="' + ART + 'heaven-church.svg" alt="">' : '');
       }
-      return '<h2 class="center">' + esc(S.invite.title) + '</h2>' + myLine(me) +
-        (me.willing === 'later' ? '<p class="bigline center">' + esc(w.laterReply) + '</p>' : '') +
-        '<button class="btn primary fullbtn" id="willyes">' + esc(w.yes) + '</button>' +
-        (me.willing === 'later' ? '' : '<button class="btn ghost fullbtn" id="willlater">' + esc(w.later) + '</button>') +
-        '<p class="privacy center">🔒 大螢幕上的線不掛名字，沒有人知道哪一條是你。</p>';
+      return '<h2 class="center">' + esc(w.title) + '</h2>' + myLine(me) +
+        '<button class="btn primary fullbtn" id="willyes">' + esc(w.yes) + '</button>';
     },
 
     // 祝福禱告。**什麼都沒寫也按得下去。只有他自己看得到。**
@@ -276,8 +269,6 @@
     if (v) v.onclick = function () { act('verse'); };
     var wy = document.getElementById('willyes');
     if (wy) wy.onclick = function () { act('willing', { k: 'yes' }); };
-    var wl = document.getElementById('willlater');
-    if (wl) wl.onclick = function () { act('willing', { k: 'later' }); };
 
     var save = document.getElementById('savebl');
     if (save) save.onclick = function () {
@@ -314,7 +305,7 @@
           week: 7,
           name: me.name,
           outer: me.outer, outerPrev: me.outerStart,
-          inner: me.innerShown, innerLabel: '幸福根基',
+          inner: me.inner, innerLabel: '幸福根基',
           verseRef: S.verse.ref, verseText: S.verse.text,
           // 按了「我願意」的人印這一句；其他人印「我可以說不。」（**這張卡只在他自己的手機上**）
           path: { label: 'MY CARD', steps: [me.willing === 'yes' ? S.willingInfo.cardYes : S.willingInfo.cardNo] },
@@ -366,13 +357,13 @@
     document.getElementById('mystate').textContent = S.phase.title;
     document.getElementById('outerv').textContent = me.outer == null ? '—' : me.outer;
     document.getElementById('outerbar').style.width = (me.outer == null ? 0 : me.outer) + '%';
-    document.getElementById('innerv').textContent = me.innerShown ? me.innerShown : '—';
-    document.getElementById('innerbar').style.width = me.innerShown + '%';
+    document.getElementById('innerv').textContent = me.inner ? me.inner : '—';
+    document.getElementById('innerbar').style.width = me.inner + '%';
 
     // ⚠️ 禱告那一格正在打的字不能進這一行 —— 一變就整頁重畫，焦點會被踢掉。
     var next = [
-      S.phase.id, S.freeNow.step, S.oxNow.round, S.oxNow.revealed, S.filled,
-      me.outer, me.inner, me.innerShown, me.freeSent, me.free.join(','), me.oxChoice, me.oxO,
+      S.phase.id, S.freeNow.step, S.oxNow.round, S.oxNow.revealed, S.willingNow.all,
+      me.outer, me.inner, me.freeSent, me.free.join(','), me.oxChoice, me.oxO,
       me.receivedVerse, me.capped, me.willing, me.cardDone, me.prayed,
       draft.byVisits,
     ].join('|');

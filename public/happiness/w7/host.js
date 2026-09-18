@@ -1,7 +1,7 @@
 // 主持人大螢幕 · 第七關「釋放與自由」
 //
 // 十四頁。模擬器的最後一關 —— 最後是下週預告（第八週 · 幸福的教會），最後結算放在那一頁。
-// 需要一步一步走的那幾頁（O/X 公布、全場補滿 100）共用一組按鈕，字由伺服器給（S.step）。
+// 需要一步一步走的那幾頁（自由是什麼、O/X 公布）共用一組按鈕，字由伺服器給（S.step）。
 (function () {
   'use strict';
   var WEEK = 7;
@@ -37,7 +37,7 @@
   }
 
   // ── 側欄玩家狀態 ──────────────────────────────────────────────────────
-  // ⚠️ **不掛誰按了「我願意」** —— 側欄的幸福根基要等全場補滿才變。
+  // 按了「我願意」的人，幸福根基馬上是 100。
   function renderPlayers() {
     var el = document.getElementById('plist');
     if (!S.players.length) {
@@ -67,9 +67,9 @@
   }
 
   // 一片幸福根基的線（小小的，排好幾欄）。rows: [{ k, name, v }]；name 沒給就不掛名字
-  function rootList(rows) {
-    return '<div class="rlist">' + rows.map(function (r) {
-      return '<div class="rl"' + (r.k ? ' data-k="' + esc(r.k) + '"' : '') + '>' +
+  function rootList(rows, top) {
+    return '<div class="rlist' + (top ? ' top' : '') + '">' + rows.map(function (r) {
+      return '<div class="rl' + (r.k ? ' grow' : '') + '"' + (r.k ? ' data-k="' + esc(r.k) + '"' : '') + '>' +
         (r.name != null ? '<span class="nm">' + esc(r.name) + '</span>' : '') +
         '<span class="tr"><i data-v="' + r.v + '" style="width:' + r.v + '%"></i></span>' +
         '<b>' + r.v + '</b></div>';
@@ -187,23 +187,29 @@
         rootList(S.players.map(function (p) { return { name: p.name, v: p.inner || 0 }; }));
     },
 
-    // 邀請：只有問題和約翰福音 1:12。**手機上還沒有按鈕**（下一頁才有）。
+    // 約翰福音 1:12：**只有經文**，配第五關那張手上的心。
     invite: function () {
       return '<div class="heaven">' +
-        '<img class="church" src="' + ART + 'heaven-church.svg" alt="">' +
-        '<div class="hl ask">' + esc(S.invite.title) + '</div>' +
-        '<div class="vref">「' + esc(S.invite.verse.text) + '」' + esc(S.invite.verse.ref) + '</div>' +
+        '<img class="handheart" src="' + ART + esc(S.invite.art) + '.svg" alt="">' +
+        '<div class="verse bigverse"><span class="ref">' + esc(S.invite.verse.ref) + '</span>' +
+          '<blockquote>「' + esc(S.invite.verse.text) + '」</blockquote></div>' +
       '</div>';
     },
 
-    // 天上的身分：每個人的幸福根基（**不掛名字、順序打亂**）。
-    // 手機上按了「我願意」，那一條就慢慢補滿；主持人按「全場補滿 100」，每一條都滿。
+    // 你願意嗎：每個人的幸福根基（**掛名字**，從上往下排）。手機上按了「我願意」，那一條就慢慢補滿。
+    // **全場都按了**（等最後一條長完）才換成天上的教會那張圖。主持人**不替任何人補**。
     willing: function () {
       var w = S.willingNow, info = S.willingInfo;
-      return '<h2>' + esc(w.filled ? info.fullTitle : info.title) + '</h2>' +
-        (w.filled ? '' : '<div class="sub2">' + esc(info.sub) + '</div>') +
-        rootList(w.lines.map(function (l) { return { k: l.k, v: l.v }; })) +
-        (w.filled ? '<div class="fullnote"><span class="o">▍' + esc(info.outerNote) + '</span><span class="n">▍' + esc(info.innerNote) + '</span></div>' : '');
+      if (celebrating) {
+        return '<div class="heaven">' +
+          '<img class="church" src="' + ART + 'heaven-church.svg" alt="">' +
+          '<div class="hl" style="margin-top:min(calc(12px * var(--u)),1.5vh)">' + esc(info.allTitle) + '</div>' +
+          '<div class="vref">' + esc(info.allSub) + '</div>' +
+        '</div>';
+      }
+      return '<h2 class="asktitle">' + esc(info.title) + '</h2>' +
+        rootList(w.lines.map(function (l) { return { k: l.k, name: l.name, v: l.v }; }), true) +
+        counter(w.yes, '人按了我願意');
     },
 
     bless: function () {
@@ -234,6 +240,17 @@
       });
     },
   };
+
+  // ── 全場都按了「我願意」→ 等最後一條長完（3 秒）再換成歡呼的那張圖 ──────────
+  // 翻進來的時候已經全場都按了，就直接給圖。
+  var celebrating = false, celebSeenPartial = false, celebTimer = null;
+  function celebWatch() {
+    if (S.phase.id !== 'willing') { celebrating = false; celebSeenPartial = false; clearTimeout(celebTimer); celebTimer = null; return; }
+    if (!S.willingNow.all) { celebrating = false; celebSeenPartial = true; clearTimeout(celebTimer); celebTimer = null; return; }
+    if (celebrating || celebTimer) return;
+    if (!celebSeenPartial) { celebrating = true; return; }
+    celebTimer = setTimeout(function () { celebTimer = null; celebrating = true; paint(); }, 3000);
+  }
 
   // ── 線慢慢補滿 ────────────────────────────────────────────────────────
   // 整頁重畫的時候，每一條（data-k）先放回上一次的寬度，再慢慢長到新的值 ——
@@ -268,7 +285,8 @@
   }
 
   function paint() {
-    stage.className = 'stage phase-' + S.phase.id + (S.phase.id === 'invite' ? ' cinepage' : '');
+    celebWatch();
+    stage.className = 'stage phase-' + S.phase.id + (S.phase.id === 'invite' || celebrating ? ' cinepage' : '');
     var html = (views[S.phase.id] || function () { return ''; })();
     stage.innerHTML = html;
 
@@ -349,7 +367,6 @@
     ctl.style.display = S.step ? 'inline-flex' : 'none';
     if (S.step) {
       document.getElementById('sback').disabled = !S.step.back;
-      document.getElementById('sback').style.display = S.phase.id === 'willing' ? 'none' : '';
       var sn = document.getElementById('snext');
       sn.textContent = S.step.label;
       sn.disabled = !S.step.next;
