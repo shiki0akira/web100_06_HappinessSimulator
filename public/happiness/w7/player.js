@@ -44,7 +44,7 @@
   }
   function join(name) { if (src) src.join(name); }
 
-  var draft = { byVisits: false };
+  var draft = { byVisits: false, free: null, other: null };
 
   var wait = function (msg, sub) {
     return '<div class="wait"><div class="dot">. . .</div><p style="font-size:21px;color:var(--ink-2)">' +
@@ -98,6 +98,23 @@
         '<button class="btn primary fullbtn" id="sendrec">送出</button>' +
         '<button class="btn ghost fullbtn" id="togglemode">' +
           (draft.byVisits ? '我有卡片，改填幸福根基' : '忘記帶卡片？改填「這是你第幾次來」') + '</button>';
+    },
+
+    // 你覺得自由是什麼？複選 ＋ 其他。長條公布之前都可以改。
+    free: function (me) {
+      if (S.freeNow.step >= 1) return wait('看大螢幕');
+      var info = S.freeInfo;
+      var picked = draft.free || me.free;
+      var other = draft.other == null ? me.freeOther : draft.other;
+      return '<h2>' + esc(info.title) + '</h2>' +
+        '<p>' + esc(info.sub) + '</p>' +
+        '<div class="opts">' + info.options.map(function (o) {
+          return '<button class="opt check' + (picked.indexOf(o.k) >= 0 ? ' on' : '') + '" data-free="' + esc(o.k) + '">' + esc(o.t) + '</button>';
+        }).join('') + '</div>' +
+        '<p class="fieldlbl">' + esc(info.otherLabel) + '<span class="sub">' + esc(info.otherHint) + '</span></p>' +
+        '<input id="fo" maxlength="20" value="' + esc(other) + '" placeholder="（可以不填）" style="width:100%;padding:14px;font-size:20px;font-weight:700">' +
+        '<button class="btn primary fullbtn" id="sendfree">' + (me.freeSent ? '更新' : '送出') + '</button>' +
+        (me.freeSent ? '<p class="ok center" style="margin-top:12px">已送出。主持人公布之前都可以改。</p>' : '');
     },
 
     // O/X：兩顆大按鈕。公布之前都可以改。
@@ -232,6 +249,25 @@
       if (tm) tm.onclick = function () { draft.byVisits = !draft.byVisits; sig = ''; render(); };
     }
 
+    // 自由是什麼：勾選只改暫存，按送出才上去
+    document.querySelectorAll('[data-free]').forEach(function (b) {
+      b.onclick = function () {
+        var fo = document.getElementById('fo');
+        if (fo) draft.other = fo.value;
+        var list = (draft.free || me.free).slice();
+        var k = b.dataset.free, at = list.indexOf(k);
+        if (at >= 0) list.splice(at, 1); else list.push(k);
+        draft.free = list;
+        sig = ''; render();
+      };
+    });
+    var sf = document.getElementById('sendfree');
+    if (sf) sf.onclick = function () {
+      var fo = document.getElementById('fo');
+      act('free', { keys: draft.free || me.free, other: fo ? fo.value : '' });
+      draft.free = null; draft.other = null;
+    };
+
     document.querySelectorAll('[data-ox]').forEach(function (b) {
       b.onclick = function () { act('ox', { round: S.oxNow.round, k: b.dataset.ox }); };
     });
@@ -335,8 +371,8 @@
 
     // ⚠️ 禱告那一格正在打的字不能進這一行 —— 一變就整頁重畫，焦點會被踢掉。
     var next = [
-      S.phase.id, S.oxNow.round, S.oxNow.revealed, S.filled,
-      me.outer, me.inner, me.innerShown, me.oxChoice, me.oxO,
+      S.phase.id, S.freeNow.step, S.oxNow.round, S.oxNow.revealed, S.filled,
+      me.outer, me.inner, me.innerShown, me.freeSent, me.free.join(','), me.oxChoice, me.oxO,
       me.receivedVerse, me.capped, me.willing, me.cardDone, me.prayed,
       draft.byVisits,
     ].join('|');

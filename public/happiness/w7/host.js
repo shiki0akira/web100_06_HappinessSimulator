@@ -45,8 +45,10 @@
       return;
     }
     var onOx = S.phase.id === 'ox' && !S.oxNow.revealed;
+    var onFree = S.phase.id === 'free' && S.freeNow.step === 0;
     el.innerHTML = S.players.map(function (p) {
       var chips = [];
+      if (onFree) chips.push('<span class="chip' + (p.acted ? ' on' : '') + '">' + (p.acted ? '已送出' : '還沒') + '</span>');
       if (onOx) chips.push('<span class="chip' + (p.acted ? ' on' : '') + '">' + (p.acted ? '已選' : '還沒') + '</span>');
       if (p.prayed) chips.push('<span class="chip">已寫下</span>');
       return '' +
@@ -95,6 +97,28 @@
       return StageParts.reconnect({ done: S.stats.reconnected, total: S.stats.count });
     },
 
+    // 你覺得自由是什麼？ 0 作答 → 1 長條（**只有人數，不掛名字**）
+    free: function () {
+      var f = S.freeNow, info = S.freeInfo;
+      if (f.step === 0) {
+        return '<h2>' + esc(info.title) + '</h2>' +
+          '<div class="sub2">' + esc(info.sub) + '</div>' +
+          '<div class="freeopts">' + info.options.map(function (o) {
+            return '<div>' + esc(o.t) + '</div>';
+          }).join('') + '<div class="other">' + esc(info.otherLabel) + '⋯⋯</div></div>' +
+          counter(f.sent, '人已送出');
+      }
+      return '<h2>' + esc(info.title) + '</h2>' +
+        '<div class="bars free">' + f.rows.map(function (r) {
+          return '<div class="bar2' + (r.n ? '' : ' zero') + '">' +
+            '<span class="bl">' + esc(r.t) + '</span>' +
+            '<span class="bt"><i style="width:' + Math.round(r.n / f.max * 100) + '%"></i></span>' +
+            '<span class="bn">' + r.n + ' 人</span>' +
+          '</div>';
+        }).join('') + '</div>' +
+        (f.others.length ? '<div class="others">' + f.others.map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('') + '</div>' : '');
+    },
+
     // O/X：一題一題。公布之後**名字站到 O 或 X 那一邊**。
     ox: function () {
       var o = S.oxNow, info = S.oxInfo;
@@ -112,18 +136,22 @@
         (o.revealed ? '' : counter(o.acted, '人已選'));
     },
 
-    // 統計：八題各幾個人選 O。**沒有步驟按鈕**，按下一頁就走。
+    // 統計：每一題誰選 O、誰選 X（掛名字，照 O 的人數排）。**沒有步驟按鈕**，按下一頁就走。
     oxTally: function () {
       var t = S.oxTally, info = S.oxInfo;
+      var who = function (names) {
+        return names.length ? names.map(function (n) { return '<span>' + esc(n) + '</span>'; }).join('') : '<em>—</em>';
+      };
       return '<h2>' + esc(info.tallyTitle) + '</h2>' +
         '<div class="sub2">' + esc(info.tallySub) + '</div>' +
-        '<div class="bars oxbars">' + t.rows.map(function (r) {
-          return '<div class="bar2' + (r.o ? '' : ' zero') + '">' +
-            '<span class="bl">' + esc(r.q) + '</span>' +
-            '<span class="bt"><i style="width:' + Math.round(r.o / t.max * 100) + '%"></i></span>' +
-            '<span class="bn">' + r.o + ' 人</span>' +
-          '</div>';
-        }).join('') + '</div>';
+        '<div class="oxtab">' +
+          '<div class="oxr hd"><span></span><span class="o">O</span><span class="x">X</span></div>' +
+          t.rows.map(function (r) {
+            return '<div class="oxr"><span class="q">' + esc(r.q) + '</span>' +
+              '<span class="names o">' + who(r.oNames) + '</span>' +
+              '<span class="names x">' + who(r.xNames) + '</span></div>';
+          }).join('') +
+        '</div>';
     },
 
     story: function () {
@@ -137,10 +165,12 @@
 
     trueFree: function () {
       var t = S.trueFree;
+      // 左欄：第 3 頁全場勾最多的三項（沒人答就用固定的三項）
+      var left = S.freeNow.top.length ? S.freeNow.top : t.left;
       return '<h2>' + esc(t.title) + '</h2>' +
         '<div class="goodgrid">' +
           '<div class="goodcol left"><h3>' + esc(t.leftLabel) + '</h3><ul>' +
-            t.left.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>' +
+            left.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>' +
           '<div class="goodcol right"><h3>' + esc(t.rightLabel) + '</h3><ul>' +
             t.right.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>' +
         '</div>';
@@ -275,6 +305,18 @@
         oz -= 0.05;
         sides.forEach(function (sd) { var w = sd.querySelector('.who'); if (w) w.style.setProperty('--oz', oz.toFixed(2)); });
       }
+    }
+    // 統計表：名字多的時候名字一起縮
+    var tb = stage.querySelector('.oxtab');
+    if (tb) {
+      // 只縮名字，題目的字不縮（電視上題目要看得清楚）
+      var nz = 1;
+      tb.style.setProperty('--nz', nz);
+      while (stage.scrollHeight > stage.clientHeight + 1 && nz > 0.6) { nz -= 0.05; tb.style.setProperty('--nz', nz.toFixed(2)); }
+      // 名字縮到底還塞不下（人很多），整張表再一起縮
+      var tz = 1;
+      tb.style.setProperty('--tz', tz);
+      while (stage.scrollHeight > stage.clientHeight + 1 && tz > 0.5) { tz -= 0.05; tb.style.setProperty('--tz', tz.toFixed(2)); }
     }
     var rl = stage.querySelector('.rlist');
     if (rl) {

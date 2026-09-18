@@ -9,7 +9,7 @@
 //
 // ⚠️ **這是模擬器的最後一關**（第八週不用模擬器）。補滿之後幸福根基鎖在 100，禱告不再加。
 // ⚠️ **誰按了「我願意」不公開**：大螢幕的線不掛名字、側欄要等全場補滿才變；名字只給主持人備忘錄。
-import { OX, STORY, FAITH, TRUE_FREE, VERSE, IDENTITY, INVITE, WILLING, BLESS, NEXT } from './w7-data.js';
+import { FREE, OX, STORY, FAITH, TRUE_FREE, VERSE, IDENTITY, INVITE, WILLING, BLESS, NEXT } from './w7-data.js';
 
 // 幸福根基的規則七關都一樣。上限 95 不是 100 —— 你自己填不滿。
 // **第七關「天上的身分」補滿之後才變成 100**（FULL_INNER）。
@@ -23,7 +23,8 @@ export const NEWCOMER_INNER = 15;
 export const PHASES = [
   { id: 'lobby',     tag: '入場',     title: '掃碼進場' },
   { id: 'reconnect', tag: '接關',     title: '輸入幸福指數' },
-  { id: 'ox',        tag: '互動點 1', title: '身不由己 O/X（八題）' },
+  { id: 'free',      tag: '互動點 1', title: '你覺得自由是什麼？' },
+  { id: 'ox',        tag: '互動點 2', title: '身不由己 O/X（八題）' },
   { id: 'oxTally',   tag: '統計',     title: '我們都有點身不由己' },
   { id: 'story',     tag: '見證',     title: '見證分享' },
   { id: 'faith',     tag: '信息',     title: '信而受洗 · 醫治與平安' },
@@ -31,8 +32,8 @@ export const PHASES = [
   { id: 'verse',     tag: '經文',     title: '領受經文' },
   { id: 'identity',  tag: '身分',     title: '這不是一個分數，是一個身分' },
   { id: 'invite',    tag: '邀請',     title: '你願意成為上帝的兒女嗎？' },
-  { id: 'willing',   tag: '互動點 2', title: '天上的身分（我願意）' },
-  { id: 'bless',     tag: '互動點 3', title: '祝福禱告' },
+  { id: 'willing',   tag: '互動點 3', title: '天上的身分（我願意）' },
+  { id: 'bless',     tag: '互動點 4', title: '祝福禱告' },
   { id: 'card',      tag: '週卡',     title: '儲存模擬回憶' },
   { id: 'end',       tag: '預告',     title: '下週預告' },
 ];
@@ -45,6 +46,7 @@ export function createState() {
     phaseIdx: 0,
     players: {},
     order: [],
+    freeStep: 0,         // 0 作答 → 1 長條
     oxRound: 0,
     oxOpen: [],
     filled: false,       // 全場補滿 100 了沒
@@ -77,6 +79,9 @@ export function addPlayer(s, name) {
     innerStart: 0,
     visits: 0,
     newcomer: false,
+    free: [],             // 自由是什麼（勾了哪幾個）
+    freeOther: '',        // 其他（**會上大螢幕，不掛名字**）
+    freeSent: false,
     ox: [],               // O/X 八題各選了什麼：'o'／'x'
     receivedVerse: false,
     capped: false,        // 領受那一刻撞到 95
@@ -88,6 +93,26 @@ export function addPlayer(s, name) {
   };
   s.order.push(pid);
   return pid;
+}
+
+// ── 你覺得自由是什麼？ ────────────────────────────────────────────────
+function freeView(s) {
+  const ps = alive(s);
+  const rows = FREE.options.map((o, i) => ({
+    k: o.k, t: o.t, order: i, n: ps.filter((p) => arr(p.free).indexOf(o.k) >= 0).length,
+  }));
+  const others = ps.map((p) => String(p.freeOther || '').trim()).filter(Boolean);
+  const max = rows.reduce((m, r) => Math.max(m, r.n), 0);
+  const sorted = rows.slice().sort((a, b) => (b.n - a.n) || (a.order - b.order));
+  return {
+    step: s.freeStep || 0,
+    sent: ps.filter((p) => p.freeSent).length,
+    rows: sorted,
+    others: s.freeStep >= 1 ? others : [],
+    max: Math.max(max, 1),
+    // 「耶穌裡的真自由」左欄：勾最多的三項（沒人勾的不算）
+    top: sorted.filter((r) => r.n > 0).slice(0, 3).map((r) => r.t),
+  };
 }
 
 // ── 身不由己 O/X ───────────────────────────────────────────────────────
@@ -120,12 +145,14 @@ function oxView(s) {
   };
 }
 
-// 統計：每一題幾個人選 O（照 O 的人數排）
+// 統計：每一題誰選 O、誰選 X（照 O 的人數排；名字照進場順序）
 function oxTallyView(s) {
   const ps = alive(s);
   const rows = OX.questions.map((q, i) => ({
     q, order: i,
     o: ps.filter((p) => oxAt(p, i) === 'o').length,
+    oNames: ps.filter((p) => oxAt(p, i) === 'o').map((p) => p.name),
+    xNames: ps.filter((p) => oxAt(p, i) === 'x').map((p) => p.name),
     n: ps.filter((p) => oxAt(p, i) !== undefined).length,
   }));
   rows.sort((a, b) => (b.o - a.o) || (a.order - b.order));
@@ -145,6 +172,7 @@ export function fill(s) {
 // 大螢幕控制列和主持人備忘錄都用這一組（stepNext／stepBack），標籤由 stepView 給。
 export function stepNext(s) {
   switch (phaseId(s)) {
+    case 'free': if (s.freeStep < 1) { s.freeStep = 1; return true; } return false;
     case 'ox': return oxStep(s);
     case 'willing': return fill(s);
     default: return false;
@@ -152,12 +180,17 @@ export function stepNext(s) {
 }
 
 export function stepBack(s) {
+  if (phaseId(s) === 'free' && s.freeStep > 0) { s.freeStep = 0; return true; }
   if (phaseId(s) === 'ox') return oxPrev(s);
   return false;
 }
 
 function stepView(s) {
   const id = phaseId(s);
+  if (id === 'free') {
+    return { back: s.freeStep > 0, next: s.freeStep < 1,
+      label: s.freeStep < 1 ? '公布長條' : '出來了，按下一頁' };
+  }
   if (id === 'ox') {
     const r = s.oxRound, open = shown(s, 'oxOpen', r), last = r >= OX_TOTAL - 1;
     return { back: r > 0, next: !(open && last),
@@ -196,6 +229,15 @@ export function applyAction(s, pid, msg) {
       p.innerStart = p.inner;
       // 補滿之後才進來的人也一樣是 100
       if (s.filled) p.inner = FULL_INNER;
+      break;
+    }
+    // 自由是什麼。**送出之後還可以改**（長條公布之前）。
+    case 'free': {
+      if (phaseId(s) !== 'free' || s.freeStep >= 1) break;
+      const keys = arr(msg.keys).map(String).filter((k) => FREE.options.some((o) => o.k === k));
+      p.free = keys.filter((k, i) => keys.indexOf(k) === i);
+      p.freeOther = String(msg.other || '').trim().slice(0, 20);
+      p.freeSent = true;
       break;
     }
     // O/X：這一題選 O 還是 X。公布之前都可以改。
@@ -284,6 +326,8 @@ function common(s) {
     week: 7,
     phase: PHASES[s.phaseIdx],
     phaseIdx: s.phaseIdx,
+    freeInfo: FREE,
+    freeNow: freeView(s),
     oxInfo: OX,
     oxNow: oxView(s),
     oxTally: oxTallyView(s),
@@ -317,7 +361,7 @@ export function hostView(s, roomCode) {
       pid: p.pid, name: p.name,
       outer: p.outer, outerStart: p.outerStart, inner: p.inner || 0,
       visits: p.visits, newcomer: p.newcomer,
-      acted: id === 'ox' ? oxAt(p, s.oxRound) !== undefined : false,
+      acted: id === 'ox' ? oxAt(p, s.oxRound) !== undefined : id === 'free' ? !!p.freeSent : false,
       hasBless: !!p.hasBless, prayed: !!p.prayed,
       cardDone: !!p.cardDone, adjust: p.adjust || 0,
     })),
@@ -326,6 +370,7 @@ export function hostView(s, roomCode) {
       reconnected: sc.length,
       newcomers: ps.filter((p) => p.newcomer).length,
       acted: id === 'ox' ? oxView(s).acted : 0,
+      freeSent: ps.filter((p) => p.freeSent).length,
       versesReceived: ps.filter((p) => p.receivedVerse).length,
       capped: ps.filter((p) => p.capped).length,
       outerAvg: outers.length ? Math.round(outers.reduce((a, b) => a + b, 0) / outers.length) : null,
@@ -360,6 +405,7 @@ export function playerView(s, pid, roomCode) {
       // 他自己手機上的那一條：按了「我願意」就是 100
       innerShown: shownInner(s, p),
       visits: p.visits, newcomer: p.newcomer,
+      free: arr(p.free), freeOther: p.freeOther || '', freeSent: !!p.freeSent,
       oxChoice: oxAt(p, s.oxRound),
       oxO: arr(p.ox).filter((k) => k === 'o').length,
       oxN: arr(p.ox).filter((k) => k).length,
