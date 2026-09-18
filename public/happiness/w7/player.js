@@ -120,7 +120,7 @@
     // O/X：兩顆大按鈕。公布之前都可以改。
     ox: function (me) {
       var o = S.oxNow, mine = me.oxChoice;
-      var head = '<div class="qn">' + esc(S.oxInfo.title) + ' · 第 ' + (o.round + 1) + ' / ' + o.total + ' 題</div>' +
+      var head = '<div class="qn">' + esc(S.oxInfo.title) + ' · ' + (o.warm ? S.oxInfo.warmupLabel + ' ' + o.num + ' / ' + o.of : '第 ' + o.num + ' / ' + o.of + ' 題') + '</div>' +
         '<h2 style="margin-top:6px">' + esc(o.q) + '</h2>';
       if (o.revealed) {
         if (!mine) return head + wait('看大螢幕', '這一題你沒有選');
@@ -140,10 +140,7 @@
       return (me.oxN ? '<p class="bigline center">八題裡，你有 ' + me.oxO + ' 個 O</p>' : '') + wait('看大螢幕');
     },
 
-    faith: function () {
-      return '<h2 class="center">' + esc(S.faith[0]) + '</h2>' +
-        '<h2 class="center" style="color:var(--root-c)">' + esc(S.faith[1]) + '</h2>' + wait('看大螢幕');
-    },
+    faith: function () { return wait('看大螢幕'); },
 
     // 領受經文：跟前六關一樣。
     verse: function (me) {

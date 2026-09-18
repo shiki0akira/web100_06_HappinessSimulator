@@ -3,7 +3,7 @@
 // 這一關完全不依賴前六關 —— 上一次沒來的人不會少玩到任何東西。
 // 接過來的只有卡片上的兩條線。**第三關起第一次來的人，幸福根基直接給 15。**
 //
-// 流程：身不由己 O/X → 統計 → 見證 → 信而受洗 → 耶穌裡的真自由 → 領受經文（+10，最多 95）→
+// 流程：自由是什麼 → 身不由己 O/X（先試玩兩題）→ 統計 → 見證 → 因著信，得著真自由 → 耶穌裡的真自由 → 領受經文（+10，最多 95）→
 // 這不是一個分數，是一個身分 → 約翰福音 1:12 → **你願意嗎：按了「我願意」，那一條慢慢補滿 100** →
 // 祝福禱告 → 週卡 → 下週預告。
 //
@@ -27,7 +27,7 @@ export const PHASES = [
   { id: 'ox',        tag: '互動點 2', title: '身不由己 O/X（八題）' },
   { id: 'oxTally',   tag: '統計',     title: '我們都有點身不由己' },
   { id: 'story',     tag: '見證',     title: '見證分享' },
-  { id: 'faith',     tag: '信息',     title: '信而受洗 · 醫治與平安' },
+  { id: 'faith',     tag: '信息',     title: '因著信，得著真自由' },
   { id: 'trueFree',  tag: '揭曉',     title: '耶穌裡的真自由' },
   { id: 'verse',     tag: '經文',     title: '領受經文' },
   { id: 'identity',  tag: '身分',     title: '這不是一個分數，是一個身分' },
@@ -79,7 +79,7 @@ export function addPlayer(s, name) {
     free: [],             // 自由是什麼（勾了哪幾個）
     freeOther: '',        // 其他（**會上大螢幕，不掛名字**）
     freeSent: false,
-    ox: [],               // O/X 八題各選了什麼：'o'／'x'
+    ox: [],               // O/X 十回合（兩題試玩 ＋ 八題）各選了什麼：'o'／'x'
     receivedVerse: false,
     capped: false,        // 領受那一刻撞到 95
     willing: '',          // 'yes'＝按了「我願意」（那一條補滿 100）
@@ -113,8 +113,15 @@ function freeView(s) {
 }
 
 // ── 身不由己 O/X ───────────────────────────────────────────────────────
-const OX_TOTAL = OX.questions.length;
+// 回合 0、1 是試玩（不算進統計），之後才是八題
+const OX_WARM = arr(OX.warmup).length;
+const OX_ALL = OX.warmup.concat(OX.questions);
+const OX_TOTAL = OX_ALL.length;
 const oxAt = (p, r) => arr(p.ox)[r];
+// 按鈕上的字：試玩 1/2、第 1/8 題
+const oxLabel = (r) => (r < OX_WARM
+  ? OX.warmupLabel + ' ' + (r + 1) + '/' + OX_WARM
+  : '第 ' + (r - OX_WARM + 1) + '/' + OX.questions.length + ' 題');
 
 export function oxStep(s) {
   const r = s.oxRound;
@@ -135,23 +142,30 @@ function oxView(s) {
   const open = shown(s, 'oxOpen', r);
   return {
     round: r, total: OX_TOTAL, revealed: open,
-    q: OX.questions[r],
+    q: OX_ALL[r],
+    // 試玩：「試玩 1 / 2」；正式：「第 1 / 8 題」
+    warm: r < OX_WARM,
+    num: r < OX_WARM ? r + 1 : r - OX_WARM + 1,
+    of: r < OX_WARM ? OX_WARM : OX.questions.length,
     acted: ps.filter((p) => oxAt(p, r) !== undefined).length,
     o: open ? ps.filter((p) => oxAt(p, r) === 'o').map((p) => p.name) : [],
     x: open ? ps.filter((p) => oxAt(p, r) === 'x').map((p) => p.name) : [],
   };
 }
 
-// 統計：每一題誰選 O、誰選 X（照 O 的人數排；名字照進場順序）
+// 統計：八題（**不含試玩**）每一題誰選 O、誰選 X（照 O 的人數排；名字照進場順序）
 function oxTallyView(s) {
   const ps = alive(s);
-  const rows = OX.questions.map((q, i) => ({
-    q, order: i,
-    o: ps.filter((p) => oxAt(p, i) === 'o').length,
-    oNames: ps.filter((p) => oxAt(p, i) === 'o').map((p) => p.name),
-    xNames: ps.filter((p) => oxAt(p, i) === 'x').map((p) => p.name),
-    n: ps.filter((p) => oxAt(p, i) !== undefined).length,
-  }));
+  const rows = OX.questions.map((q, n) => {
+    const i = OX_WARM + n;
+    return {
+      q, order: n,
+      o: ps.filter((p) => oxAt(p, i) === 'o').length,
+      oNames: ps.filter((p) => oxAt(p, i) === 'o').map((p) => p.name),
+      xNames: ps.filter((p) => oxAt(p, i) === 'x').map((p) => p.name),
+      n: ps.filter((p) => oxAt(p, i) !== undefined).length,
+    };
+  });
   rows.sort((a, b) => (b.o - a.o) || (a.order - b.order));
   return { rows, max: Math.max(1, rows.reduce((m, r) => Math.max(m, r.n), 0)) };
 }
@@ -181,8 +195,8 @@ function stepView(s) {
   if (id === 'ox') {
     const r = s.oxRound, open = shown(s, 'oxOpen', r), last = r >= OX_TOTAL - 1;
     return { back: r > 0, next: !(open && last),
-      label: !open ? '公布（' + (r + 1) + '/' + OX_TOTAL + '）'
-        : (last ? '八題都公布了，按下一頁' : '下一題 →（' + (r + 2) + '/' + OX_TOTAL + '）') };
+      label: !open ? '公布（' + oxLabel(r) + '）'
+        : (last ? '八題都公布了，按下一頁' : '下一題 →（' + oxLabel(r + 1) + '）') };
   }
   return null;
 }
@@ -381,8 +395,8 @@ export function playerView(s, pid, roomCode) {
       visits: p.visits, newcomer: p.newcomer,
       free: arr(p.free), freeOther: p.freeOther || '', freeSent: !!p.freeSent,
       oxChoice: oxAt(p, s.oxRound),
-      oxO: arr(p.ox).filter((k) => k === 'o').length,
-      oxN: arr(p.ox).filter((k) => k).length,
+      oxO: arr(p.ox).slice(OX_WARM).filter((k) => k === 'o').length,
+      oxN: arr(p.ox).slice(OX_WARM).filter((k) => k).length,
       receivedVerse: !!p.receivedVerse,
       capped: !!p.capped,
       willing: p.willing || '',

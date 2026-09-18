@@ -1214,3 +1214,65 @@ function animatedSvg(w, h, css, body, label) {
   }
   console.log('第七關：bound-0～5／rest／chain-link／bird／heaven-church.svg');
 }
+
+// ── 第七關第 7 頁「因著信，得著真自由、真幸福」──────────────────────────────
+// 一個人舉起雙手跳起來（教會投影片第 2、12 頁那張跳起來的照片），腳邊是斷掉的鎖鏈，
+// 鳥從斷開的地方飛走（投影片第 10 頁）。**不畫十字架、不畫水** —— 這一頁講的是「信」，不是儀式。
+{
+  const OUT_SHARED = 'public/happiness/shared/art';
+  const box = (x, y, w, h, c) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`;
+  const W = 48, H = 32;
+  const JUMP = [
+    '.k............k.',
+    '.C....nnnn....C.',
+    '.C...nnnnnn...C.',
+    '.CC..kkkkkk..CC.',
+    '..C..kdkkdk..C..',
+    '..CC.kkddkk.CC..',
+    '...CC.kkkk.CC...',
+    '....CCCCCCCC....',
+    '....CCCCCCCC....',
+    '....CCCCCCCC....',
+    '....CCCCCCCC....',
+    '....cccccccc....',
+    '....cc....cc....',
+    '...cc......cc...',
+    '..cc........cc..',
+    '.DDD........DDD.',
+  ];
+  JUMP.forEach((r, y) => { if (r.length !== 16) throw new Error('JUMP 第 ' + y + ' 列不是 16 格'); });
+  let body = '';
+  // 身後的光
+  let glow = '';
+  for (let r = 0; r < 5; r++) {
+    glow += `<rect x="${18 - r * 3}" y="${2 + r}" width="${12 + r * 6}" height="${22 - r}" fill="${PAL.G}" opacity="${(0.2 - r * 0.035).toFixed(3)}"/>`;
+  }
+  body += `<g class="glow">${glow}</g>`;
+  // 地面
+  body += box(0, 29, W, 1, PAL.w) + box(0, 30, W, 2, PAL.W);
+  // 斷掉的鎖鏈：左右各一截，斷口朝中間
+  const LINK = ['.wwww.', 'ww..ww', 'ww..ww', '.wwww.'];
+  const DARK = LINK.map((r) => r.replace(/w/g, 'D'));
+  body += sprite(LINK, 2, 25) + sprite(DARK, 6, 25) + box(10, 26, 2, 2, PAL.w);
+  body += box(36, 26, 2, 2, PAL.w) + sprite(DARK, 38, 25) + sprite(LINK, 42, 25);
+  // 跳起來的人（離地一點）
+  body += `<g class="jump">${sprite(JUMP, 16, 7)}</g>`;
+  // 鳥：從斷口往上飛
+  // 小小的鳥（5×3），離人遠一點，不要擋到他
+  const BIRD = ['w...w', '.w.w.', '..D..'];
+  [[4, 17, 0], [39, 16, 0.4], [7, 7, 0.8], [36, 5, 1.2], [42, 10, 0.6]].forEach(([x, y, d]) => {
+    body += `<g class="fly" style="animation-delay:${d}s">${sprite(BIRD, x, y)}</g>`;
+  });
+  // 星星
+  [[14, 3], [33, 20], [12, 21]].forEach(([x, y]) => {
+    body += `<g class="tw">${box(x, y, 1, 1, PAL.G)}${box(x - 1, y + 1, 3, 1, PAL.G)}${box(x, y + 2, 1, 1, PAL.G)}</g>`;
+  });
+  const css =
+    '.jump{animation:jp 1.2s steps(1) infinite}@keyframes jp{0%,49%{transform:translateY(0)}50%,100%{transform:translateY(-2px)}}' +
+    '.fly{animation:fl 1.6s steps(1) infinite}@keyframes fl{0%,49%{transform:translateY(0)}50%,100%{transform:translateY(-1px)}}' +
+    '.glow{animation:gl 2.4s steps(1) infinite}@keyframes gl{0%,49%{opacity:.75}50%,100%{opacity:1}}' +
+    '.tw{animation:tk 2s steps(1) infinite}@keyframes tk{0%,45%{opacity:.2}50%,100%{opacity:1}}' +
+    '@media (prefers-reduced-motion:reduce){.jump,.fly,.glow,.tw{animation:none}}';
+  fs.writeFileSync(OUT_SHARED + '/faith-free.svg', animatedSvg(W, H, css, body, '一個人舉起雙手跳起來，腳邊的鎖鏈斷了，鳥飛走'));
+  console.log('第七關：faith-free.svg（因著信，得著真自由）');
+}

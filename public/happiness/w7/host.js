@@ -130,7 +130,7 @@
             : '') + '</div>';
       };
       return '<h2>' + esc(info.title) + '</h2>' +
-        '<div class="oxq"><span class="as">第 ' + (o.round + 1) + ' / ' + o.total + ' 題</span>' +
+        '<div class="oxq"><span class="as">' + (o.warm ? info.warmupLabel + ' ' + o.num + ' / ' + o.of : '第 ' + o.num + ' / ' + o.of + ' 題') + '</span>' +
           '<div class="line">' + esc(o.q) + '</div></div>' +
         '<div class="oxgrid">' + side('O', 'o', o.o) + side('X', 'x', o.x) + '</div>' +
         (o.revealed ? '' : counter(o.acted, '人已選'));
@@ -157,9 +157,12 @@
       return StageParts.testimony({ title: S.story.title });
     },
 
-    // 信而受洗，必得釋放 · 相信耶穌，醫治與平安。**手機上沒有按鈕。**
+    // 因著信，得著真自由、真幸福：一句話 ＋ 插圖。**手機上沒有按鈕。**
     faith: function () {
-      return '<div class="faith">' + S.faith.map(function (t) { return '<div>' + esc(t) + '</div>'; }).join('') + '</div>';
+      return '<div class="heaven">' +
+        '<img class="faithart" src="' + ART + esc(S.faith.art) + '.svg" alt="">' +
+        '<div class="hl">' + esc(S.faith.line) + '</div>' +
+      '</div>';
     },
 
     trueFree: function () {
