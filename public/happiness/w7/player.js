@@ -131,7 +131,7 @@
           '<button class="oxbtn o' + (mine === 'o' ? ' on' : '') + '" data-ox="o">O</button>' +
           '<button class="oxbtn x' + (mine === 'x' ? ' on' : '') + '" data-ox="x">X</button>' +
         '</div>' +
-        '<p class="privacy center">' + esc(S.oxInfo.sub) + '。公布之後大螢幕會出現名字。</p>';
+        '<p class="privacy center">' + '公布之後大螢幕會出現名字。</p>';
     },
 
     oxTally: function (me) {

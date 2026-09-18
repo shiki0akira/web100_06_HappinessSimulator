@@ -99,14 +99,13 @@
     ox: function () {
       var o = S.oxNow, info = S.oxInfo;
       var side = function (mark, cls, names) {
-        return '<div class="oxside ' + cls + '"><div class="mark">' + mark + '</div>' +
+        return '<div class="oxside ' + cls + (o.revealed ? '' : ' waiting') + '"><div class="mark">' + mark + '</div>' +
           (o.revealed
             ? '<div class="cnt">' + names.length + ' 人</div><div class="who">' +
                 names.map(function (n, i) { return '<span style="animation-delay:' + (i * 0.06) + 's">' + esc(n) + '</span>'; }).join('') + '</div>'
             : '') + '</div>';
       };
       return '<h2>' + esc(info.title) + '</h2>' +
-        '<div class="sub2">' + esc(info.sub) + '</div>' +
         '<div class="oxq"><span class="as">第 ' + (o.round + 1) + ' / ' + o.total + ' 題</span>' +
           '<div class="line">' + esc(o.q) + '</div></div>' +
         '<div class="oxgrid">' + side('O', 'o', o.o) + side('X', 'x', o.x) + '</div>' +

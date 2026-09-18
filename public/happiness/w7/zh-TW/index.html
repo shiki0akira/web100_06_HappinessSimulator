@@ -180,6 +180,9 @@
   .oxgrid { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: calc(24px * var(--u)); margin-top: min(calc(16px * var(--u)), 2vh); }
   .oxside { display: flex; flex-direction: column; align-items: center; min-height: 0; overflow: hidden; background: var(--surface);
     border: 4px solid var(--edge); box-shadow: 6px 6px 0 var(--hard); padding: min(calc(10px * var(--u)), 1.3vh) calc(18px * var(--u)); }
+  /* 還沒公布：O 和 X 放在框的正中間 */
+  .oxside.waiting { justify-content: center; }
+  .oxside.waiting .mark { font-size: min(calc(150px * var(--u)), 20vh); }
   .oxside .mark { font-family: var(--pixel); font-size: min(calc(96px * var(--u)), 13vh); line-height: 1.1; }
   .oxside.o { border-color: var(--root-c); } .oxside.o .mark { color: var(--root-c); }
   .oxside.x { border-color: var(--vol); } .oxside.x .mark { color: var(--vol); }
