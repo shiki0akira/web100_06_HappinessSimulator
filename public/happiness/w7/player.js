@@ -245,7 +245,6 @@
         '<h2 class="center" style="margin-top:14px">' + esc(h.steps[2]) + '</h2>' +
         '<div class="verse-p"><span class="ref">' + esc(S.verse.ref) + '</span>' +
           '<blockquote>「' + esc(S.verse.text) + '」</blockquote></div>' +
-        '<p class="center qn" style="margin-top:10px">' + esc(h.end) + '</p>' +
         (cardURL ? '<img class="weekcard" src="' + cardURL + '" alt="第七關週卡">' : '');
     },
   };

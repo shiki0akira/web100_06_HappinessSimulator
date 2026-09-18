@@ -260,7 +260,6 @@
         '<div class="hl" style="margin-top:min(calc(12px * var(--u)),1.5vh)">' + esc(h.steps[2]) + '</div>' +
         '<div class="vref">「' + esc(S.verse.text) + '」' + esc(S.verse.ref) + '</div>' +
         avgRow() +
-        '<div class="fin">' + esc(h.end) + '</div>' +
       '</div>';
     },
   };

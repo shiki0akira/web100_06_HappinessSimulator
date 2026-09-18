@@ -332,7 +332,7 @@ function stepView(s) {
   if (id === 'heaven') {
     const st = s.heavenStep || 0;
     return { back: st > 0, next: st < 2,
-      label: ['下一段（那不是最後一格）', '下一段（天上的教會）', '七關完成'][st] };
+      label: ['下一段（那不是最後一格）', '下一段（天上的教會）', '走完了'][st] };
   }
   return null;
 }
