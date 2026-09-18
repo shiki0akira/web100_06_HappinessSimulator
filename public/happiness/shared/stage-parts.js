@@ -110,7 +110,7 @@ window.StageParts = (function () {
           stat(opts.innerLabel || '幸福根基', opts.inner, opts.innerFrom, 'var(--root-c)') +
         '</div>' +
         '<div class="col3 nextbox" style="border-color:var(--gold)">' +
-          '<h3 class="next">下一關 · ' + esc(opts.week || '') + '</h3>' +
+          '<h3 class="next">' + esc(opts.nextLabel || '下一關') + ' · ' + esc(opts.week || '') + '</h3>' +
           lines.map(function (l) {
             return '<p style="margin:8px 0 0;font-size:calc(18px * var(--u));color:var(--ink-2)">' + esc(l) + '</p>';
           }).join('') +

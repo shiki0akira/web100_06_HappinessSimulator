@@ -243,7 +243,7 @@
         avg: S.stats.outerAvg, avgFrom: S.stats.startAvg,
         inner: S.stats.innerAvg || null, innerFrom: S.stats.innerStartAvg,
         innerLabel: '幸福根基', fromLabel: '開場',
-        week: S.next.week, lines: S.next.lines,
+        week: S.next.week, lines: S.next.lines, nextLabel: S.next.nextLabel,
       });
     },
 
