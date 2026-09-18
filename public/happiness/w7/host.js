@@ -68,7 +68,7 @@
 
   // 一片幸福根基的線（小小的，排好幾欄）。rows: [{ k, name, v }]；name 沒給就不掛名字
   function rootList(rows, top) {
-    return '<div class="rlist' + (top ? ' top' : '') + '">' + rows.map(function (r) {
+    return '<div class="rlist' + (top ? ' fromtop' : '') + '">' + rows.map(function (r) {
       return '<div class="rl' + (r.k ? ' grow' : '') + '"' + (r.k ? ' data-k="' + esc(r.k) + '"' : '') + '>' +
         (r.name != null ? '<span class="nm">' + esc(r.name) + '</span>' : '') +
         '<span class="tr"><i data-v="' + r.v + '" style="width:' + r.v + '%"></i></span>' +
@@ -207,8 +207,7 @@
         '</div>';
       }
       return '<h2 class="asktitle">' + esc(info.title) + '</h2>' +
-        rootList(w.lines.map(function (l) { return { k: l.k, name: l.name, v: l.v }; }), true) +
-        counter(w.yes, '人按了我願意');
+        rootList(w.lines.map(function (l) { return { k: l.k, name: l.name, v: l.v }; }), true);
     },
 
     bless: function () {
