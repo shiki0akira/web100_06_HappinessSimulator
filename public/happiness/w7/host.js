@@ -143,7 +143,6 @@
         return names.length ? names.map(function (n) { return '<span>' + esc(n) + '</span>'; }).join('') : '<em>—</em>';
       };
       return '<h2>' + esc(info.tallyTitle) + '</h2>' +
-        '<div class="sub2">' + esc(info.tallySub) + '</div>' +
         '<div class="oxtab">' +
           '<div class="oxr hd"><span></span><span class="o">O</span><span class="x">X</span></div>' +
           t.rows.map(function (r) {
