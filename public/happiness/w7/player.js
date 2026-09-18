@@ -170,10 +170,11 @@
     // 你願意嗎：**只有「我願意」一顆**。按了，自己那一條慢慢補滿 100。
     willing: function (me) {
       var w = S.willingInfo;
+      // 全場都按了：歡迎回家那張圖只在大螢幕上，手機叫他看大螢幕
+      if (S.willingNow.all) return wait('看大螢幕');
       if (me.willing === 'yes') {
         return '<h2 class="center">' + esc(me.name) + '</h2>' + myLine(me) +
-          '<p class="bigline center">' + esc(w.yesReply) + '</p>' +
-          (S.willingNow.all ? '<img class="churchart" src="' + ART + 'heaven-church.svg" alt="">' : '');
+          '<p class="bigline center">' + esc(w.yesReply) + '</p>';
       }
       return '<h2 class="center">' + esc(w.title) + '</h2>' + myLine(me) +
         '<button class="btn primary fullbtn" id="willyes">' + esc(w.yes) + '</button>';
