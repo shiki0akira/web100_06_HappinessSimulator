@@ -270,17 +270,13 @@
   /* 天上的教會 */
   .heaven { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
   .heaven .hl { font-size: min(calc(48px * var(--u)), 6vh, 3.2vw); font-weight: 900; letter-spacing: .06em; white-space: nowrap; margin-top: min(calc(22px * var(--u)), 2.8vh); animation: unseal 1s ease-out both; }
-  .timeline { width: min(calc(900px * var(--u)), 80%); height: min(calc(16px * var(--u)), 2vh); border: 4px solid var(--edge); background: var(--surface-2); }
-  .timeline i { display: block; height: 100%; background: var(--ink-3); animation: tl 2.4s ease-out both; }
-  @keyframes tl { from { width: 0; } to { width: 100%; } }
-  .rests { display: flex; gap: calc(26px * var(--u)); margin-top: min(calc(34px * var(--u)), 4vh); }
-  .rests img { width: min(calc(90px * var(--u)), 12vh); image-rendering: pixelated; animation: dimin 1.2s ease-out both; }
-  .rests img:nth-child(2) { animation-delay: .3s; } .rests img:nth-child(3) { animation-delay: .6s; }
-  .rests img:nth-child(4) { animation-delay: .9s; } .rests img:nth-child(5) { animation-delay: 1.2s; }
-  @keyframes dimin { from { opacity: 1; } to { opacity: .5; } }
-  .stage.phase-heaven.dark { background: #070B0C; }
-  .stage.phase-heaven.dark .hl { color: #E9F1EC; }
-  .heaven .tomb { width: min(calc(420px * var(--u)), 44vh, 34vw); image-rendering: pixelated; animation: unseal 1.4s ease-out both; }
+  /* 天上的身分 ①：一條滿格的幸福根基 */
+  .rootfull { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: calc(18px * var(--u));
+    width: min(calc(900px * var(--u)), 80%); animation: unseal .8s ease-out both; }
+  .rootfull .l { font-size: min(calc(30px * var(--u)), 3.8vh); font-weight: 900; }
+  .rootfull .tr { height: min(calc(44px * var(--u)), 5.6vh); border: 4px solid var(--edge); background: var(--root-c); }
+  .rootfull b { font-family: var(--pixel); font-size: min(calc(46px * var(--u)), 5.8vh); color: var(--root-c); }
+  .heaven .hl.ask { margin-top: min(calc(20px * var(--u)), 2.6vh); color: var(--gold); }
   .heaven .church { width: min(calc(900px * var(--u)), 60vw, 44vh * 64 / 40); image-rendering: pixelated; animation: unseal 1.2s ease-out both; }
   .heaven .vref { margin-top: min(calc(12px * var(--u)), 1.5vh); font-size: min(calc(26px * var(--u)), 3.2vh); font-weight: 700; color: var(--ink-2); }
   .avgrow { display: flex; align-items: center; gap: calc(22px * var(--u)); margin-top: min(calc(12px * var(--u)), 1.5vh); animation: unseal 1s .6s ease-out both; }

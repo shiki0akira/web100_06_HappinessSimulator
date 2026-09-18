@@ -247,29 +247,22 @@
       });
     },
 
-    // 天上的教會。三段：最後一格 → 那不是最後一格 → 天上的教會。
-    // ⚠️ 第一段**幾秒就翻過去**，不准變成恐嚇。第三段是一群人，**不掛名字**。
+    // 天上的身分。三段：滿了之後 → 上帝的兒女 → 邀請。
+    // ⚠️ **大螢幕上什麼都不顯示**：沒有人數、沒有名字。誰按了「我願意」只在主持人備忘錄上。
     heaven: function () {
       var st = S.heavenStep, h = S.heaven;
       if (st === 0) {
-        var n = Math.max(3, Math.min(5, S.players.length || 3)), rests = '';
-        for (var i = 0; i < n; i++) rests += '<img src="' + ART + 'rest.svg" alt="">';
         return '<div class="heaven">' +
-          '<div class="timeline"><i></i></div>' +
-          '<div class="rests">' + rests + '</div>' +
+          '<div class="rootfull"><span class="l">幸福根基</span><span class="tr"><i></i></span><b>100</b></div>' +
           '<div class="hl">' + esc(h.steps[0]) + '</div>' +
-        '</div>';
-      }
-      if (st === 1) {
-        return '<div class="heaven">' +
-          '<img class="tomb" src="' + ART + 'tomb-open.svg" alt="">' +
-          '<div class="hl">' + esc(h.steps[1]) + '</div>' +
         '</div>';
       }
       return '<div class="heaven">' +
         '<img class="church" src="' + ART + 'heaven-church.svg" alt="">' +
-        '<div class="hl" style="margin-top:min(calc(12px * var(--u)),1.5vh)">' + esc(h.steps[2]) + '</div>' +
-        '<div class="vref">「' + esc(S.verse.text) + '」' + esc(S.verse.ref) + '</div>' +
+        (st === 1
+          ? '<div class="hl" style="margin-top:min(calc(12px * var(--u)),1.5vh)">' + esc(h.steps[1]) + '</div>' +
+            '<div class="vref">「' + esc(h.verse.text) + '」' + esc(h.verse.ref) + '</div>'
+          : '<div class="hl ask">' + esc(h.steps[2]) + '</div>') +
       '</div>';
     },
   };
@@ -309,7 +302,7 @@
   function paint() {
     fullWatch();
     stage.className = 'stage phase-' + S.phase.id +
-      (S.phase.id === 'heaven' ? ' cinepage' + (S.heavenStep < 2 ? ' dark' : '') : '');
+      (S.phase.id === 'heaven' ? ' cinepage' : '');
     var html = (views[S.phase.id] || function () { return ''; })();
     stage.innerHTML = html;
 

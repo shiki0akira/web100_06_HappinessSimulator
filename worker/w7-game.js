@@ -33,7 +33,7 @@ export const PHASES = [
   { id: 'refuse',    tag: '互動點 3', title: '拒絕的自由（三回合）' },
   { id: 'trueFree',  tag: '揭曉',     title: '耶穌裡的真自由' },
   { id: 'full',      tag: '補滿',     title: '補滿 100' },
-  { id: 'heaven',    tag: '天上的教會', title: '天上的教會' },
+  { id: 'heaven',    tag: '天上的身分', title: '天上的身分' },
   { id: 'bless',     tag: '互動點 4', title: '釋放禱告' },
   { id: 'card',      tag: '週卡',     title: '儲存模擬回憶' },
   { id: 'end',       tag: '預告',     title: '下週預告' },
@@ -59,7 +59,7 @@ export function createState() {
     refuseRound: 0,
     refuseOpen: [],
     filled: false,       // 補滿 100 了沒
-    heavenStep: 0,       // 0 最後一格 → 1 那不是最後一格 → 2 天上的教會
+    heavenStep: 0,       // 0 滿了之後 → 1 上帝的兒女 → 2 邀請
     seq: 0,
   };
 }
@@ -96,6 +96,7 @@ export function addPlayer(s, name) {
     capped: false,        // 領受那一刻撞到 95
     innerBeforeFill: null,
     refuse: [],           // 拒絕的自由三回合
+    willing: '',          // 天上的身分：'yes'（我願意）／'later'（我想再想想）。**只有主持人備忘錄看得到**
     hasBless: false,
     prayed: false,
     cardDone: false,
@@ -333,7 +334,7 @@ function stepView(s) {
   if (id === 'heaven') {
     const st = s.heavenStep || 0;
     return { back: st > 0, next: st < 2,
-      label: ['下一段（那不是最後一格）', '下一段（天上的教會）', '走完了'][st] };
+      label: ['下一段（上帝的兒女）', '下一段（邀請）', '走完了'][st] };
   }
   return null;
 }
@@ -415,6 +416,13 @@ export function applyAction(s, pid, msg) {
       p.hasBless = !!msg.has;
       p.prayed = true;
       break;
+    // 天上的身分 · 邀請。**只在第三段收**，可以改（想再想想的人，門一直開著）。
+    case 'willing': {
+      if (phaseId(s) !== 'heaven' || (s.heavenStep || 0) < 2) break;
+      const k = String(msg.k || '');
+      if (k === 'yes' || k === 'later') p.willing = k;
+      break;
+    }
     case 'card':
       p.cardDone = true;
       break;
@@ -552,6 +560,9 @@ export function hostView(s, roomCode) {
       billTotal: ps.reduce((a, p) => a + (p.billLoss || 0), 0),
       cardsDone: ps.filter((p) => p.cardDone).length,
       blessed: ps.filter((p) => p.prayed).length,
+      // 天上的身分：**只給主持人備忘錄**（大螢幕的畫面不讀這兩個）
+      willingYes: ps.filter((p) => p.willing === 'yes').map((p) => p.name),
+      willingLater: ps.filter((p) => p.willing === 'later').length,
       // 補滿那一頁：全場補了多少（主持人備忘錄念「只來過兩次的人跳了 70」用）
       fillMax: ps.reduce((m, p) => Math.max(m, p.innerBeforeFill == null ? 0 : FULL_INNER - p.innerBeforeFill), 0),
     },
@@ -589,6 +600,7 @@ export function playerView(s, pid, roomCode) {
       refuseChoice: arr(p.refuse)[s.refuseRound],
       hasBless: !!p.hasBless, prayed: !!p.prayed,
       cardDone: !!p.cardDone,
+      willing: p.willing || '',
     },
   };
 }

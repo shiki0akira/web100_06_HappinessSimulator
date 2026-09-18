@@ -238,22 +238,22 @@
         (cardURL ? '<a class="btn ghost fullbtn" id="zoom" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none">放大這張卡</a>' : '');
     },
 
-    // 天上的教會。**手機上沒有按鈕。**
-    heaven: function () {
+    // 天上的身分。前兩段看大螢幕；第三段「我願意」／「我想再想想」。
+    // **按了什麼不會上大螢幕。**
+    heaven: function (me) {
       var st = S.heavenStep, h = S.heaven;
-      if (st === 0) {
-        return '<img class="freeart dim" src="' + ART + 'rest.svg" alt="">' +
-          '<p class="bigline center" style="color:var(--ink-2) !important">' + esc(h.steps[0]) + '</p>';
-      }
-      if (st === 1) {
-        return '<img class="freeart wide" src="' + ART + 'tomb-open.svg" alt="">' +
-          '<p class="bigline center">' + esc(h.steps[1]) + '</p>';
+      if (st < 2) return wait('看大螢幕');
+      if (me.willing === 'yes') {
+        return '<img class="churchart" src="' + ART + 'heaven-church.svg" alt="">' +
+          '<h2 class="center" style="margin-top:14px">' + esc(me.name) + '</h2>' +
+          '<p class="bigline center">' + esc(h.yesReply) + '</p>';
       }
       return '<img class="churchart" src="' + ART + 'heaven-church.svg" alt="">' +
         '<h2 class="center" style="margin-top:14px">' + esc(h.steps[2]) + '</h2>' +
-        '<div class="verse-p"><span class="ref">' + esc(S.verse.ref) + '</span>' +
-          '<blockquote>「' + esc(S.verse.text) + '」</blockquote></div>' +
-        (cardURL ? '<img class="weekcard" src="' + cardURL + '" alt="第七關週卡">' : '');
+        (me.willing === 'later' ? '<p class="bigline center">' + esc(h.laterReply) + '</p>' : '') +
+        '<button class="btn primary fullbtn" id="willyes">' + esc(h.yes) + '</button>' +
+        (me.willing === 'later' ? '' : '<button class="btn ghost fullbtn" id="willlater">' + esc(h.later) + '</button>') +
+        '<p class="privacy center">🔒 你按了什麼，不會出現在大螢幕上。</p>';
     },
   };
 
@@ -318,6 +318,11 @@
     document.querySelectorAll('[data-refuse]').forEach(function (b) {
       b.onclick = function () { act('refuse', { round: S.refuseNow.round, k: b.dataset.refuse }); };
     });
+
+    var wy = document.getElementById('willyes');
+    if (wy) wy.onclick = function () { act('willing', { k: 'yes' }); };
+    var wl = document.getElementById('willlater');
+    if (wl) wl.onclick = function () { act('willing', { k: 'later' }); };
 
     var v = document.getElementById('verse');
     if (v) v.onclick = function () { act('verse'); };
@@ -419,7 +424,7 @@
       S.phase.id, S.oxNow.round, S.oxNow.revealed, S.boundNow.round, S.boundNow.revealed, S.billStep,
       S.refuseNow.round, S.refuseNow.revealed, S.filled, S.heavenStep,
       me.outer, me.inner, me.oxChoice, me.oxO, me.boundChoice, me.chains.join(','),
-      me.billLoss, me.broken, me.capped, me.refuseChoice, me.cardDone, me.prayed,
+      me.billLoss, me.broken, me.capped, me.refuseChoice, me.cardDone, me.prayed, me.willing,
       draft.byVisits, !!flying(),
     ].join('|');
     if (next !== sig) {
