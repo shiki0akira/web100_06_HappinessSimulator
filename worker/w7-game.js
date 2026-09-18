@@ -33,9 +33,9 @@ export const PHASES = [
   { id: 'refuse',    tag: '互動點 3', title: '拒絕的自由（三回合）' },
   { id: 'trueFree',  tag: '揭曉',     title: '耶穌裡的真自由' },
   { id: 'full',      tag: '補滿',     title: '補滿 100' },
+  { id: 'heaven',    tag: '天上的教會', title: '天上的教會' },
   { id: 'bless',     tag: '互動點 4', title: '釋放禱告' },
   { id: 'card',      tag: '週卡',     title: '儲存模擬回憶' },
-  { id: 'heaven',    tag: '謝幕',     title: '天上的教會' },
   { id: 'end',       tag: '預告',     title: '下週預告' },
 ];
 
@@ -545,7 +545,7 @@ export function hostView(s, roomCode) {
       notBroken: ps.filter((p) => !p.broken).length,
       outerAvg: outers.length ? Math.round(outers.reduce((a, b) => a + b, 0) / outers.length) : null,
       innerAvg: ps.length ? Math.round(ps.reduce((a, b) => a + (b.inner || 0), 0) / ps.length) : 0,
-      // 謝幕那一頁的全場平均：今晚一進來自己打的那兩個數字
+      // 下週預告那一頁的最後結算：今晚一進來自己打的那兩個數字
       startAvg: sc.length ? Math.round(sc.reduce((a, b) => a + b.outerStart, 0) / sc.length) : null,
       innerStartAvg: sc.length ? Math.round(sc.reduce((a, b) => a + (b.innerStart || 0), 0) / sc.length) : null,
       saidNo: saidNo(s),
