@@ -230,6 +230,14 @@
         '<a class="btn primary fullbtn" id="zoom" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none">放大這張卡</a>';
     },
 
+    end: function (me) {
+      return '<h2>下週見</h2>' +
+        '<p>下一關 · ' + esc(S.next.week) + '</p>' +
+        '<p>' + esc(S.next.lines[0]) + '</p>' +
+        (cardURL ? '<img class="weekcard" src="' + cardURL + '" alt="第七關週卡">' : '') +
+        (cardURL ? '<a class="btn ghost fullbtn" id="zoom" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none">放大這張卡</a>' : '');
+    },
+
     // 天上的教會。**手機上沒有按鈕。**
     heaven: function () {
       var st = S.heavenStep, h = S.heaven;

@@ -7,9 +7,9 @@
 // 帳單（每條「好過一點」−5）→ 見證 → **領受 8:36＝斷鏈（根基 +10、每條鏈 +3）** →
 // 拒絕的自由三回合（不計分）→ 耶穌裡的真自由 → **補滿 100（全場同時）** → 釋放禱告 → 天上的教會。
 //
-// ⚠️ **這是最後一關。** 補滿 100 之後幸福根基鎖在 100，禱告不再加。
+// ⚠️ **這是模擬器的最後一關**（第八週不用模擬器）。補滿 100 之後幸福根基鎖在 100，禱告不再加。
 // ⚠️ 領受經文是**領受**，不是「我相信」按鈕。沒按的人翻到拒絕的自由時手機先跳回經文卡。
-import { OX, BOUND, BILL, STORY, VERSE, REFUSE, TRUE_FREE, FULL, BLESS, HEAVEN } from './w7-data.js';
+import { OX, BOUND, BILL, STORY, VERSE, REFUSE, TRUE_FREE, FULL, BLESS, HEAVEN, NEXT } from './w7-data.js';
 
 // 幸福根基的規則七關都一樣。上限 95 不是 100 —— 你自己填不滿。
 // **第七關第 12 頁補滿之後才變成 100**（FULL_INNER）。
@@ -36,6 +36,7 @@ export const PHASES = [
   { id: 'bless',     tag: '互動點 4', title: '釋放禱告' },
   { id: 'card',      tag: '週卡',     title: '儲存模擬回憶' },
   { id: 'heaven',    tag: '謝幕',     title: '天上的教會' },
+  { id: 'end',       tag: '預告',     title: '下週預告' },
 ];
 
 const phaseId = (s) => (PHASES[s.phaseIdx] || PHASES[0]).id;
@@ -505,6 +506,7 @@ function common(s) {
     filled: !!s.filled,
     bless: BLESS,
     heaven: HEAVEN,
+    next: NEXT,
     heavenStep: s.heavenStep || 0,
     step: stepView(s),
   };

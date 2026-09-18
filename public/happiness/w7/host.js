@@ -1,6 +1,6 @@
 // 主持人大螢幕 · 第七關「釋放與自由」
 //
-// 十三頁。最後一關 —— 沒有下週預告，最後一頁是天上的教會。
+// 十六頁。模擬器的最後一關 —— 天上的教會之後是下週預告（第八週 · 幸福的教會），最後結算放在那一頁。
 // 需要一步一步走的那幾頁（公布、下一段、補滿 100）共用一組按鈕，字由伺服器給（S.step）。
 (function () {
   'use strict';
@@ -231,8 +231,19 @@
       return StageParts.keepsake({
         done: S.stats.cardsDone, total: S.stats.count,
         extra: '「我可以說不」、你想對它說不的那一件事',
-        // 最後一關：沒有下一關了
+        // 第七張卡：下一週不用模擬器，不叫它入場券
         lede: '長按手機上的圖片存進相簿。這是第七張卡。',
+      });
+    },
+
+    // 下週預告：最後結算（全場兩條線的平均，和開場比）＋ 第八週 · 幸福的教會。
+    end: function () {
+      return StageParts.nextWeek({
+        kicker: S.next.kicker,
+        avg: S.stats.outerAvg, avgFrom: S.stats.startAvg,
+        inner: S.stats.innerAvg || null, innerFrom: S.stats.innerStartAvg,
+        innerLabel: '幸福根基', fromLabel: '開場',
+        week: S.next.week, lines: S.next.lines,
       });
     },
 
@@ -259,23 +270,9 @@
         '<img class="church" src="' + ART + 'heaven-church.svg" alt="">' +
         '<div class="hl" style="margin-top:min(calc(12px * var(--u)),1.5vh)">' + esc(h.steps[2]) + '</div>' +
         '<div class="vref">「' + esc(S.verse.text) + '」' + esc(S.verse.ref) + '</div>' +
-        avgRow() +
       '</div>';
     },
   };
-
-  // 今晚全場平均（跟前六關下週預告那一排一樣）：一條被推來推去，一條只往上
-  function avgRow() {
-    var st = S.stats;
-    var one = function (label, v, from, cls) {
-      var d = (v == null || from == null) ? null : v - from;
-      return '<div class="avg ' + cls + '"><span class="l">' + label + '</span><b>' + (v == null ? '—' : v) + '</b>' +
-        (d == null ? '' : '<span class="d">開場 ' + from + '　' + (d > 0 ? '+' : d === 0 ? '±' : '') + d + '</span>') + '</div>';
-    };
-    return '<div class="avgrow"><span class="k">今晚全場平均</span>' +
-      one('幸福指數', st.outerAvg, st.startAvg, 'o') +
-      one('幸福根基', st.innerAvg || null, st.innerStartAvg, 'n') + '</div>';
-  }
 
   // ── 補滿 100 的動畫 ─────────────────────────────────────────────────
   // **在這一頁親眼看到它從沒補變成補滿**才播：全場的幸福根基同一秒一起往上長。

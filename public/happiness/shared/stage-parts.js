@@ -104,7 +104,7 @@ window.StageParts = (function () {
         '</div>';
       };
       return '<h2>下週預告</h2>' +
-        '<span class="kicker" style="margin-top:10px">今晚全場平均</span>' +
+        '<span class="kicker" style="margin-top:10px">' + esc(opts.kicker || '今晚全場平均') + '</span>' +
         '<div class="cols3" style="grid-template-columns:1fr 1fr;margin-top:0">' +
           stat('幸福指數', opts.avg, opts.avgFrom, 'var(--vol)') +
           stat(opts.innerLabel || '幸福根基', opts.inner, opts.innerFrom, 'var(--root-c)') +
